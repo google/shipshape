@@ -1,0 +1,10 @@
+URL: https://github.com/jmhodges/levigo/archive/251e8f03dd.zip
+Version: 251e8f03dd
+License: MIT
+License File: LICENSE
+
+Description:
+levigo is a Go wrapper for LevelDB.
+
+Local Modifications:
+built levigo using go build

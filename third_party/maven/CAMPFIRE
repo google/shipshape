@@ -1,0 +1,13 @@
+[
+  {
+    "name": "maven",
+    "kind": "java_external_jar",
+    "inputs": {
+      "srcs": [
+        "maven-core-3.2.1.jar",
+        "maven-model-3.2.1.jar",
+        "maven-model-builder-3.2.1.jar"
+      ]
+    }
+  }
+]

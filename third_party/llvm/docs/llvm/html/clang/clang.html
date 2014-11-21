@@ -1,0 +1,665 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>clang</title>
+<link rel="stylesheet" href="manpage.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#OPTIONS">OPTIONS</a>
+    <ul>
+      <li><a href="#Stage-Selection-Options">Stage Selection Options</a></li>
+      <li><a href="#Language-Selection-and-Mode-Options">Language Selection and Mode Options</a></li>
+      <li><a href="#Target-Selection-Options">Target Selection Options</a></li>
+      <li><a href="#Code-Generation-Options">Code Generation Options</a></li>
+      <li><a href="#Driver-Options">Driver Options</a></li>
+      <li><a href="#Diagnostics-Options">Diagnostics Options</a></li>
+      <li><a href="#Preprocessor-Options">Preprocessor Options</a></li>
+    </ul>
+  </li>
+  <li><a href="#ENVIRONMENT">ENVIRONMENT</a></li>
+  <li><a href="#BUGS">BUGS</a></li>
+  <li><a href="#SEE-ALSO">SEE ALSO</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>clang - the Clang C, C++, and Objective-C compiler</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<p><b>clang</b> [<b>-c</b>|<b>-S</b>|<b>-E</b>] <b>-std=</b><i>standard</i> <b>-g</b> [<b>-O0</b>|<b>-O1</b>|<b>-O2</b>|<b>-O3</b>|<b>-Ofast</b>|<b>-Os</b>|<b>-Oz</b>|<b>-O</b>|<b>-O4</b>] <b>-W</b><i>warnings...</i> <b>-pedantic</b> <b>-I</b><i>dir...</i> <b>-L</b><i>dir...</i> <b>-D</b><i>macro[=defn]</i> <b>-f</b><i>feature-option...</i> <b>-m</b><i>machine-option...</i> <b>-o</b> <i>output-file</i> <b>-stdlib=</b><i>library</i> <i>input-filenames</i></p>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p><b>clang</b> is a C, C++, and Objective-C compiler which encompasses preprocessing, parsing, optimization, code generation, assembly, and linking. Depending on which high-level mode setting is passed, Clang will stop before doing a full link. While Clang is highly integrated, it is important to understand the stages of compilation, to understand how to invoke it. These stages are:</p>
+
+<dl>
+
+<dt id="Driver"><b>Driver</b></dt>
+<dd>
+
+<p>The <b>clang</b> executable is actually a small driver which controls the overall execution of other tools such as the compiler, assembler and linker. Typically you do not need to interact with the driver, but you transparently use it to run the other tools.</p>
+
+</dd>
+<dt id="Preprocessing"><b>Preprocessing</b></dt>
+<dd>
+
+<p>This stage handles tokenization of the input source file, macro expansion, #include expansion and handling of other preprocessor directives. The output of this stage is typically called a &quot;.i&quot; (for C), &quot;.ii&quot; (for C++), &quot;.mi&quot; (for Objective-C) , or &quot;.mii&quot; (for Objective-C++) file.</p>
+
+</dd>
+<dt id="Parsing-and-Semantic-Analysis"><b>Parsing and Semantic Analysis</b></dt>
+<dd>
+
+<p>This stage parses the input file, translating preprocessor tokens into a parse tree. Once in the form of a parser tree, it applies semantic analysis to compute types for expressions as well and determine whether the code is well formed. This stage is responsible for generating most of the compiler warnings as well as parse errors. The output of this stage is an &quot;Abstract Syntax Tree&quot; (AST).</p>
+
+</dd>
+<dt id="Code-Generation-and-Optimization"><b>Code Generation and Optimization</b></dt>
+<dd>
+
+<p>This stage translates an AST into low-level intermediate code (known as &quot;LLVM IR&quot;) and ultimately to machine code. This phase is responsible for optimizing the generated code and handling target-specific code generation. The output of this stage is typically called a &quot;.s&quot; file or &quot;assembly&quot; file.</p>
+
+<p>Clang also supports the use of an integrated assembler, in which the code generator produces object files directly. This avoids the overhead of generating the &quot;.s&quot; file and of calling the target assembler.</p>
+
+</dd>
+<dt id="Assembler"><b>Assembler</b></dt>
+<dd>
+
+<p>This stage runs the target assembler to translate the output of the compiler into a target object file. The output of this stage is typically called a &quot;.o&quot; file or &quot;object&quot; file.</p>
+
+</dd>
+<dt id="Linker"><b>Linker</b></dt>
+<dd>
+
+<p>This stage runs the target linker to merge multiple object files into an executable or dynamic library. The output of this stage is typically called an &quot;a.out&quot;, &quot;.dylib&quot; or &quot;.so&quot; file.</p>
+
+</dd>
+</dl>
+
+<p>The Clang compiler supports a large number of options to control each of these stages. In addition to compilation of code, Clang also supports other tools:</p>
+
+<p><b>Clang Static Analyzer</b></p>
+
+<p>The Clang Static Analyzer is a tool that scans source code to try to find bugs through code analysis. This tool uses many parts of Clang and is built into the same driver. Please see <a href="http://clang-analyzer.llvm.org">http://clang-analyzer.llvm.org</a> for more details on how to use the static analyzer.</p>
+
+<h1 id="OPTIONS">OPTIONS</h1>
+
+<h2 id="Stage-Selection-Options">Stage Selection Options</h2>
+
+<dl>
+
+<dt id="E"><b>-E</b></dt>
+<dd>
+
+<p>Run the preprocessor stage.</p>
+
+</dd>
+<dt id="fsyntax-only"><b>-fsyntax-only</b></dt>
+<dd>
+
+<p>Run the preprocessor, parser and type checking stages.</p>
+
+</dd>
+<dt id="S"><b>-S</b></dt>
+<dd>
+
+<p>Run the previous stages as well as LLVM generation and optimization stages and target-specific code generation, producing an assembly file.</p>
+
+</dd>
+<dt id="c"><b>-c</b></dt>
+<dd>
+
+<p>Run all of the above, plus the assembler, generating a target &quot;.o&quot; object file.</p>
+
+</dd>
+<dt id="no-stage-selection-option"><b>no stage selection option</b></dt>
+<dd>
+
+<p>If no stage selection option is specified, all stages above are run, and the linker is run to combine the results into an executable or shared library.</p>
+
+</dd>
+</dl>
+
+<h2 id="Language-Selection-and-Mode-Options">Language Selection and Mode Options</h2>
+
+<dl>
+
+<dt id="x-language"><b>-x</b> <i>language</i></dt>
+<dd>
+
+<p>Treat subsequent input files as having type <i>language</i>.</p>
+
+</dd>
+<dt id="std-language"><b>-std</b>=<i>language</i></dt>
+<dd>
+
+<p>Specify the language standard to compile for.</p>
+
+</dd>
+<dt id="stdlib-library"><b>-stdlib</b>=<i>library</i></dt>
+<dd>
+
+<p>Specify the C++ standard library to use; supported options are libstdc++ and libc++.</p>
+
+</dd>
+<dt id="ansi"><b>-ansi</b></dt>
+<dd>
+
+<p>Same as <b>-std=c89</b>.</p>
+
+</dd>
+<dt id="ObjC"><b>-ObjC++</b></dt>
+<dd>
+
+<p>Treat source input files as Objective-C++ inputs.</p>
+
+</dd>
+<dt id="ObjC1"><b>-ObjC</b></dt>
+<dd>
+
+<p>Treat source input files as Objective-C inputs.</p>
+
+</dd>
+<dt id="trigraphs"><b>-trigraphs</b></dt>
+<dd>
+
+<p>Enable trigraphs.</p>
+
+</dd>
+<dt id="ffreestanding"><b>-ffreestanding</b></dt>
+<dd>
+
+<p>Indicate that the file should be compiled for a freestanding, not a hosted, environment.</p>
+
+</dd>
+<dt id="fno-builtin"><b>-fno-builtin</b></dt>
+<dd>
+
+<p>Disable special handling and optimizations of builtin functions like strlen and malloc.</p>
+
+</dd>
+<dt id="fmath-errno"><b>-fmath-errno</b></dt>
+<dd>
+
+<p>Indicate that math functions should be treated as updating errno.</p>
+
+</dd>
+<dt id="fpascal-strings"><b>-fpascal-strings</b></dt>
+<dd>
+
+<p>Enable support for Pascal-style strings with &quot;\pfoo&quot;.</p>
+
+</dd>
+<dt id="fms-extensions"><b>-fms-extensions</b></dt>
+<dd>
+
+<p>Enable support for Microsoft extensions.</p>
+
+</dd>
+<dt id="fmsc-version"><b>-fmsc-version=</b></dt>
+<dd>
+
+<p>Set _MSC_VER. Defaults to 1300 on Windows. Not set otherwise.</p>
+
+</dd>
+<dt id="fborland-extensions"><b>-fborland-extensions</b></dt>
+<dd>
+
+<p>Enable support for Borland extensions.</p>
+
+</dd>
+<dt id="fwritable-strings"><b>-fwritable-strings</b></dt>
+<dd>
+
+<p>Make all string literals default to writable. This disables uniquing of strings and other optimizations.</p>
+
+</dd>
+<dt id="flax-vector-conversions"><b>-flax-vector-conversions</b></dt>
+<dd>
+
+<p>Allow loose type checking rules for implicit vector conversions.</p>
+
+</dd>
+<dt id="fblocks"><b>-fblocks</b></dt>
+<dd>
+
+<p>Enable the &quot;Blocks&quot; language feature.</p>
+
+</dd>
+<dt id="fobjc-gc-only"><b>-fobjc-gc-only</b></dt>
+<dd>
+
+<p>Indicate that Objective-C code should be compiled in GC-only mode, which only works when Objective-C Garbage Collection is enabled.</p>
+
+</dd>
+<dt id="fobjc-gc"><b>-fobjc-gc</b></dt>
+<dd>
+
+<p>Indicate that Objective-C code should be compiled in hybrid-GC mode, which works with both GC and non-GC mode.</p>
+
+</dd>
+<dt id="fobjc-abi-version-version"><b>-fobjc-abi-version</b>=<i>version</i></dt>
+<dd>
+
+<p>Select the Objective-C ABI version to use. Available versions are 1 (legacy &quot;fragile&quot; ABI), 2 (non-fragile ABI 1), and 3 (non-fragile ABI 2).</p>
+
+</dd>
+<dt id="fobjc-nonfragile-abi-version-version"><b>-fobjc-nonfragile-abi-version</b>=<i>version</i></dt>
+<dd>
+
+<p>Select the Objective-C non-fragile ABI version to use by default. This will only be used as the Objective-C ABI when the non-fragile ABI is enabled (either via -fobjc-nonfragile-abi, or because it is the platform default).</p>
+
+</dd>
+<dt id="fobjc-nonfragile-abi"><b>-fobjc-nonfragile-abi</b></dt>
+<dd>
+
+<p>Enable use of the Objective-C non-fragile ABI. On platforms for which this is the default ABI, it can be disabled with <b>-fno-objc-nonfragile-abi</b>.</p>
+
+</dd>
+</dl>
+
+<h2 id="Target-Selection-Options">Target Selection Options</h2>
+
+<p>Clang fully supports cross compilation as an inherent part of its design. Depending on how your version of Clang is configured, it may have support for a number of cross compilers, or may only support a native target.</p>
+
+<dl>
+
+<dt id="arch-architecture"><b>-arch</b> <i>architecture</i></dt>
+<dd>
+
+<p>Specify the architecture to build for.</p>
+
+</dd>
+<dt id="mmacosx-version-min-version"><b>-mmacosx-version-min</b>=<i>version</i></dt>
+<dd>
+
+<p>When building for Mac OS X, specify the minimum version supported by your application.</p>
+
+</dd>
+<dt id="miphoneos-version-min"><b>-miphoneos-version-min</b></dt>
+<dd>
+
+<p>When building for iPhone OS, specify the minimum version supported by your application.</p>
+
+</dd>
+<dt id="march-cpu"><b>-march</b>=<i>cpu</i></dt>
+<dd>
+
+<p>Specify that Clang should generate code for a specific processor family member and later. For example, if you specify -march=i486, the compiler is allowed to generate instructions that are valid on i486 and later processors, but which may not exist on earlier ones.</p>
+
+</dd>
+</dl>
+
+<h2 id="Code-Generation-Options">Code Generation Options</h2>
+
+<dl>
+
+<dt id="O0--O1--O2--O3--Ofast--Os--Oz--O--O4"><b>-O0</b> <b>-O1</b> <b>-O2</b> <b>-O3</b> <b>-Ofast</b> <b>-Os</b> <b>-Oz</b> <b>-O</b> <b>-O4</b></dt>
+<dd>
+
+<p>Specify which optimization level to use:</p>
+
+<dl>
+
+<dt id="O0"><b>-O0</b></dt>
+<dd>
+
+<p>Means &quot;no optimization&quot;: this level compiles the fastest and generates the most debuggable code.</p>
+
+</dd>
+<dt id="O1"><b>-O1</b></dt>
+<dd>
+
+<p>Somewhere between <b>-O0</b> and <b>-O2</b>.</p>
+
+</dd>
+<dt id="O2"><b>-O2</b></dt>
+<dd>
+
+<p>Moderate level of optimization which enables most optimizations.</p>
+
+</dd>
+<dt id="O3"><b>-O3</b></dt>
+<dd>
+
+<p>Like <b>-O2</b>, except that it enables optimizations that take longer to perform or that may generate larger code (in an attempt to make the program run faster).</p>
+
+</dd>
+<dt id="Ofast"><b>-Ofast</b></dt>
+<dd>
+
+<p>Enables all the optimizations from <b>-O3</b> along with other aggressive optimizations that may violate strict compliance with language standards.</p>
+
+</dd>
+<dt id="Os"><b>-Os</b></dt>
+<dd>
+
+<p>Like <b>-O2</b> with extra optimizations to reduce code size.</p>
+
+</dd>
+<dt id="Oz"><b>-Oz</b></dt>
+<dd>
+
+<p>Like <b>-Os</b> (and thus <b>-O2</b>), but reduces code size further.</p>
+
+</dd>
+<dt id="O"><b>-O</b></dt>
+<dd>
+
+<p>Equivalent to <b>-O2</b>.</p>
+
+</dd>
+<dt id="O4-and-higher"><b>-O4</b> and higher</dt>
+<dd>
+
+<p>Currently equivalent to <b>-O3</b></p>
+
+</dd>
+</dl>
+
+</dd>
+<dt id="g"><b>-g</b></dt>
+<dd>
+
+<p>Generate debug information. Note that Clang debug information works best at <b>-O0</b>.</p>
+
+</dd>
+<dt id="fstandalone-debug--fno-standalone-debug"><b>-fstandalone-debug</b> <b>-fno-standalone-debug</b></dt>
+<dd>
+
+<p>Clang supports a number of optimizations to reduce the size of debug information in the binary. They work based on the assumption that the debug type information can be spread out over multiple compilation units. For instance, Clang will not emit type definitions for types that are not needed by a module and could be replaced with a forward declaration. Further, Clang will only emit type info for a dynamic C++ class in the module that contains the vtable for the class.</p>
+
+<p>The <b>-fstandalone-debug</b> option turns off these optimizations. This is useful when working with 3rd-party libraries that don&#39;t come with debug information. This is the default on Darwin. Note that Clang will never emit type information for types that are not referenced at all by the program.</p>
+
+</dd>
+<dt id="fexceptions"><b>-fexceptions</b></dt>
+<dd>
+
+<p>Enable generation of unwind information, this allows exceptions to be thrown through Clang compiled stack frames. This is on by default in x86-64.</p>
+
+</dd>
+<dt id="ftrapv"><b>-ftrapv</b></dt>
+<dd>
+
+<p>Generate code to catch integer overflow errors. Signed integer overflow is undefined in C, with this flag, extra code is generated to detect this and abort when it happens.</p>
+
+</dd>
+<dt id="fvisibility"><b>-fvisibility</b></dt>
+<dd>
+
+<p>This flag sets the default visibility level.</p>
+
+</dd>
+<dt id="fcommon"><b>-fcommon</b></dt>
+<dd>
+
+<p>This flag specifies that variables without initializers get common linkage. It can be disabled with <b>-fno-common</b>.</p>
+
+</dd>
+<dt id="ftls-model"><b>-ftls-model</b></dt>
+<dd>
+
+<p>Set the default thread-local storage (TLS) model to use for thread-local variables. Valid values are: &quot;global-dynamic&quot;, &quot;local-dynamic&quot;, &quot;initial-exec&quot; and &quot;local-exec&quot;. The default is &quot;global-dynamic&quot;. The default model can be overridden with the tls_model attribute. The compiler will try to choose a more efficient model if possible.</p>
+
+</dd>
+<dt id="flto--emit-llvm"><b>-flto</b> <b>-emit-llvm</b></dt>
+<dd>
+
+<p>Generate output files in LLVM formats, suitable for link time optimization. When used with <b>-S</b> this generates LLVM intermediate language assembly files, otherwise this generates LLVM bitcode format object files (which may be passed to the linker depending on the stage selection options).</p>
+
+</dd>
+</dl>
+
+<h2 id="Driver-Options">Driver Options</h2>
+
+<dl>
+
+<dt id="pod"><b>-###</b></dt>
+<dd>
+
+<p>Print (but do not run) the commands to run for this compilation.</p>
+
+</dd>
+<dt id="help"><b>--help</b></dt>
+<dd>
+
+<p>Display available options.</p>
+
+</dd>
+<dt id="Qunused-arguments"><b>-Qunused-arguments</b></dt>
+<dd>
+
+<p>Don&#39;t emit warning for unused driver arguments.</p>
+
+</dd>
+<dt id="Wa-args"><b>-Wa,</b><i>args</i></dt>
+<dd>
+
+<p>Pass the comma separated arguments in <i>args</i> to the assembler.</p>
+
+</dd>
+<dt id="Wl-args"><b>-Wl,</b><i>args</i></dt>
+<dd>
+
+<p>Pass the comma separated arguments in <i>args</i> to the linker.</p>
+
+</dd>
+<dt id="Wp-args"><b>-Wp,</b><i>args</i></dt>
+<dd>
+
+<p>Pass the comma separated arguments in <i>args</i> to the preprocessor.</p>
+
+</dd>
+<dt id="Xanalyzer-arg"><b>-Xanalyzer</b> <i>arg</i></dt>
+<dd>
+
+<p>Pass <i>arg</i> to the static analyzer.</p>
+
+</dd>
+<dt id="Xassembler-arg"><b>-Xassembler</b> <i>arg</i></dt>
+<dd>
+
+<p>Pass <i>arg</i> to the assembler.</p>
+
+</dd>
+<dt id="Xlinker-arg"><b>-Xlinker</b> <i>arg</i></dt>
+<dd>
+
+<p>Pass <i>arg</i> to the linker.</p>
+
+</dd>
+<dt id="Xpreprocessor-arg"><b>-Xpreprocessor</b> <i>arg</i></dt>
+<dd>
+
+<p>Pass <i>arg</i> to the preprocessor.</p>
+
+</dd>
+<dt id="o-file"><b>-o</b> <i>file</i></dt>
+<dd>
+
+<p>Write output to <i>file</i>.</p>
+
+</dd>
+<dt id="print-file-name-file"><b>-print-file-name</b>=<i>file</i></dt>
+<dd>
+
+<p>Print the full library path of <i>file</i>.</p>
+
+</dd>
+<dt id="print-libgcc-file-name"><b>-print-libgcc-file-name</b></dt>
+<dd>
+
+<p>Print the library path for &quot;libgcc.a&quot;.</p>
+
+</dd>
+<dt id="print-prog-name-name"><b>-print-prog-name</b>=<i>name</i></dt>
+<dd>
+
+<p>Print the full program path of <i>name</i>.</p>
+
+</dd>
+<dt id="print-search-dirs"><b>-print-search-dirs</b></dt>
+<dd>
+
+<p>Print the paths used for finding libraries and programs.</p>
+
+</dd>
+<dt id="save-temps"><b>-save-temps</b></dt>
+<dd>
+
+<p>Save intermediate compilation results.</p>
+
+</dd>
+<dt id="integrated-as--no-integrated-as"><b>-integrated-as</b> <b>-no-integrated-as</b></dt>
+<dd>
+
+<p>Used to enable and disable, respectively, the use of the integrated assembler. Whether the integrated assembler is on by default is target dependent.</p>
+
+</dd>
+<dt id="time"><b>-time</b></dt>
+<dd>
+
+<p>Time individual commands.</p>
+
+</dd>
+<dt id="ftime-report"><b>-ftime-report</b></dt>
+<dd>
+
+<p>Print timing summary of each stage of compilation.</p>
+
+</dd>
+<dt id="v"><b>-v</b></dt>
+<dd>
+
+<p>Show commands to run and use verbose output.</p>
+
+</dd>
+</dl>
+
+<h2 id="Diagnostics-Options">Diagnostics Options</h2>
+
+<dl>
+
+<dt id="fshow-column--fshow-source-location--fcaret-diagnostics--fdiagnostics-fixit-info--fdiagnostics-parseable-fixits--fdiagnostics-print-source-range-info--fprint-source-range-info--fdiagnostics-show-option--fmessage-length"><b>-fshow-column</b> <b>-fshow-source-location</b> <b>-fcaret-diagnostics</b> <b>-fdiagnostics-fixit-info</b> <b>-fdiagnostics-parseable-fixits</b> <b>-fdiagnostics-print-source-range-info</b> <b>-fprint-source-range-info</b> <b>-fdiagnostics-show-option</b> <b>-fmessage-length</b></dt>
+<dd>
+
+<p>These options control how Clang prints out information about diagnostics (errors and warnings). Please see the Clang User&#39;s Manual for more information.</p>
+
+</dd>
+</dl>
+
+<h2 id="Preprocessor-Options">Preprocessor Options</h2>
+
+<dl>
+
+<dt id="Dmacroname-value"><b>-D</b><i>macroname=value</i></dt>
+<dd>
+
+<p>Adds an implicit #define into the predefines buffer which is read before the source file is preprocessed.</p>
+
+</dd>
+<dt id="Umacroname"><b>-U</b><i>macroname</i></dt>
+<dd>
+
+<p>Adds an implicit #undef into the predefines buffer which is read before the source file is preprocessed.</p>
+
+</dd>
+<dt id="include-filename"><b>-include</b> <i>filename</i></dt>
+<dd>
+
+<p>Adds an implicit #include into the predefines buffer which is read before the source file is preprocessed.</p>
+
+</dd>
+<dt id="Idirectory"><b>-I</b><i>directory</i></dt>
+<dd>
+
+<p>Add the specified directory to the search path for include files.</p>
+
+</dd>
+<dt id="Fdirectory"><b>-F</b><i>directory</i></dt>
+<dd>
+
+<p>Add the specified directory to the search path for framework include files.</p>
+
+</dd>
+<dt id="nostdinc"><b>-nostdinc</b></dt>
+<dd>
+
+<p>Do not search the standard system directories or compiler builtin directories for include files.</p>
+
+</dd>
+<dt id="nostdlibinc"><b>-nostdlibinc</b></dt>
+<dd>
+
+<p>Do not search the standard system directories for include files, but do search compiler builtin include directories.</p>
+
+</dd>
+<dt id="nobuiltininc"><b>-nobuiltininc</b></dt>
+<dd>
+
+<p>Do not search clang&#39;s builtin directory for include files.</p>
+
+</dd>
+</dl>
+
+<h1 id="ENVIRONMENT">ENVIRONMENT</h1>
+
+<dl>
+
+<dt id="TMPDIR-TEMP-TMP"><b>TMPDIR</b>, <b>TEMP</b>, <b>TMP</b></dt>
+<dd>
+
+<p>These environment variables are checked, in order, for the location to write temporary files used during the compilation process.</p>
+
+</dd>
+<dt id="CPATH"><b>CPATH</b></dt>
+<dd>
+
+<p>If this environment variable is present, it is treated as a delimited list of paths to be added to the default system include path list. The delimiter is the platform dependent delimitor, as used in the <i>PATH</i> environment variable.</p>
+
+<p>Empty components in the environment variable are ignored.</p>
+
+</dd>
+<dt id="C_INCLUDE_PATH-OBJC_INCLUDE_PATH-CPLUS_INCLUDE_PATH-OBJCPLUS_INCLUDE_PATH"><b>C_INCLUDE_PATH</b>, <b>OBJC_INCLUDE_PATH</b>, <b>CPLUS_INCLUDE_PATH</b>, <b>OBJCPLUS_INCLUDE_PATH</b></dt>
+<dd>
+
+<p>These environment variables specify additional paths, as for CPATH, which are only used when processing the appropriate language.</p>
+
+</dd>
+<dt id="MACOSX_DEPLOYMENT_TARGET"><b>MACOSX_DEPLOYMENT_TARGET</b></dt>
+<dd>
+
+<p>If -mmacosx-version-min is unspecified, the default deployment target is read from this environment variable. This option only affects darwin targets.</p>
+
+</dd>
+</dl>
+
+<h1 id="BUGS">BUGS</h1>
+
+<p>To report bugs, please visit <a href="http://llvm.org/bugs/">http://llvm.org/bugs/</a>. Most bug reports should include preprocessed source files (use the <b>-E</b> option) and the full output of the compiler, along with information to reproduce.</p>
+
+<h1 id="SEE-ALSO">SEE ALSO</h1>
+
+<pre><code> as(1), ld(1)</code></pre>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Maintained by the Clang / LLVM Team (<a href="http://clang.llvm.org">http://clang.llvm.org</a>).</p>
+
+
+</body>
+
+</html>
+
+

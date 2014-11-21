@@ -1,0 +1,17 @@
+[
+  {
+    "name": "levigo",
+    "kind": "go_external_lib",
+    "inputs": {
+      "srcs": [
+        "levigo.a"
+      ],
+      "cc_libs": [
+        "//third_party/leveldb"
+      ]
+    },
+    "properties": {
+      "go_include_path": "third_party/levigo"
+    }
+  }
+]
