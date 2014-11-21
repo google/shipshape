@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+package shipshape_proto;
+
+option java_outer_classname = "ShipshapeConfigProto";
+option java_package = "com.google.shipshape.proto";
+
+
+message GlobalConfig {
+  // URLs to third-party analyzers to be installed.
+  // The URLs must point to a Docker image that can be downloaded and run.
+  // The container must respond to the Shipshape RPC API on port 10005;
+  // Shipshape will map this to a different external port.
+  repeated string images = 1;
+
+  // A list of subtrees to ignore when running analysis. Each entry in the list
+  // is a directory, relative to the repository root.
+  // TODO(collinwinter): add support for file=.gitignore syntax to avoid
+  // duplication between multiple systems.
+  repeated string ignore = 2;
+}
+
+message EventConfig {
+  // Defines points in a development workflow when one may want to run analyses
+  // Pre-defined values used by Leeroy might include "Commit", "Review", and "Deploy".
+  // A CLI might use "Developer". Jenkins without Leeroy might use all sorts of
+  // events with job names like "Jenkins-Nightly", "Jenkins-QAGate", etc.
+  // The special event "All" signals that this configuration applies to EVERY run of
+  // Shipshape. If "All" is used, no other event can be used.
+  // TODO(collinwinter): scrub internal Google codenames from this comment.
+  optional string event = 1;
+
+  // A list of categories to run for this event. Each category must be found in
+  // the default collection of analyzers, or in one of the analyzers listed in
+  // the `images` list of the global section.
+  repeated string categories = 2;
+}
+
+// Represents the Shipshape configuration.
+message ShipshapeConfig {
+  optional GlobalConfig global = 1;
+
+  repeated EventConfig events = 2;
+}

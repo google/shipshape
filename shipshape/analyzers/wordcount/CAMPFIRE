@@ -1,0 +1,19 @@
+[
+  {
+    "name": "wordcount",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "word_count_analyzer.go"
+      ],
+      "go_tests": [
+        "word_count_analyzer_test.go"
+      ],
+      "go_pkgs": [
+        "//shipshape/proto:note_proto",
+        "//shipshape/test",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

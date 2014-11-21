@@ -1,0 +1,70 @@
+// A SourceContext is a reference to a tree of files.
+// A SourceContext and a path points to a unique revision of a single file
+// or directory.
+//
+// NOTE: This should be kept in sync with the source API.
+// DO NOT MODIFY THIS FILE DIRECTLY, instead modify the source API first.
+//
+// TODO(supertri): How can we externalize and share this proto between projects?
+
+
+syntax = "proto2";
+
+package source.v1;
+
+option java_outer_classname = "SourceContextProto";
+option java_package = "com.google.devtools.source.v1";
+
+message SourceContext {
+  optional CloudRepoSourceContext cloud_repo = 1;
+  optional CloudWorkspaceSourceContext cloud_workspace = 2;
+  optional GerritSourceContext gerrit = 3;
+}
+
+// Selects a repo using a Google Cloud Platform project ID
+// (e.g. winged-cargo-31) and a repo name within that project.
+message ProjectRepoId {
+  optional string project_id = 1;
+  optional string repo_name = 2;
+}
+
+// A unique identifier for a cloud repo.
+message RepoId {
+  optional ProjectRepoId project_repo_id = 1;
+
+  // A raw repo ID.
+  optional string repo_id = 2;
+}
+
+// A CloudRepoSourceContext denotes a particular revision in a cloud
+// repo (a repo hosted by the Google Cloud Platform).
+// The revision can be specified by revision id (hash) or alias name.
+// (An alias is a branch, tag or Mercurial bookmark.)
+message CloudRepoSourceContext {
+  optional RepoId repo_id = 1;
+  optional string revision_id = 2;
+  optional string alias_name = 3;
+}
+
+// A CloudWorkspaceId is a unique identifier for a cloud workspace.
+message CloudWorkspaceId {
+  // The ID of the repo containing the workspace.
+  optional RepoId repo_id = 1;
+
+  // The unique name of the workspace within the repo.  This is the name
+  // chosen by the client in the Source API's CreateWorkspace method.
+  optional string name = 2;
+}
+
+// A CloudWorkspaceSourceContext denotes a workspace at a particular snapshot.
+// An empty snapshot_id refers to the most recent snapshot.
+message CloudWorkspaceSourceContext {
+  optional CloudWorkspaceId workspace_id = 1;
+  optional string snapshot_id = 2;
+}
+
+message GerritSourceContext {
+  optional string host = 1;
+  optional string project = 2;
+  optional string revision_id = 3;
+}

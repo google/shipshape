@@ -1,0 +1,18 @@
+[
+  {
+    "name": "release",
+    "kind": "docker_deploy",
+    "properties": {
+      "docker_name": "android_lint"
+    },
+    "inputs": {
+      "srcs": [
+        "Dockerfile"
+      ],
+      "data": [
+        "//shipshape/androidlint_analyzer/androidlint:android_lint_service",
+        "endpoint.sh"
+      ]
+    }
+  }
+]

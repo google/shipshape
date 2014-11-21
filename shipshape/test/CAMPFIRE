@@ -1,0 +1,69 @@
+[
+  {
+    "name": "test",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "test_util.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/client",
+        "//third_party/kythe/go/rpc/server",
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "test_analyzer_client",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "test_analyzer_client.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/platform/indexinfo",
+        "//third_party/kythe/go/rpc/client",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/util/file",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "test_shipshape_client",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "test_shipshape_client.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/client",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/util/file",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "test_request_via_stream",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "TestRequestViaStream.java"
+      ],
+      "jars": [
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//shipshape/proto:source_context_proto",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "test.TestRequestViaStream"
+    }
+  }
+]

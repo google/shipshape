@@ -1,0 +1,30 @@
+[
+  {
+    "name": "analyzers",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "EncodingOffsetConverter.java",
+        "ErrorProneAnalyzer.java",
+        "FixAndReplacementConverter.java",
+        "JavacAnalyzer.java",
+        "PostMessageAnalyzer.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/java",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//shipshape/java/com/google/shipshape/service:api",
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:source_context_proto",
+        "//shipshape/proto:textrange_proto",
+        "//third_party/error-prone",
+        "//third_party/guava",
+        "//third_party/jsr305_annotations:jsr305",
+        "//third_party/openjdk/lib:tools_jar",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    }
+  }
+]

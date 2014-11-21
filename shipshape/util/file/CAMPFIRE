@@ -1,0 +1,32 @@
+[
+  {
+    "name": "file",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "cloud_repo_file_utility.go",
+        "file_util.go"
+      ],
+      "go_pkgs": [
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//shipshape/proto:source_context_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "copy_cloud_repo",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "copy_cloud_repo.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/client",
+        "//shipshape/util/file",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

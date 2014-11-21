@@ -1,0 +1,41 @@
+syntax = "proto2";
+
+package shipshape_proto;
+
+option java_outer_classname = "ShipshapeReporterProto";
+option java_package = "com.google.shipshape.proto";
+
+import "shipshape/proto/note.proto";
+import "shipshape/proto/shipshape_context.proto";
+
+// Where to send the results to
+service Reporter {
+  // Send a collection of notes to a reporter.
+  rpc ReportNotes(ReportNotesRequest) returns (ReportNotesResponse) {}
+  // Keep the reporter updated about an analyzer's progress (or failure).
+  rpc ReportStatus(ReportAnalyzerStatusRequest)
+      returns (ReportAnalyzerStatusResponse) {}
+}
+
+message ReportNotesRequest {
+  // All notes should have the same category.
+  repeated Note notes = 1;
+}
+
+message ReportNotesResponse {
+}
+
+message ReportAnalyzerStatusRequest {
+  optional string category = 1;
+  optional AnalyzerStatus status = 2;
+  optional string message = 3;
+}
+
+message ReportAnalyzerStatusResponse {
+}
+
+enum AnalyzerStatus {
+  RUNNING = 1;
+  COMPLETED = 2;
+  FAILED = 3;
+}

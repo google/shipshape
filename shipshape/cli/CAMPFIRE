@@ -1,0 +1,17 @@
+[
+  {
+    "name": "shipshape",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "shipshape.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/server",
+        "//shipshape/service",
+        "//shipshape/util/docker",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

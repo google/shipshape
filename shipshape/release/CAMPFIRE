@@ -1,0 +1,20 @@
+[
+  {
+    "name": "release",
+    "kind": "docker_deploy",
+    "properties": {
+      "docker_name": "service"
+    },
+    "inputs": {
+      "srcs": [
+        "Dockerfile"
+      ],
+      "data": [
+        "//shipshape/java/com/google/shipshape/service:javac_dispatcher_deploy",
+        "//shipshape/service:go_dispatcher",
+        "//shipshape/service:shipshape",
+        "endpoint.sh"
+      ]
+    }
+  }
+]

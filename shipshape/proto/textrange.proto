@@ -1,0 +1,41 @@
+// A range in a text.
+
+syntax = "proto2";
+
+package shipshape_proto;
+
+// Has to be something other than "TextRange".
+option java_outer_classname = "TextRangeProto";
+option java_package = "com.google.shipshape.proto";
+
+// Defines a range of Unicode characters within a text.
+// Handles both line-based and character-based ranges.
+// Rows and columns are counted one-based. Row 1,
+// column 1 refer to the first character in the text.
+// If all four fields are set, the span includes a subset of the first and last
+// line, but the full inner lines.
+message TextRange {
+  // If 0, then the position is attributed to the entire file and
+  // the other fields below are ignored.
+  // Must be non-negative.
+  optional int32 start_line = 1 [default=0];
+
+  // If 0, then the position is attributed to a span of lines, and the field
+  // end_column is ignored.
+  // If set, a start_line must be given as well.
+  // Must be non-negative.
+  optional int32 start_column = 2 [default=0];
+
+  // If 0, then defaults to the same value as start_line. This line is included
+  // in the range, i.e. the range spans (end_line-start_line+1) lines.
+  // If set, a start_line must be given as well.
+  // Must be non-negative.
+  optional int32 end_line = 3 [default=0];
+
+  // If 0, then the position spans until the end of end_line. This column is
+  // included in the range, i.e. the range spans (end_column-start_column+1)
+  // columns.
+  // If set, all other fields must be set as well.
+  // Must be non-negative.
+  optional int32 end_column = 4 [default=0];
+}

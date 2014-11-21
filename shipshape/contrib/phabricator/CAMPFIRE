@@ -1,0 +1,24 @@
+[
+  {
+    "name": "phipshape",
+    "kind": "docker_deploy",
+    "properties": {
+      "docker_name": "phipshape"
+    },
+    "inputs": {
+      "srcs": [
+        "Dockerfile"
+      ],
+      "data": [
+        "//shipshape/cli:shipshape",
+        "analyze.sh",
+        "async.js",
+        "conduit.js",
+        "git-credential-gerrit.sh",
+        "gitconfig",
+        "launch.sh",
+        "server.js"
+      ]
+    }
+  }
+]

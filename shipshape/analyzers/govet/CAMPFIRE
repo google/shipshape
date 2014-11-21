@@ -1,0 +1,21 @@
+[
+  {
+    "name": "govet",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "govet_analyzer.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/client",
+        "//shipshape/api",
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//third_party/protobuf:protobuf_go"
+      ],
+      "go_tests": [
+        "govet_analyzer_test.go"
+      ]
+    }
+  }
+]

@@ -1,0 +1,94 @@
+syntax = "proto2";
+
+package shipshape_proto;
+
+option java_outer_classname = "ShipshapeRpcProto";
+option java_package = "com.google.shipshape.proto";
+
+import "shipshape/proto/note.proto";
+import "shipshape/proto/source_context.proto";
+import "shipshape/proto/shipshape_context.proto";
+
+message GetCategoryRequest {
+}
+
+// Tells the environment what analyses are available at this
+// service.
+message GetCategoryResponse {
+  // List of analysis categories available.
+  // For individual analyzers, this list should have one element.
+  // Dispatching analyzers (implementation details for Shipshape) can
+  // return multiple categories.
+  // Should match requirements in the category field for Notes.
+  repeated string category = 1;
+}
+
+message GetStageRequest {
+}
+
+// Tells the environment what stage the analyzer can run in.
+message GetStageResponse {
+  optional Stage stage = 1;
+}
+
+// Provides information to an analyzer to perform its analysis.
+message AnalyzeRequest {
+  optional ShipshapeContext shipshape_context = 1;
+  repeated string category = 2;
+}
+
+message AnalysisFailure {
+  optional string category = 1; // required
+  optional string failure_message = 2; // required
+}
+
+// Describes the results of an analysis, whether complete or failed.
+// If an analysis run completes successfully but produces no notes,
+// just return an empty list.
+// If the analyzer fails, return a failure_message. Analyzers may also
+// return partial results (only a subset of the notes) in this case.
+message AnalyzeResponse {
+  repeated Note note = 1;
+  repeated AnalysisFailure failure = 2;
+}
+
+// Service that implements the logic of a shipshape analyzer.
+// Can either be an individual analyzer, or a dispatching analyzer
+// that is responsible for all the analyzers within a given process.
+service ShipshapeAnalyzer {
+  // Called by the shipshape environment to retrieve the list of known
+  // analysis categories for this analyzer.
+  rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse) {
+  }
+
+  // Called by shipshape to find out what stage to run an analyzer in.
+  rpc GetStage(GetStageRequest) returns (GetStageResponse) {
+  }
+
+  // Called by the shipshape environment to perform analysis on a specific
+  // ShipshapeContext.
+  rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse) {
+  }
+}
+
+message ShipshapeRequest {
+  // The ShipshapeContext to use for this run
+  optional ShipshapeContext shipshape_context = 1;
+  // Explicitly triggered categories. If empty will run what is in config files.
+  // Will only run the triggered categories.
+  repeated string triggered_category = 2;
+  // The event we are running for
+  optional string event = 3;
+}
+
+message ShipshapeResponse {
+  repeated AnalyzeResponse analyze_response = 1;
+}
+
+// The Shipshape Service. This does not generate any code, but is
+// included for documentation.
+service Shipshape {
+  // Called by systems that need to start up the Shipshape Pipeline
+  // Will return immediately, but results will continue
+  rpc Run(ShipshapeRequest) returns (ShipshapeResponse) {}
+}
