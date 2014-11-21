@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ -n "$CAMPFIRE_ROOT" ]; then
+  cd "$CAMPFIRE_ROOT" || exit $?
+else
+  CAMPFIRE_ROOT="$PWD"
+fi
+
+COMMAND="$1"
+if [ -z "$COMMAND" ]; then
+  ./campfire
+else
+  shift
+  ./campfire "$COMMAND" --ansi=false \
+    --jdk_path=/usr/lib/jvm/java-8-openjdk-amd64/ \
+    --crosstool_cxx_path=/usr/crosstool/v17/gcc-x86_64-grtev3-linux-gnu/bin/x86_64-grtev3-linux-gnu-g++ \
+    --crosstool_cc_path=/usr/crosstool/v17/gcc-x86_64-grtev3-linux-gnu/bin/x86_64-grtev3-linux-gnu-gcc \
+    --go_path=/usr/local/go/pkg/tool/linux_amd64/ "$@"
+  STATUS=$?
+  chown -R $(stat "$CAMPFIRE_ROOT" -c %u:%g) "${CAMPFIRE_ROOT}"
+  exit $STATUS
+fi
