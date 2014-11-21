@@ -1,0 +1,17 @@
+URL: http://www.jetbrains.com/idea/download/
+Version: 138.243
+License: Apache 2.0
+License File: LICENSE
+
+Description:
+Jars from the development version of IntelliJ IDEA Community Edition v14.
+Daily development snapshots of IntelliJ IDEA Community Edition are available
+to the public at:
+
+  http://teamcity.jetbrains.com/viewType.html?buildTypeId=bt410
+
+(use "Login as guest" when prompted to login to TeamCity).
+The currently uploaded built is , built on May 20, 2014.
+
+Local Modifications:
+None.
