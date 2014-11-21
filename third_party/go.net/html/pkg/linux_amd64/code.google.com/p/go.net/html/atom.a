@@ -1,0 +1,401 @@
+!<arch>
+__.PKGDEF       0           0     0     644     17390     `
+go object linux amd64 go1.3 X:precisestack
+
+$$
+package atom
+	import runtime "runtime"
+	type @"".Atom uint32
+	func (@"".aÂ·2 @"".Atom) String () (? string) {  var @"".startÂ·3 uint32; @"".startÂ·3 = uint32(@"".aÂ·2 >> 0x8);  var @"".nÂ·4 uint32; @"".nÂ·4 = uint32(@"".aÂ·2 & @"".Atom(0xFF)); if @"".startÂ·3 + @"".nÂ·4 > 0x5F9 { return "" }; return "abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee"[@"".startÂ·3:@"".startÂ·3 + @"".nÂ·4] }
+	func (@"".aÂ·2 @"".Atom) @"".string () (? string) { return "abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee"[@"".aÂ·2 >> 0x8:@"".aÂ·2 >> 0x8 + @"".aÂ·2 & @"".Atom(0xFF)] }
+	func @"".Lookup (@"".sÂ·2 []byte "esc:0x0") (? @"".Atom)
+	func @"".String (@"".sÂ·2 []byte "esc:0x0") (? string)
+	const @"".A @"".Atom = 0x1
+	const @"".Abbr @"".Atom = 0x4
+	const @"".Accept @"".Atom = 0x2106
+	const @"".AcceptCharset @"".Atom = 0x210E
+	const @"".Accesskey @"".Atom = 0x3309
+	const @"".Action @"".Atom = 0x21B06
+	const @"".Address @"".Atom = 0x5D507
+	const @"".Align @"".Atom = 0x1105
+	const @"".Alt @"".Atom = 0x4503
+	const @"".Annotation @"".Atom = 0x18D0A
+	const @"".AnnotationXml @"".Atom = 0x18D0E
+	const @"".Applet @"".Atom = 0x2D106
+	const @"".Area @"".Atom = 0x31804
+	const @"".Article @"".Atom = 0x39907
+	const @"".Aside @"".Atom = 0x4F05
+	const @"".Async @"".Atom = 0x9305
+	const @"".Audio @"".Atom = 0xAF05
+	const @"".Autocomplete @"".Atom = 0xD50C
+	const @"".Autofocus @"".Atom = 0xE109
+	const @"".Autoplay @"".Atom = 0x10C08
+	const @"".B @"".Atom = 0x101
+	const @"".Base @"".Atom = 0x11404
+	const @"".Basefont @"".Atom = 0x11408
+	const @"".Bdi @"".Atom = 0x1A03
+	const @"".Bdo @"".Atom = 0x12503
+	const @"".Bgsound @"".Atom = 0x13807
+	const @"".Big @"".Atom = 0x14403
+	const @"".Blink @"".Atom = 0x14705
+	const @"".Blockquote @"".Atom = 0x14C0A
+	const @"".Body @"".Atom = 0x2F04
+	const @"".Border @"".Atom = 0x15606
+	const @"".Br @"".Atom = 0x202
+	const @"".Button @"".Atom = 0x15C06
+	const @"".Canvas @"".Atom = 0x4B06
+	const @"".Caption @"".Atom = 0x1E007
+	const @"".Center @"".Atom = 0x2DF06
+	const @"".Challenge @"".Atom = 0x23E09
+	const @"".Charset @"".Atom = 0x2807
+	const @"".Checked @"".Atom = 0x33F07
+	const @"".Cite @"".Atom = 0x9704
+	const @"".Class @"".Atom = 0x3D905
+	const @"".Code @"".Atom = 0x16F04
+	const @"".Col @"".Atom = 0x17603
+	const @"".Colgroup @"".Atom = 0x17608
+	const @"".Color @"".Atom = 0x18305
+	const @"".Cols @"".Atom = 0x18804
+	const @"".Colspan @"".Atom = 0x18807
+	const @"".Command @"".Atom = 0x19B07
+	const @"".Content @"".Atom = 0x42C07
+	const @"".Contenteditable @"".Atom = 0x42C0F
+	const @"".Contextmenu @"".Atom = 0x3480B
+	const @"".Controls @"".Atom = 0x1AE08
+	const @"".Coords @"".Atom = 0x1BA06
+	const @"".Crossorigin @"".Atom = 0x1C40B
+	const @"".Data @"".Atom = 0x44304
+	const @"".Datalist @"".Atom = 0x44308
+	const @"".Datetime @"".Atom = 0x25B08
+	const @"".Dd @"".Atom = 0x28802
+	const @"".Default @"".Atom = 0x5207
+	const @"".Defer @"".Atom = 0x17105
+	const @"".Del @"".Atom = 0x4D603
+	const @"".Desc @"".Atom = 0x4804
+	const @"".Details @"".Atom = 0x6507
+	const @"".Dfn @"".Atom = 0x8303
+	const @"".Dialog @"".Atom = 0x1B06
+	const @"".Dir @"".Atom = 0x9D03
+	const @"".Dirname @"".Atom = 0x9D07
+	const @"".Disabled @"".Atom = 0x10008
+	const @"".Div @"".Atom = 0x10703
+	const @"".Dl @"".Atom = 0x13E02
+	const @"".Download @"".Atom = 0x40908
+	const @"".Draggable @"".Atom = 0x1A109
+	const @"".Dropzone @"".Atom = 0x3A208
+	const @"".Dt @"".Atom = 0x4E402
+	const @"".Em @"".Atom = 0x7F02
+	const @"".Embed @"".Atom = 0x7F05
+	const @"".Enctype @"".Atom = 0x23007
+	const @"".Face @"".Atom = 0x2DD04
+	const @"".Fieldset @"".Atom = 0x1D508
+	const @"".Figcaption @"".Atom = 0x1DD0A
+	const @"".Figure @"".Atom = 0x1F106
+	const @"".Font @"".Atom = 0x11804
+	const @"".Footer @"".Atom = 0x5906
+	const @"".For @"".Atom = 0x1FD03
+	const @"".ForeignObject @"".Atom = 0x1FD0D
+	const @"".Foreignobject @"".Atom = 0x20A0D
+	const @"".Form @"".Atom = 0x21704
+	const @"".Formaction @"".Atom = 0x2170A
+	const @"".Formenctype @"".Atom = 0x22C0B
+	const @"".Formmethod @"".Atom = 0x2470A
+	const @"".Formnovalidate @"".Atom = 0x2510E
+	const @"".Formtarget @"".Atom = 0x2660A
+	const @"".Frame @"".Atom = 0x8705
+	const @"".Frameset @"".Atom = 0x8708
+	const @"".H1 @"".Atom = 0x13602
+	const @"".H2 @"".Atom = 0x29602
+	const @"".H3 @"".Atom = 0x2C502
+	const @"".H4 @"".Atom = 0x30E02
+	const @"".H5 @"".Atom = 0x4E602
+	const @"".H6 @"".Atom = 0x27002
+	const @"".Head @"".Atom = 0x2FA04
+	const @"".Header @"".Atom = 0x2FA06
+	const @"".Headers @"".Atom = 0x2FA07
+	const @"".Height @"".Atom = 0x27206
+	const @"".Hgroup @"".Atom = 0x27A06
+	const @"".Hidden @"".Atom = 0x28606
+	const @"".High @"".Atom = 0x29304
+	const @"".Hr @"".Atom = 0x13102
+	const @"".Href @"".Atom = 0x29804
+	const @"".Hreflang @"".Atom = 0x29808
+	const @"".Html @"".Atom = 0x27604
+	const @"".HttpEquiv @"".Atom = 0x2A00A
+	const @"".I @"".Atom = 0x601
+	const @"".Icon @"".Atom = 0x42B04
+	const @"".Id @"".Atom = 0x5102
+	const @"".Iframe @"".Atom = 0x2B406
+	const @"".Image @"".Atom = 0x2BA05
+	const @"".Img @"".Atom = 0x2BF03
+	const @"".Inert @"".Atom = 0x4C105
+	const @"".Input @"".Atom = 0x3F605
+	const @"".Ins @"".Atom = 0x1CD03
+	const @"".Isindex @"".Atom = 0x2C707
+	const @"".Ismap @"".Atom = 0x2CE05
+	const @"".Itemid @"".Atom = 0x9806
+	const @"".Itemprop @"".Atom = 0x57E08
+	const @"".Itemref @"".Atom = 0x2D707
+	const @"".Itemscope @"".Atom = 0x2E509
+	const @"".Itemtype @"".Atom = 0x2EF08
+	const @"".Kbd @"".Atom = 0x1903
+	const @"".Keygen @"".Atom = 0x3906
+	const @"".Keytype @"".Atom = 0x51207
+	const @"".Kind @"".Atom = 0xFD04
+	const @"".Label @"".Atom = 0xBA05
+	const @"".Lang @"".Atom = 0x29C04
+	const @"".Legend @"".Atom = 0x1A806
+	const @"".Li @"".Atom = 0x1202
+	const @"".Link @"".Atom = 0x14804
+	const @"".List @"".Atom = 0x44704
+	const @"".Listing @"".Atom = 0x44707
+	const @"".Loop @"".Atom = 0xBE04
+	const @"".Low @"".Atom = 0x13F03
+	const @"".Malignmark @"".Atom = 0x100A
+	const @"".Manifest @"".Atom = 0x5B608
+	const @"".Map @"".Atom = 0x2D003
+	const @"".Mark @"".Atom = 0x1604
+	const @"".Marquee @"".Atom = 0x5F207
+	const @"".Math @"".Atom = 0x2F704
+	const @"".Max @"".Atom = 0x30603
+	const @"".Maxlength @"".Atom = 0x30609
+	const @"".Media @"".Atom = 0xA205
+	const @"".Mediagroup @"".Atom = 0xA20A
+	const @"".Menu @"".Atom = 0x34F04
+	const @"".Meta @"".Atom = 0x45604
+	const @"".Meter @"".Atom = 0x26105
+	const @"".Method @"".Atom = 0x24B06
+	const @"".Mglyph @"".Atom = 0x2C006
+	const @"".Mi @"".Atom = 0x9B02
+	const @"".Min @"".Atom = 0x31003
+	const @"".Mn @"".Atom = 0x25402
+	const @"".Mo @"".Atom = 0x47A02
+	const @"".Ms @"".Atom = 0x2E802
+	const @"".Mtext @"".Atom = 0x31305
+	const @"".Multiple @"".Atom = 0x32108
+	const @"".Muted @"".Atom = 0x32905
+	const @"".Name @"".Atom = 0xA004
+	const @"".Nav @"".Atom = 0x3E03
+	const @"".Nobr @"".Atom = 0x7404
+	const @"".Noembed @"".Atom = 0x7D07
+	const @"".Noframes @"".Atom = 0x8508
+	const @"".Noscript @"".Atom = 0x28B08
+	const @"".Novalidate @"".Atom = 0x2550A
+	const @"".Object @"".Atom = 0x21106
+	const @"".Ol @"".Atom = 0xCD02
+	const @"".Onabort @"".Atom = 0x16007
+	const @"".Onafterprint @"".Atom = 0x1E50C
+	const @"".Onbeforeprint @"".Atom = 0x21F0D
+	const @"".Onbeforeunload @"".Atom = 0x5C90E
+	const @"".Onblur @"".Atom = 0x3E206
+	const @"".Oncancel @"".Atom = 0xB308
+	const @"".Oncanplay @"".Atom = 0x12709
+	const @"".Oncanplaythrough @"".Atom = 0x12710
+	const @"".Onchange @"".Atom = 0x3B808
+	const @"".Onclick @"".Atom = 0x2AD07
+	const @"".Onclose @"".Atom = 0x32E07
+	const @"".Oncontextmenu @"".Atom = 0x3460D
+	const @"".Oncuechange @"".Atom = 0x3530B
+	const @"".Ondblclick @"".Atom = 0x35E0A
+	const @"".Ondrag @"".Atom = 0x36806
+	const @"".Ondragend @"".Atom = 0x36809
+	const @"".Ondragenter @"".Atom = 0x3710B
+	const @"".Ondragleave @"".Atom = 0x37C0B
+	const @"".Ondragover @"".Atom = 0x3870A
+	const @"".Ondragstart @"".Atom = 0x3910B
+	const @"".Ondrop @"".Atom = 0x3A006
+	const @"".Ondurationchange @"".Atom = 0x3B010
+	const @"".Onemptied @"".Atom = 0x3A709
+	const @"".Onended @"".Atom = 0x3C007
+	const @"".Onerror @"".Atom = 0x3C707
+	const @"".Onfocus @"".Atom = 0x3CE07
+	const @"".Onhashchange @"".Atom = 0x3E80C
+	const @"".Oninput @"".Atom = 0x3F407
+	const @"".Oninvalid @"".Atom = 0x3FB09
+	const @"".Onkeydown @"".Atom = 0x40409
+	const @"".Onkeypress @"".Atom = 0x4110A
+	const @"".Onkeyup @"".Atom = 0x42107
+	const @"".Onload @"".Atom = 0x43B06
+	const @"".Onloadeddata @"".Atom = 0x43B0C
+	const @"".Onloadedmetadata @"".Atom = 0x44E10
+	const @"".Onloadstart @"".Atom = 0x4640B
+	const @"".Onmessage @"".Atom = 0x46F09
+	const @"".Onmousedown @"".Atom = 0x4780B
+	const @"".Onmousemove @"".Atom = 0x4830B
+	const @"".Onmouseout @"".Atom = 0x48E0A
+	const @"".Onmouseover @"".Atom = 0x49B0B
+	const @"".Onmouseup @"".Atom = 0x4A609
+	const @"".Onmousewheel @"".Atom = 0x4AF0C
+	const @"".Onoffline @"".Atom = 0x4BB09
+	const @"".Ononline @"".Atom = 0x4C608
+	const @"".Onpagehide @"".Atom = 0x4CE0A
+	const @"".Onpageshow @"".Atom = 0x4D90A
+	const @"".Onpause @"".Atom = 0x4E807
+	const @"".Onplay @"".Atom = 0x4F206
+	const @"".Onplaying @"".Atom = 0x4F209
+	const @"".Onpopstate @"".Atom = 0x4FB0A
+	const @"".Onprogress @"".Atom = 0x5050A
+	const @"".Onratechange @"".Atom = 0x5190C
+	const @"".Onreset @"".Atom = 0x52507
+	const @"".Onresize @"".Atom = 0x52C08
+	const @"".Onscroll @"".Atom = 0x53A08
+	const @"".Onseeked @"".Atom = 0x54208
+	const @"".Onseeking @"".Atom = 0x54A09
+	const @"".Onselect @"".Atom = 0x55308
+	const @"".Onshow @"".Atom = 0x55D06
+	const @"".Onstalled @"".Atom = 0x56609
+	const @"".Onstorage @"".Atom = 0x56F09
+	const @"".Onsubmit @"".Atom = 0x57808
+	const @"".Onsuspend @"".Atom = 0x58809
+	const @"".Ontimeupdate @"".Atom = 0x1190C
+	const @"".Onunload @"".Atom = 0x59108
+	const @"".Onvolumechange @"".Atom = 0x5990E
+	const @"".Onwaiting @"".Atom = 0x5A709
+	const @"".Open @"".Atom = 0x58404
+	const @"".Optgroup @"".Atom = 0xC008
+	const @"".Optimum @"".Atom = 0x5B007
+	const @"".Option @"".Atom = 0x5C506
+	const @"".Output @"".Atom = 0x49506
+	const @"".P @"".Atom = 0xC01
+	const @"".Param @"".Atom = 0xC05
+	const @"".Pattern @"".Atom = 0x6E07
+	const @"".Ping @"".Atom = 0xAB04
+	const @"".Placeholder @"".Atom = 0xC70B
+	const @"".Plaintext @"".Atom = 0xF109
+	const @"".Poster @"".Atom = 0x17D06
+	const @"".Pre @"".Atom = 0x27F03
+	const @"".Preload @"".Atom = 0x27F07
+	const @"".Progress @"".Atom = 0x50708
+	const @"".Prompt @"".Atom = 0x5BF06
+	const @"".Public @"".Atom = 0x42706
+	const @"".Q @"".Atom = 0x15101
+	const @"".Radiogroup @"".Atom = 0x30A
+	const @"".Readonly @"".Atom = 0x31908
+	const @"".Rel @"".Atom = 0x28003
+	const @"".Required @"".Atom = 0x1F508
+	const @"".Reversed @"".Atom = 0x5E08
+	const @"".Rows @"".Atom = 0x7704
+	const @"".Rowspan @"".Atom = 0x7707
+	const @"".Rp @"".Atom = 0x1EB02
+	const @"".Rt @"".Atom = 0x16502
+	const @"".Ruby @"".Atom = 0xD104
+	const @"".S @"".Atom = 0x2C01
+	const @"".Samp @"".Atom = 0x6B04
+	const @"".Sandbox @"".Atom = 0xE907
+	const @"".Scope @"".Atom = 0x2E905
+	const @"".Scoped @"".Atom = 0x2E906
+	const @"".Script @"".Atom = 0x28D06
+	const @"".Seamless @"".Atom = 0x33308
+	const @"".Section @"".Atom = 0x3DD07
+	const @"".Select @"".Atom = 0x55506
+	const @"".Selected @"".Atom = 0x55508
+	const @"".Shape @"".Atom = 0x1B505
+	const @"".Size @"".Atom = 0x53004
+	const @"".Sizes @"".Atom = 0x53005
+	const @"".Small @"".Atom = 0x1BF05
+	const @"".Source @"".Atom = 0x1CF06
+	const @"".Spacer @"".Atom = 0x30006
+	const @"".Span @"".Atom = 0x7A04
+	const @"".Spellcheck @"".Atom = 0x33A0A
+	const @"".Src @"".Atom = 0x3D403
+	const @"".Srcdoc @"".Atom = 0x3D406
+	const @"".Srclang @"".Atom = 0x41A07
+	const @"".Start @"".Atom = 0x39705
+	const @"".Step @"".Atom = 0x5BC04
+	const @"".Strike @"".Atom = 0x50E06
+	const @"".Strong @"".Atom = 0x53406
+	const @"".Style @"".Atom = 0x5DB05
+	const @"".Sub @"".Atom = 0x57A03
+	const @"".Summary @"".Atom = 0x5E007
+	const @"".Sup @"".Atom = 0x5E703
+	const @"".Svg @"".Atom = 0x5EA03
+	const @"".System @"".Atom = 0x5ED06
+	const @"".Tabindex @"".Atom = 0x45C08
+	const @"".Table @"".Atom = 0x43605
+	const @"".Target @"".Atom = 0x26A06
+	const @"".Tbody @"".Atom = 0x2E05
+	const @"".Td @"".Atom = 0x4702
+	const @"".Textarea @"".Atom = 0x31408
+	const @"".Tfoot @"".Atom = 0x5805
+	const @"".Th @"".Atom = 0x13002
+	const @"".Thead @"".Atom = 0x2F905
+	const @"".Time @"".Atom = 0x11B04
+	const @"".Title @"".Atom = 0x8E05
+	const @"".Tr @"".Atom = 0xF902
+	const @"".Track @"".Atom = 0xF905
+	const @"".Translate @"".Atom = 0x16609
+	const @"".Tt @"".Atom = 0x7002
+	const @"".Type @"".Atom = 0x23304
+	const @"".Typemustmatch @"".Atom = 0x2330D
+	const @"".U @"".Atom = 0xB01
+	const @"".Ul @"".Atom = 0x5602
+	const @"".Usemap @"".Atom = 0x4EC06
+	const @"".Value @"".Atom = 0x4005
+	const @"".Var @"".Atom = 0x10903
+	const @"".Video @"".Atom = 0x2A905
+	const @"".Wbr @"".Atom = 0x14103
+	const @"".Width @"".Atom = 0x4E205
+	const @"".Wrap @"".Atom = 0x56204
+	const @"".Xmp @"".Atom = 0xEF03
+	const @"".atomText = "abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee"
+
+$$
+_go_.6          0           0     0     644     33549     `
+go object linux amd64 go1.3 X:precisestack
+
+!
+  go13ld ş"".Atom.String  À  ¬dH‹%    H;!wè    ëëHƒì‹\$ ‰ÙÁëáÿ   ‰ØËûù  vH%    H‹+H‰l$(H‹kH‰l$0HƒÄÃH%    H‹3H‹S‰ÃËH‰Ù‹ØH‰ØH9ÊrH9ÙrHóH‰\$(H‰ËH)ÃH‰\$0HƒÄÃè    
+
+        4runtime.morestack24_noctxt   p  go.string.""   ¬  ""..gostring.1      $runtime.panicslice   00  
+"".autotmp_0004 type.uint64 "".autotmp_0003 type.uint64 "".start 'type.uint32 "".~r0 type.string "".a  type."".Atom 08/0</0   2N         TgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş"".Atom.string  €  âdH‹%    H;!wè    ëëHƒì‹l$ H%    H‹;H‹S‰îÁî‰èÁèåÿ   è‹ØH‰Ù‹ŞH‰ØH9ÊrH9ÙrHûH‰\$(H‰ËH)ÃH‰\$0HƒÄÃè    
+        4runtime.morestack24_noctxt   B  ""..gostring.2   Ö  $runtime.panicslice   00  "".autotmp_0011 type.uint64 "".autotmp_0010 type.uint64 "".autotmp_0008 /type."".Atom "".autotmp_0007 'type."".Atom "".~r0 type.string "".a  type."".Atom 0P/0 € 
+Dc 
+ j 
+ j     TgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş"".fnv  À  ÀdH‹%    H;!wè    ëëHƒìL‹L$ H‹t$(‹L$H1ÀH‰÷H9ğ}H9øs"I¶1ËiÛ“ ‰ÙHÿÀH9ğ|â‰L$8HƒÄÃè    
+        4runtime.morestack40_noctxt   ´  $runtime.panicindex   P   "".autotmp_0016 type.int "".autotmp_0015 type.int "".autotmp_0014  type.uint32 "".~r2 @type.uint32 "".s type.[]uint8 "".h  type.uint32  ?  ` N'	  ` 
+ Y     TgclocalsÂ·0a88650f7829a229e167bf06d2f46132 TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş"".match  €  ìdH‹%    H;!wè    ëëHƒìL‹T$L‹L$H‹L$ H‹|$(H‹\$0H1ÀH9ø}+H¶)L9Ès,IH¶@8ët
+ÆD$8 HƒÄÃHÿÁHÿÀH9ø|ÕÆD$8HƒÄÃè    
+        4runtime.morestack48_noctxt   à  $runtime.panicindex   `  "".autotmp_0018 type.int "".~r2 Ptype.bool "".t  type.[]uint8 "".s  type.string @ € ^#
+
+
+  € 
+ o     TgclocalsÂ·96a28a40e9f51b864d6f736f0e045eee TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş"".Lookup  à	  Ş	dH‹%    HD$èH;wè    ëæHì˜   H‹„$¨   Hƒø „)  Hƒø  »>¦}Á‰$H‹œ$    H‰\$H‰D$H‹œ$°   H‰\$è    L‹„$¨   ‹\$ ‰Ù‰\$8ãÿ  H,%    Hl ‹] ‰Øãÿ   L9Ã…»   ‰D$DH%    H‹;H‹S‰ÆÁî‰ÁÁé‰Ååÿ   é‹ŞH‰ØH9Ê‚~  H9Ù‚u  H‰ÚHúH‰ËH)ÃH‰”$ˆ   H‰œ$   H‰T$hH‰$H‰\$pH‰\$H‹œ$    H‰\$L‰D$H‹œ$°   H‰\$ è    ‹L$8L‹„$¨   H¶\$(€û t‹\$D‰œ$¸   HÄ˜   Ã‰ËÁëãÿ  H,%    Hl ‹] ‰Øãÿ   L9Ã…²   ‰D$LH%    H‹;H‹S‰ÆÁî‰ÁÁé‰Ååÿ   é‹ŞH‰ØH9Ê‚   H9Ù‚‡   H‰ÚHúH‰ËH)ÃH‰”$ˆ   H‰œ$   H‰T$xH‰$H‰œ$€   H‰\$H‹œ$    H‰\$L‰D$H‹œ$°   H‰\$ è    H¶\$(€û t‹\$L‰œ$¸   HÄ˜   ÃÇ„$¸       HÄ˜   Ãè    è    Ç„$¸       HÄ˜   Ã
+      (  4runtime.morestack32_noctxt   Ê  "".fnv   Š  "".table   Ô  ""..gostring.3   Ş  "".match   Ø  "".table   ¢  ""..gostring.4   ²  "".match   	  $runtime.panicslice   ¬	  $runtime.panicslice   @°  0"".autotmp_0038  type.uint64 "".autotmp_0037  type.uint64 "".autotmp_0036  type.uint64 "".autotmp_0035  type."".Atom "".autotmp_0034  type."".Atom "".autotmp_0033  type.string "".autotmp_0032  type.string "".autotmp_0031 type.uint64 "".autotmp_0030 type.uint64 "".autotmp_0029 otype.uint64 "".autotmp_0027 ·type."".Atom "".autotmp_0026 type.string "".autotmp_0025  type.string "".autotmp_0024  type.bool "".autotmp_0023 Átype.bool "".~r0 ?type.string "".a Ÿtype."".Atom "".~r0 _type.string "".a ¯type."".Atom "".a —type."".Atom "".a §type."".Atom "".h ¿type.uint32 "".~r1 0type."".Atom "".s  type.[]uint8 :!°»¯°İ¯°¯° ¯ ğ 2t)8ÕË  Î"  dŒ     TgclocalsÂ·07d5ee73adbccedad048091767fd0930 TgclocalsÂ·f883d3996c76325fd1714d4e3de9fa33     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş"".String  À  °dH‹%    H;!wè    ëëHƒì`HÇ„$€       HÇ„$ˆ       H‹\$hH‰$H‹\$pH‰\$H‹\$xH‰\$è    ‹D$ƒø t{‰ÁÁèáÿ   ‰ÃËûù  v$H%    H‹H‹CH‰Œ$€   H‰„$ˆ   HƒÄ`ÃH%    H‹3H‹S‰ÃËH‰Ù‹ØH‰ØH9ÊrH9ÙrH‰ÚHòH‰ËH)ÃH‰ØH‰Ñë²è    H‹\$hH‰$H‹\$pH‰\$H‹\$xH‰\$è    H‹\$H‰œ$€   H‹\$ H‰œ$ˆ   HƒÄ`Ã
+        4runtime.morestack40_noctxt     "".Lookup   î  go.string.""   ¶  ""..gostring.5   ¢  $runtime.panicslice   ê  2runtime.slicebytetostring   PÀ  "".autotmp_0047 _type.uint64 "".autotmp_0046 Otype.uint64 "".autotmp_0043 type.string "".autotmp_0042  type.string "".~r0 ?type.string "".start otype.uint32 "".a gtype."".Atom "".~r1 0type.string "".s  type.[]uint8  À}¿À€¿	   ”1+{I  Ğ$PQ'  NÒ     TgclocalsÂ·0beca3a5df59b608501c86859323d7da TgclocalsÂ·44568aa369055d8938d809aa5d80843b     Ü/usr/local/google/home/fromberger/kythe/third_party/go.net/html/src/code.google.com/p/go.net/html/atom/atom.goş""".(*Atom).String     ‚dH‹%    H;!wè    ëëHƒìhƒApH‹\$pH1íH9ëuKH%    H,$H‰ïH‰ŞH¥H¥H%    Hl$H‰ïH‰ŞH¥H¥H%    Hl$ H‰ïH‰ŞH¥H¥è    H‹\$p‹‰ÙÁëáÿ   ‰ØËûù  v.H%    H‹H‹CH‰L$xH‰„$€   dH‹%    ƒipHƒÄhÃH%    H‹3H‹S‰ÃËH‰Ù‹ØH‰ØH9ÊrH9ÙrH‰ÚHòH‰ËH)ÃH‰ØH‰Ñë¨è    
+        4runtime.morestack24_noctxt   \   go.string."atom"   ˆ   go.string."Atom"   ¶  $go.string."String"   Ş  "runtime.panicwrap   ®  go.string.""   è      Š  ""..gostring.6   ö  $runtime.panicslice   0Ğ  "".autotmp_0054 _type.uint64 "".autotmp_0053 Otype.uint64 "".autotmp_0050 type.string "".autotmp_0049  type.string "".~r0 ?type.string "".start otype.uint32 "".a gtype."".Atom "".~r0 type.string ""..this  type.*"".Atom Ğ§ÏĞO    nbŒ_  n¢     TgclocalsÂ·a08e9001cb8f9d822225de3b8e406515 TgclocalsÂ·44568aa369055d8938d809aa5d80843b     <autogenerated>ş""".(*Atom).string  À  ºdH‹%    H;!wè    ëëHƒìPƒAXH‹\$XH1íH9ëuKH%    H,$H‰ïH‰ŞH¥H¥H%    Hl$H‰ïH‰ŞH¥H¥H%    Hl$ H‰ïH‰ŞH¥H¥è    H‹L$X‹)H%    H‹9H‹Q‰îÁî‰èÁèåÿ   è‹È‹ŞH‰ØH9Êr-H9Ùr(H‰ÚHúH‰ËH)ÃH‰T$`H‰\$hdH‹%    ƒiXHƒÄPÃè    
+        4runtime.morestack24_noctxt   \   go.string."atom"   ˆ   go.string."Atom"   ¶  $go.string."string"   Ş  "runtime.panicwrap   €  ""..gostring.7   ’      ®  $runtime.panicslice   0   "".autotmp_0062 type.uint64 "".autotmp_0061 type.uint64 "".autotmp_0059 7type."".Atom "".autotmp_0058 /type."".Atom "".autotmp_0056  type.string "".a 'type."".Atom "".~r0 type.string ""..this  type.*"".Atom  ¼Ÿ 
+ à à  nbh_
+ 
+ nr     TgclocalsÂ·a08e9001cb8f9d822225de3b8e406515 TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     <autogenerated>ş""".Atom.StringÂ·i  à  ÆdH‹%    H;!wè    ëëHƒì8ƒA@‹\$@‰ÙÁëáÿ   ‰ØËûù  v+H%    H‹H‹CH‰L$HH‰D$PdH‹%    ƒi@HƒÄ8ÃH%    H‹3H‹S‰ÃËH‰Ù‹ØH‰ØH9ÊrH9ÙrH‰ÚHòH‰ËH)ÃH‰ØH‰Ñë«è    
+        4runtime.morestack24_noctxt   x  go.string.""   ¬      Î  ""..gostring.8   º  $runtime.panicslice   0p  "".autotmp_0069 _type.uint64 "".autotmp_0068 Otype.uint64 "".autotmp_0065 type.string "".autotmp_0064  type.string "".~r0 ?type.string "".start otype.uint32 "".a gtype."".Atom "".~r0 type.string ""..pad type.[4]uint8 ""..this  type."".Atom pIopM ° °  œ  œ     TgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be TgclocalsÂ·44568aa369055d8938d809aa5d80843b     <autogenerated>ş""".Atom.stringÂ·i     ŠdH‹%    H;!wè    ëëHƒì ƒA(‹l$(H%    H‹;H‹S‰îÁî‰èÁèåÿ   è‹ØH‰Ù‹ŞH‰ØH9Êr-H9Ùr(H‰ÚHúH‰ËH)ÃH‰T$0H‰\$8dH‹%    ƒi(HƒÄ Ãè    
+
+        4runtime.morestack24_noctxt   J  ""..gostring.9   â      ş  $runtime.panicslice   0@  "".autotmp_0077 type.uint64 "".autotmp_0076 type.uint64 "".autotmp_0074 7type."".Atom "".autotmp_0073 /type."".Atom "".autotmp_0071  type.string "".a 'type."".Atom "".~r0 type.string ""..pad type.[4]uint8 ""..this  type."".Atom @d?@  
+ 
+ ~ 
+ ~     TgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be TgclocalsÂ·3280bececceccd33cb74587feedb1f9f     <autogenerated>şgo.string."" 0  "                    go.string.""   ş""..gostring.1    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.1   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be             ş""..gostring.2    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.2   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be             şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·0a88650f7829a229e167bf06d2f46132      
+       şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·96a28a40e9f51b864d6f736f0e045eee         s    ş""..gostring.3    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.3   ş""..gostring.4    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.4   şTgclocalsÂ·f883d3996c76325fd1714d4e3de9fa33              şTgclocalsÂ·07d5ee73adbccedad048091767fd0930             ş""..gostring.5    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.5   şTgclocalsÂ·44568aa369055d8938d809aa5d80843b              şTgclocalsÂ·0beca3a5df59b608501c86859323d7da      
+       ş,"".table  € "type.[512]"".Atom €     ƒ 	§     ¿         °       × 
+Ù U 	¡ >  ›               ú C     k          	 : v             ~ 
+  ç     õ                           q ä x 1 F     º è z «  S                              ›  3 (  Q  
+û Ö ò 	3      Y  Ñ Î                     O /          ‡  % G   ™     0     Q „      ; ö  ˆ  >     Õ      	             ú e v T     ` 9  	» 	> Ğ      Ç 	  X   
+  V “  Å ˆ ˜ 
+¢  º  
+^ @      ³      
+: ‡      D                     6 à A 
+         í     ƒ K  v     	J                         µ € ' 
+‡     ı     w          G •     H     ? ë 	ˆ \ H      İ 
+ 	o ÷ ò     V  n  ¯ 	h Ñ    . a 8         r       ï         à           ê ¿ C     Æ À       ù  d     °                     % G  O  –  
+L     º        w              	ò     ¿ À  ,          è e      	         é      ,     | !  U         
+ ß     N H  Ä Î b +     © Ù         ™ â 	å Û         '     Q ]     	f —  è  ı  
+f             À † ,      
+G G     p Í  S 
+             É     	§ q ï  ¯            	o Å E  ?        
+U         }          ­ x ¸         	û é ® )     ì 
+İ h “     Ô }      ¼                z         ı Í     0     R    
+Î   3  Á 	' ƒ  \           œ     ¢ 
+ [ ˆ    ;         V .  K     ¾  ´     ú                     ¶ 	á  o 4 !           0 İ 	ñ  6 	f            , › ‘ B     3 ñ 
+  â         t          p    ô         !         å !  ˜           z ù  —                          Ï ¨ ù     é          ¢  
+ ,     ‹     0 Õ  z  …  j   Ô     ^              Ç         ˜     æ Õ              Ç       	¦ ‘  ş""".Atom.StringÂ·f              "".Atom.String   ş*runtime.panicsliceÂ·f              $runtime.panicslice   ş,runtime.throwreturnÂ·f              &runtime.throwreturn   ş""".Atom.stringÂ·f              "".Atom.string   ş"".fnvÂ·f              "".fnv   ş*runtime.panicindexÂ·f              $runtime.panicindex   ş"".matchÂ·f              "".match   ş"".LookupÂ·f              "".Lookup   ş"".StringÂ·f              "".String   ş8runtime.slicebytetostringÂ·f              2runtime.slicebytetostring   ş"type..gc.*"".Atom @  @                               ş,go.string."*atom.Atom" @  6        
+       *atom.Atom    ,go.string."*atom.Atom"   ş go.string."atom" 0  *               atom     go.string."atom"   ş go.string."Atom" 0  *               Atom     go.string."Atom"   ş$go.string."String" 0  .               String    $go.string."String"   ş""..gostring.6    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.6   şTgclocalsÂ·44568aa369055d8938d809aa5d80843b              şTgclocalsÂ·a08e9001cb8f9d822225de3b8e406515             ş$go.string."string" 0  .               string    $go.string."string"   ş""..gostring.7    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.7   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·a08e9001cb8f9d822225de3b8e406515             ş<type..gc.func(*"".Atom) string @  @                               şFgo.string."func(*atom.Atom) string" P  P               func(*atom.Atom) string    Fgo.string."func(*atom.Atom) string"   ş4type.func(*"".Atom) string          d¥_®                                                                                                                      À  runtime.algarray   0  <type..gc.func(*"".Atom) string   @  Fgo.string."func(*atom.Atom) string"   `  Fgo.weak.type.*func(*"".Atom) string   p  "runtime.zerovalue   ğ 4type.func(*"".Atom) string   À€ 4type.func(*"".Atom) string   ğ  type.*"".Atom   €  type.string   ş,type..gc.func() string @  @                               ş2go.string."func() string" @  <               func() string    2go.string."func() string"   ş$type.func() string €  €       ¢mË                                                                                                                À  runtime.algarray   0  ,type..gc.func() string   @  2go.string."func() string"   `  6go.weak.type.*func() string   p  "runtime.zerovalue   ğ $type.func() string   Àğ $type.func() string   ğ  type.string   ştype.*"".Atom             €n                                                                                                                                                                                               & À  runtime.algarray   0  "type..gc.*"".Atom   @  ,go.string."*atom.Atom"   `  ,go.weak.type.**"".Atom   p  "runtime.zerovalue   €  type."".Atom   P type.*"".Atom   °à type.*"".Atom   à  $go.string."String"   €  $type.func() string     4type.func(*"".Atom) string      """.(*Atom).String   °  """.(*Atom).String   À  $go.string."string"   Ğ  "go.importpath."".   à  $type.func() string   ğ  4type.func(*"".Atom) string   €  """.(*Atom).string     """.(*Atom).string   ş type..gc."".Atom                     ş*go.string."atom.Atom" @  4        	       atom.Atom    *go.string."atom.Atom"   ş""..gostring.8    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.8   şTgclocalsÂ·44568aa369055d8938d809aa5d80843b              şTgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be             ş""..gostring.9    ”        ù      abbradiogrouparamalignmarkbdialogaccept-charsetbodyaccesskeygenavaluealtdescanvasidefaultfootereversedetailsampatternobrowspanoembedfnoframesetitleasyncitemidirnamediagroupingaudioncancelabelooptgrouplaceholderubyautocompleteautofocusandboxmplaintextrackindisabledivarautoplaybasefontimeupdatebdoncanplaythrough1bgsoundlowbrbigblinkblockquoteborderbuttonabortranslatecodefercolgroupostercolorcolspannotation-xmlcommandraggablegendcontrolshapecoordsmallcrossoriginsourcefieldsetfigcaptionafterprintfigurequiredforeignObjectforeignobjectformactionbeforeprintformenctypemustmatchallengeformmethodformnovalidatetimeterformtargeth6heightmlhgroupreloadhiddenoscripthigh2hreflanghttp-equivideonclickiframeimageimglyph3isindexismappletitemrefacenteritemscopeditemtypematheaderspacermaxlength4minmtextareadonlymultiplemutedoncloseamlesspellcheckedoncontextmenuoncuechangeondblclickondragendondragenterondragleaveondragoverondragstarticleondropzonemptiedondurationchangeonendedonerroronfocusrcdoclassectionbluronhashchangeoninputoninvalidonkeydownloadonkeypressrclangonkeyupublicontenteditableonloadeddatalistingonloadedmetadatabindexonloadstartonmessageonmousedownonmousemoveonmouseoutputonmouseoveronmouseuponmousewheelonofflinertononlineonpagehidelonpageshowidth5onpausemaponplayingonpopstateonprogresstrikeytypeonratechangeonresetonresizestrongonscrollonseekedonseekingonselectedonshowraponstalledonstorageonsubmitempropenonsuspendonunloadonvolumechangeonwaitingoptimumanifestepromptoptionbeforeunloaddresstylesummarysupsvgsystemarquee    ""..gostring.9   şTgclocalsÂ·3280bececceccd33cb74587feedb1f9f           şTgclocalsÂ·a73fd2a0c6f832642aa9216fd9c5e6be             ş:type..gc.func("".Atom) string @  @                               şDgo.string."func(atom.Atom) string" P  N               func(atom.Atom) string    Dgo.string."func(atom.Atom) string"   ş2type.func("".Atom) string          8õ¢P                                                                                                                      À  runtime.algarray   0  :type..gc.func("".Atom) string   @  Dgo.string."func(atom.Atom) string"   `  Dgo.weak.type.*func("".Atom) string   p  "runtime.zerovalue   ğ 2type.func("".Atom) string   À€ 2type.func("".Atom) string   ğ  type."".Atom   €  type.string   ştype."".Atom           û¦EÖ Š                                                                                                                                                                                      ( €  runtime.algarray   0   type..gc."".Atom   @  *go.string."atom.Atom"   `  type.*"".Atom   p  "runtime.zerovalue   P€ type."".Atom   €   go.string."Atom"     "go.importpath."".    Ğ type."".Atom   Ğ  $go.string."String"   ğ  $type.func() string   €  2type.func("".Atom) string     """.Atom.StringÂ·i      "".Atom.String   °  $go.string."string"   À  "go.importpath."".   Ğ  $type.func() string   à  2type.func("".Atom) string   ğ  """.Atom.stringÂ·i   €  "".Atom.string   ştype..gc.uint8                     ş type..gc.[]uint8 P  P       
+                               0  type..gc.uint8   ş&go.string."[]uint8" 0  0               []uint8    &go.string."[]uint8"   ştype.[]uint8          ß~.8                                                          À  runtime.algarray   0   type..gc.[]uint8   @  &go.string."[]uint8"   `  *go.weak.type.*[]uint8   p  "runtime.zerovalue   €  type.uint8   ş6go.typelink.[]uint8/[]uint8              type.[]uint8   ş$type..gc.[]"".Atom P  P       
+                               0   type..gc."".Atom   ş.go.string."[]atom.Atom" @  8               []atom.Atom    .go.string."[]atom.Atom"   ştype.[]"".Atom          Q~›O                                                          À  runtime.algarray   0  $type..gc.[]"".Atom   @  .go.string."[]atom.Atom"   `  .go.weak.type.*[]"".Atom   p  "runtime.zerovalue   €  type."".Atom   şBgo.typelink.[]atom.Atom/[]"".Atom              type.[]"".Atom   ş*type..gc.[512]"".Atom                     ş4go.string."[512]atom.Atom" @  >               [512]atom.Atom    4go.string."[512]atom.Atom"   ş"type.[512]"".Atom °  °       	ÜØ ‘                                                                           runtime.algarray   0  *type..gc.[512]"".Atom   @  4go.string."[512]atom.Atom"   `  4go.weak.type.*[512]"".Atom   p  "runtime.zerovalue   €  type."".Atom     type.[]"".Atom   şNgo.typelink.[512]atom.Atom/[512]"".Atom              "type.[512]"".Atom   ş"type..gc.[4]uint8                     ş(go.string."[4]uint8" @  2               [4]uint8    (go.string."[4]uint8"   ştype.[4]uint8 °  °       „B ‘                                                                        €  runtime.algarray   0  "type..gc.[4]uint8   @  (go.string."[4]uint8"   `  ,go.weak.type.*[4]uint8   p  "runtime.zerovalue   €  type.uint8     type.[]uint8   ş:go.typelink.[4]uint8/[4]uint8              type.[4]uint8   ş&go.string."runtime" 0  0               runtime    &go.string."runtime"   ş,go.importpath.runtime.                       &go.string."runtime"   ş("".(*Atom).StringÂ·f              """.(*Atom).String   ş(runtime.panicwrapÂ·f              "runtime.panicwrap   ş("".(*Atom).stringÂ·f              """.(*Atom).string   ş("".Atom.StringÂ·iÂ·f              """.Atom.StringÂ·i   ş("".Atom.stringÂ·iÂ·f              """.Atom.stringÂ·i   ş"runtime.zerovalue      ÿÿgo13ld 

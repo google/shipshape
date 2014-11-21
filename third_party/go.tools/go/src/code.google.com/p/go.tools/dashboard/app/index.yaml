@@ -1,0 +1,39 @@
+indexes:
+
+- kind: Commit
+  ancestor: yes
+  properties:
+  - name: Num
+    direction: desc
+
+- kind: Commit
+  ancestor: yes
+  properties:
+  - name: Time
+    direction: desc
+    
+- kind: Commit
+  ancestor: yes
+  properties:
+  - name: NeedsBenchmarking
+  - name: Num
+    direction: desc
+
+- kind: CommitRun
+  ancestor: yes
+  properties:
+  - name: StartCommitNum
+    direction: desc
+
+- kind: PerfResult
+  ancestor: yes
+  properties:
+  - name: CommitNum
+    direction: desc
+
+- kind: PerfResult   
+  ancestor: yes
+  properties:
+  - name: CommitNum
+    direction: asc
+

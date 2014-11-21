@@ -1,0 +1,4 @@
+URL: https://github.com/go-yaml/yaml
+License: LGPL with static linking exception.
+Local Modifications: Built using go get
+

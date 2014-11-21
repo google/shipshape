@@ -1,0 +1,20 @@
+[
+  {
+    "name": "gson",
+    "kind": "java_external_jar",
+    "inputs": {
+      "srcs": [
+        "gson-2.3-SNAPSHOT.jar"
+      ]
+    }
+  },
+  {
+    "name": "proto",
+    "kind": "java_external_jar",
+    "inputs": {
+      "srcs": [
+        "gson-proto-0.5.jar"
+      ]
+    }
+  }
+]

@@ -1,0 +1,9 @@
+URL: https://code.google.com/p/google-api-go-client/
+License: New BSD License
+License File: ./google-api-go-client/LICENSE
+
+Description:
+google-api-go-client is the Go client for the Google Cloud Platform
+
+Local Modifications:
+Built google-api-go-client using go get

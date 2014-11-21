@@ -1,0 +1,14 @@
+[
+  {
+    "name": "go-yaml",
+    "kind": "go_external_lib",
+    "inputs": {
+      "srcs": [
+        "pkg/linux_amd64/gopkg.in/yaml.v2.a"
+      ]
+    },
+    "properties": {
+      "go_include_path": "third_party/go-yaml/pkg/linux_amd64/"
+    }
+  }
+]
