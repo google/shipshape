@@ -1,0 +1,20 @@
+[
+  {
+    "name": "sha",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "sha2.c"
+      ],
+      "hdrs": [
+        "sha2.h"
+      ]
+    },
+    "properties": {
+      "cc_include_path": "third_party/sha",
+      "cc_local_copts": [
+        "-Wno-implicit-function-declaration"
+      ]
+    }
+  }
+]
