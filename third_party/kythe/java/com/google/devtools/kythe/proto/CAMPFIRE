@@ -1,0 +1,22 @@
+[
+  {
+    "name": "analysis_proto_krpc",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "CompilationAnalyzerKrpc.java",
+        "FileDataServiceKrpc.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:client",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:protocol",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:server",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/gson",
+        "//third_party/guava",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    }
+  }
+]

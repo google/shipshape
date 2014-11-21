@@ -1,0 +1,58 @@
+[
+  {
+    "name": "standalone",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "StandaloneExtractor.java"
+      ],
+      "jars": [
+        ":maven",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/jcommander",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.extractors.maven.StandaloneExtractor"
+    }
+  },
+  {
+    "name": "standalone_deploy",
+    "kind": "java_deploy_jar",
+    "inputs": {
+      "jars": [
+        ":standalone"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.extractors.maven.StandaloneExtractor"
+    }
+  },
+  {
+    "name": "maven",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "ArtifactRepository.java",
+        "CompilationDescriptionExtractor.java",
+        "CompilationDescriptionExtractorException.java",
+        "MavenModelResolver.java",
+        "Project.java",
+        "ProjectException.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/common",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/java",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared:file_vnames",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/maven",
+        "//third_party/plexus",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    }
+  }
+]

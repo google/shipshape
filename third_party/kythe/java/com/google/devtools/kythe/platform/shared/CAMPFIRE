@@ -1,0 +1,34 @@
+[
+  {
+    "name": "shared",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "AnalysisException.java",
+        "NullStatisticsCollector.java",
+        "StatisticsCollector.java"
+      ]
+    }
+  },
+  {
+    "name": "file_data",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "FileDataCache.java",
+        "FileDataDirectory.java",
+        "FileDataProvider.java",
+        "RemoteFileData.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/common",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:client",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:protocol",
+        "//third_party/kythe/java/com/google/devtools/kythe/proto:analysis_proto_krpc",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/guava",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    }
+  }
+]

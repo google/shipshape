@@ -1,0 +1,16 @@
+[
+  {
+    "name": "kv",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "kv.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/storage",
+        "//third_party/kythe/go/storage/keyvalue",
+        "//third_party/kv"
+      ]
+    }
+  }
+]

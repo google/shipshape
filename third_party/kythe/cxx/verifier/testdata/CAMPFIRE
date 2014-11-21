@@ -1,0 +1,29 @@
+[
+  {
+    "name": "basic",
+    "kind": "sh_test",
+    "inputs": {
+      "srcs": [
+        "test_verifier_cmd.sh"
+      ],
+      "data": [
+        "//third_party/kythe/cxx/verifier"
+      ]
+    }
+  },
+  {
+    "name": "outputs",
+    "kind": "sh_test",
+    "inputs": {
+      "srcs": [
+        "test_outputs.sh"
+      ],
+      "data": [
+        "//third_party/kythe/cxx/verifier",
+        "just_file_node.bin",
+        "just_file_node.dot",
+        "just_file_node.json"
+      ]
+    }
+  }
+]

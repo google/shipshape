@@ -1,0 +1,18 @@
+[
+  {
+    "name": "go_indexer_server",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "indexer_server.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/analyzers/go/grok",
+        "//third_party/kythe/go/platform/cache",
+        "//third_party/kythe/go/platform/service",
+        "//third_party/kythe/go/rpc/server",
+        "//third_party/kythe/go/storage/files/client"
+      ]
+    }
+  }
+]

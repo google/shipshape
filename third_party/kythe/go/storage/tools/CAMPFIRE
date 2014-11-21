@@ -1,0 +1,66 @@
+[
+  {
+    "name": "graphstore",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "graphstore.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/server",
+        "//third_party/kythe/go/storage",
+        "//third_party/kythe/go/storage/client",
+        "//third_party/kythe/go/storage/gsutil",
+        "//third_party/kythe/go/storage/service",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "write_entries",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "write_entries.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/storage",
+        "//third_party/kythe/go/storage/gsutil",
+        "//third_party/kythe/go/storage/stream",
+        "//third_party/kythe/proto:storage_proto"
+      ]
+    }
+  },
+  {
+    "name": "triples",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "triples.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/storage/stream",
+        "//third_party/kythe/go/util/kytheuri",
+        "//third_party/kythe/go/util/schema",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "directory_indexer",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "directory_indexer.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/platform/delimited",
+        "//third_party/kythe/go/storage/filevnames",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

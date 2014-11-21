@@ -1,0 +1,131 @@
+syntax = "proto2";
+
+package kythe.proto;
+option java_package = "com.google.devtools.kythe.proto";
+
+import "third_party/kythe/proto/storage.proto";
+
+// An AnalysisRequest instructs an analyzer to perform an analysis on a single
+// CompilationUnit.
+message AnalysisRequest {
+  // The compilation to analyze.
+  optional CompilationUnit compilation = 1;
+
+  // The address of a file data service to use.  If this is provided, it should
+  // be used in preference to any other file data service the analyzer may know
+  // about for this compilation.
+  optional string file_data_service = 2;
+}
+
+// An AnalysisOutput contains some output artifacts for the current analysis
+// taking place.  A given analysis may not produce any outputs.  It is okay for
+// an indexer to send an empty AnalysisOutput message if needed to keep the RPC
+// channel alive; the driver must correctly handle this.
+message AnalysisOutput {
+  optional bytes value = 1;
+}
+
+// Describes a single unit of compilation.
+message CompilationUnit {
+  // The base VName for the compilation.
+  // Used to derive other VNames. Generally, the `signature` and `language`
+  // components are ignored.
+  optional VName v_name = 1;
+
+  // The revision of the compilation.
+  optional string revision = 2;
+
+  // All files that might be touched in the course of this compilation.
+  repeated FileInput required_input = 3;
+
+  // Set by the extractor to indicate that the original input had compile
+  // errors. This is used to check validity of the sharded analysis.
+  optional bool has_compile_errors = 4;
+
+  // The arguments that would be passed to a compiler tool for this
+  // compilation unit, including the compiler executable and input files.
+  repeated string argument = 5;
+
+  // Of those files in `required_input`, the ones that this CompilationUnit
+  // is intended to analyze. This is necessary to support languages like Go,
+  // where a single translation unit may contain many source files that must all
+  // be processed at once (while excluding source files that belong to other
+  // CUs/packages, if any).
+  repeated string source_file = 6;
+
+  // The output key of the CompilationUnit; for example, the object file that
+  // it writes.
+  // TODO(zarko): should this be a VName? Are there uniqueness requirements?
+  // How is this used in the pipeline?
+  optional string output_key = 7;
+
+  message FileInput {
+    // If set, overrides the `v_name` in the `CompilationUnit` for deriving
+    // VNames during analysis.
+    optional VName v_name = 1;
+
+    // The file's metadata. It is invalid to provide a FileInput without both
+    // the file's path and digest.
+    optional FileInfo info = 2;
+  }
+
+  // For certain languages (eg, c++), the current working directory is
+  // significant. This is an absolute path. During analysis, a FileInfo
+  // with a path that has working_directory plus a path separator as an
+  // exact prefix is considered to be accessible from the same path without
+  // that prefix.
+  optional string working_directory = 8;
+
+  // TODO(schroederc): Handle language-specific arguments in a more general way.
+  optional JavaArguments java_arguments = 101;
+  // Filled if this describes a go compilation.
+  optional GoArguments go_arguments = 103;
+}
+
+// Describes the java specifics for a CompilationUnit.
+// TODO(schroederc): Legacy protobuf; remove ASAP.
+message JavaArguments {
+  // Separated list of classpaths used in the compilation.
+  // Entries here must have matching entries in required_input unless
+  // the entry is part of the JDK.
+  repeated string classpath = 1;
+
+  // Separated list of sourcepaths used in the compilation.
+  // Entries here must have matching entries in required_input.
+  // E.g. "third-party/java_src/gwt/svn/trunk/src".
+  repeated string sourcepath = 2;
+}
+
+// Describes the Go specifics for a CompilationUnit.
+// Currently only used as a marker to indicate this is a Go compilation.
+message GoArguments {
+}
+
+// A FileInfo specifies metadata for a file under analysis.
+message FileInfo {
+  // This path should be relative to the working directory of the compilation
+  // command -- typically the root of the build.
+  // i.e. file/base/file.cc or ../../base/atomic_ref_count.h
+  optional string path = 1;
+
+  // The lowercase ascii hex SHA-256 digest of the file contents.
+  optional string digest = 2;
+}
+
+// A FileDataRequest specifies one or more files whose content is optional for
+// analysis.
+message FileDataRequest {
+  // A FileInfo describes a single file to be fetched.  At least one of path or
+  // digest must be specified for each file requested.  The server should return
+  // an error if file_info is empty.
+  repeated FileInfo file_info = 1;
+}
+
+// A FileData describes the content of a single file.  A server responding to a
+// FileDataRequest must populate the same path and digest in the reply that were
+// provided by the client in the request, if any.  If either field was empty in
+// the request, the server may leave it empty or fill in its value.
+message FileData {
+  optional bytes content = 1;
+  optional FileInfo info = 2;
+}

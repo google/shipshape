@@ -1,0 +1,24 @@
+[
+  {
+    "name": "xrefs_server",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "xrefs_server.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/serving/xrefs",
+        "//third_party/kythe/go/storage",
+        "//third_party/kythe/go/storage/filetree",
+        "//third_party/kythe/go/storage/leveldb",
+        "//third_party/kythe/go/util/httpencoding",
+        "//third_party/kythe/go/util/kytheuri",
+        "//third_party/kythe/go/util/schema",
+        "//third_party/kythe/go/util/stringset",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/kythe/proto:xref_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

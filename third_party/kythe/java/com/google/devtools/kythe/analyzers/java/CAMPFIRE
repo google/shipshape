@@ -1,0 +1,91 @@
+[
+  {
+    "name": "indexer_server",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "JavaCompilationAnalyzer.java"
+      ],
+      "jars": [
+        ":analyzer",
+        "//third_party/kythe/java/com/google/devtools/kythe/analyzers/base",
+        "//third_party/kythe/java/com/google/devtools/kythe/analyzers/base:entryset",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/java",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:protocol",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:server",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/shared:file_data",
+        "//third_party/kythe/java/com/google/devtools/kythe/proto:analysis_proto_krpc",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/jcommander",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.analyzers.java.JavaCompilationAnalyzer"
+    }
+  },
+  {
+    "name": "java_indexer_server_deploy",
+    "kind": "java_deploy_jar",
+    "inputs": {
+      "jars": [
+        ":indexer_server"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.analyzers.java.JavaCompilationAnalyzer"
+    }
+  },
+  {
+    "name": "analyzer",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "FilePositions.java",
+        "JavaEntrySets.java",
+        "KytheJavacAnalyzer.java",
+        "KytheTreeScanner.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/analyzers/base:entryset",
+        "//third_party/kythe/java/com/google/devtools/kythe/analyzers/base:schema",
+        "//third_party/kythe/java/com/google/devtools/kythe/common",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/java",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/java/helpers",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/util",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/guava",
+        "//third_party/openjdk/lib:tools_jar",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    }
+  },
+  {
+    "name": "indexer",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "JavaIndexer.java"
+      ],
+      "jars": [
+        ":analyzer",
+        "//third_party/kythe/java/com/google/devtools/kythe/analyzers/base:entryset",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/java",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/platform/shared:file_data",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/guava",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.analyzers.java.JavaIndexer"
+    }
+  }
+]

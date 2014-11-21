@@ -1,0 +1,120 @@
+[
+  {
+    "name": "lib",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "endpoint.cc",
+        "service_info.cc"
+      ],
+      "hdrs": [
+        "endpoint.h",
+        "json_helper.h",
+        "method.h",
+        "output_proto_stream.h",
+        "output_sink.h",
+        "service.h",
+        "service_info.h",
+        "status.h"
+      ],
+      "cc_libs": [
+        "//third_party/gflags",
+        "//third_party/glog",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "memory_output_lib",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "memory_output.cc"
+      ],
+      "hdrs": [
+        "memory_output.h"
+      ],
+      "cc_libs": [
+        ":lib",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "http_transport_lib",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "http_transport.cc"
+      ],
+      "hdrs": [
+        "http_transport.h"
+      ],
+      "cc_libs": [
+        ":lib",
+        ":memory_output_lib",
+        "//third_party/civetweb:lib",
+        "//third_party/gflags",
+        "//third_party/glog",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "testlib",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "server_test.cc"
+      ],
+      "cc_libs": [
+        ":lib",
+        ":memory_output_lib",
+        "//third_party/kythe/cxx/rpc/server/test_data:test_proto",
+        "//third_party/gflags",
+        "//third_party/glog",
+        "//third_party/googletest:lib",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "example_lib",
+    "kind": "cc_library",
+    "inputs": {
+      "srcs": [
+        "example.cc"
+      ],
+      "cc_libs": [
+        ":http_transport_lib",
+        ":lib",
+        "//third_party/kythe/cxx/rpc/server/test_data:example_proto",
+        "//third_party/gflags",
+        "//third_party/glog",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "test",
+    "kind": "cc_binary",
+    "inputs": {
+      "cc_libs": [
+        ":testlib",
+        "//third_party/kythe/cxx/rpc/server/test_data:test_proto",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  },
+  {
+    "name": "example",
+    "kind": "cc_binary",
+    "inputs": {
+      "cc_libs": [
+        ":example_lib",
+        "//third_party/kythe/cxx/rpc/server/test_data:test_proto",
+        "//third_party/protobuf:protobuf_cc"
+      ]
+    }
+  }
+]

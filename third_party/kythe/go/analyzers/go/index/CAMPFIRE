@@ -1,0 +1,22 @@
+[
+  {
+    "name": "index",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "index.go"
+      ],
+      "go_tests": [
+        "index_test.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/platform/analysis",
+        "//third_party/kythe/go/platform/local",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/go.tools/go/gcimporter",
+        "//third_party/go.tools/go/loader",
+        "//third_party/go.tools/go/types"
+      ]
+    }
+  }
+]

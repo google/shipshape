@@ -1,0 +1,14 @@
+[
+  {
+    "name": "buffer",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "buffer.go"
+      ],
+      "go_tests": [
+        "buffer_test.go"
+      ]
+    }
+  }
+]

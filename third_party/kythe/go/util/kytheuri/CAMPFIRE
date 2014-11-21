@@ -1,0 +1,18 @@
+[
+  {
+    "name": "kytheuri",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "escape.go",
+        "uri.go"
+      ],
+      "go_tests": [
+        "uri_test.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/proto:storage_proto"
+      ]
+    }
+  }
+]

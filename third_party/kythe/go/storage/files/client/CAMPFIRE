@@ -1,0 +1,16 @@
+[
+  {
+    "name": "client",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "client.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/rpc/client",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

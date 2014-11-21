@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package kythe.test;
+
+message MyMessage {
+  required string name = 1;
+  required int32 age = 2;
+}
+
+message MyResponse {
+  optional string value = 1;
+}

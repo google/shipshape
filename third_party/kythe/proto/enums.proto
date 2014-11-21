@@ -1,0 +1,1569 @@
+syntax = "proto2";
+
+package kythe.proto;
+option java_package = "com.google.devtools.kythe.proto";
+
+
+// Languages that Kythe supports.  The list also includes languages for
+// which Kythe support is either in progress or at least has a roadmap
+// of some sort.  See kythe_schema.proto for per-language status info.
+enum Language {
+  CPP = 100;
+  JAVA = 200;
+  PYTHON = 300;
+  JAVASCRIPT = 400;
+  GO = 500;
+  DART = 600;
+}
+
+// Kythe nodes can represent symbols, references, types, files, directories and
+// just about any other kind of entity.  The Node "kind" is a coarse
+// representation of the node's role.  Its main goal is to make displaying and
+// querying the index simpler, by aggregating information collected from the
+// AST, the symbol table, the type graph and other inputs into a single
+// "best-effort" representation of what kind of node this is.
+//
+// Sometimes the combination of node-kind and node-modifiers is not enough,
+// and clients must examine the node's edges and possibly the resolved AST
+// in order to gather the desired information about the node.  But we have
+// found that having a node Kind satisfies a great many pragmatic use cases.
+//
+// Some node kinds represent types.  Type nodes are no different from other
+// node kinds.  There are two edge kinds used to represent nearly all
+// type-system relationships:  BASE_TYPE and COMPOSING_TYPE.
+//
+// Some node kinds occasionally need to be treated polymorphically; for
+// instance, it is often useful to treat all node kinds representing numeric
+// types as "generic numbers," such as when querying for any function that takes
+// a numeric first argument.  Kythe provides some predefined kind-aggregations in
+// queries.proto.
+//
+// Every node kind has a set of "expected" or "relevant" edge kinds.  The
+// schema is open, in that any indexer is allowed to produce nodes and edges
+// that it feels best fit the language being analyzed.  But in many cases
+// the schema is known a priori, and we are working on ways to describe it
+// without being draconian.  For now we keep it reasonably well documented
+// in this file.
+//
+// Some node kinds need to be "flattened" during queries.  For instance,
+// you might want to find all the callers of a method or any of its overrides,
+// or all references through any forward-declaration of some definition.
+// Kythe provides artificial "join nodes" for this purpose.  They are special
+// nodes whose kind ends with _JOIN.  They introduce a hub-and-spoke model that
+// eliminates what would otherwise be a need for quadratic edges between all
+// the nodes being joined.
+message NodeEnum {
+  // We use the following notation to specify an edge:
+  // [source node kind]  ---[edge kind]---> [target node kind].
+  enum Kind {
+    // An unresolved/unknown type; used only for broken/incomplete code.
+    UNRESOLVED_TYPE = 404;
+
+    // A namespace serves only one purpose, which is to group names and
+    // control visibility.  Some languages permit nested namespaces, and/or
+    // multiple namespaces per file.
+    NAMESPACE = 100;
+
+    // A declaration of membership in a package, such as the "package" form in
+    // Java and Go.  For languages in which a package may span multiple files,
+    // there will also be a PACKAGE_JOIN node.
+    // We also use this node to represent blaze BUILD packages.
+    PACKAGE = 200;
+
+    // An independent unit of code that may be linked or imported and
+    // typically contains at least one publicly-exported symbol.
+    // In some languages it is the same as a "package" (e.g. Java, Go),
+    // and MODULE is not used in those languages.  In other languages a
+    // module may consist of multiple namespaces and potentially multiple
+    // files.  Examples:  python import, C++ file.
+    MODULE = 300;
+
+    // A language-specific ordered composite of named fields and/or methods.
+    // Also used to represent a proto "message" declaration.
+    STRUCT = 400;
+
+    // A common composite data type in OOP, similar to a struct but with
+    // its own language-specific additional semantics.
+    // Used for "struct" and "class" in C++, "class" in Java and Python.
+    CLASS = 500;
+
+    // An abstract specification of a set of methods to be implemented
+    // by some other type.  Includes "interface" declarations in Java and Go,
+    // as well as proto "service" definitions.
+    INTERFACE = 600;
+
+    // A finite enumeration of named values.
+    // For example, an "enum" declaration in C++ or proto.
+    ENUM = 700;
+
+    // A single named value from an enumeration (whose kind is ENUM). This
+    // applies to any language that supports enums, e.g., C++, Java, and Proto.
+    ENUM_CONSTANT = 800;
+
+    // Distinguished language-specific annotation type, e.g. in Java or Python.
+    ANNOTATION = 900;
+
+    // Any standalone function or lambda.
+    FUNCTION = 1000;
+
+    // For languages that distinguish methods from functions (e.g. C++, Java),
+    // this kind is used for methods.  In some languages (e.g. Perl, Python)
+    // it is not always possible to determine statically whether a function is
+    // a method, as it may be invoked in either context.  It is up to the
+    // language indexer to choose which node kind to use.
+    //
+    // This kind is also used to represent RPCs in a proto service.
+    METHOD = 1100;
+
+    // Used in languages with distinguished object-instantiation functions
+    // or operators (e.g. "new").
+    CONSTRUCTOR = 1200;
+
+    // A preprocessor macro definition such as #define FOO 3 or #undef FOO.
+    // Similar to a function, but results in a compile-time expansion and code
+    // transformation.
+    TEXT_MACRO = 1300;
+
+    // Used for any kind of non-macro code template; e.g., a Borgmon template
+    // or a GCL template.  C++ template nodes are of kind PARAMETRIC_TYPE.
+    TEMPLATE = 1400;
+
+    // A variable slot associated with a struct, class or object.
+    // A field may be named or anonymous, e.g., in C++:
+    //   struct { int x; unsigned : 3; }
+    // This type is also used to represent the fields of a proto message,
+    // and the options of a proto service or RPC.
+    FIELD = 1500;
+
+    // A local variable of a function, method or other callable subroutine.
+    // Languages all handle nested functions a little differently, and only a
+    // few of them (e.g. Scheme) would use LOCAL for a nested named function.
+    // However, any language that permits saying something like:
+    //   var foo = function() {...}  // i.e. assign a lambda to a local var
+    // will have foo created as a LOCAL node, whose type is the lambda's type.
+    LOCAL = 1600;
+
+    // A function or method parameter.  Many compilers do not distinguish
+    // between parameters and other local variables, but Kythe distinguishes
+    // them for query and display purposes.
+    PARAMETER = 1700;
+
+    // Any other kind of named variable slot that cannot be satisfyingly
+    // represented using FIELD, LOCAL or PARAMETER.
+    VARIABLE = 1800;
+
+    // A named property or attribute, for languages that differentiate
+    // properties/attributes and regular fields.
+    // PROPERTY_OF/HAS_PROPERTY to/from the parent object.
+    PROPERTY = 1900;
+
+    // Primitive boolean type, for languages that have one.
+    BOOLEAN = 2000;
+
+    // Primitive character type.  Uses Dimension for representing width.
+    CHAR = 2100;
+
+    // A primitive string type, as distinguished from a String object type.
+    // Not all languages make this distinction.
+    STRING = 2200;
+
+    // A primitive regular expression type (as in Perl).
+    REGEXP = 2300;
+
+    // An integral numeric type.
+    INTEGER = 2400;
+
+    // A floating-point numeric type (mantissa/exponent, e.g. float or double).
+    FLOAT = 2500;
+
+    // A fixed-point numeric type.
+    FIXED_POINT = 2600;
+
+    // A rational numeric type (a ratio of two integers, as in Scheme).
+    RATIONAL = 2700;
+
+    // A primitive complex numeric type (as in Python).
+    COMPLEX = 2800;
+
+    // An arbitrary-precision integer numeric type.
+    BIGINT = 2900;
+
+    // An arbitrary-precision floating-point numeric type.
+    BIGFLOAT = 3000;
+
+    // A generic number type for languages that do not distinguish among
+    // different numeric representations.
+    NUMBER = 3100;
+
+    // A type representing a symbolic identifier or token.
+    // For example, Ruby and Lisp/Scheme have first-class symbols.
+    SYMBOL = 3200;
+
+    // Used for nodes that most languages refer to as "identifiers".
+    NAME = 3300;
+
+    // Used for literal values such as the 4 in vector<T, 4> in C++,
+    // in which case it has a HAS_TYPE pointer to its type (INTEGER).
+    // Also suitable for leaf/primary expressions that do not (yet)
+    // have an appropriate Kythe node kind.  The latter usage is
+    // similar to OBJECT in the sense that it is typically better for
+    // indexers to use a more specific node kind if possible.
+    VALUE = 3400;
+
+    // Represents a non-defining code usage of another code entity,
+    // such as a function call, constructor invocation or name reference.
+    USAGE = 3800;
+
+    // The Location of a file node should be the top of that file:
+    // /path/to/file/file.ext:1:1
+    // Has a PARENT/CHILD edges to/from the parent directory.
+    // Also used for files created via automation.
+    // May have PRODUCED_BY/HAS_OUTPUT edges to/from the file(s) from which it
+    // was generated:
+    //  {generated file} ---PRODUCED_BY---> {input 1}
+    //  {generated file} ---PRODUCED_BY---> {input 2}
+    //  {input-1} ---HAS_OUTPUT---> {generated file}
+    //  {input-2} ---HAS_OUTPUT---> {generated file}
+    FILE = 3900;
+
+    // Represents a directory in the index.
+    DIRECTORY = 4000;
+
+    // Represents a diagnostic message attached to another node in the graph,
+    // such as a FILE or METHOD.
+    // Edges:
+    //   {diagnostic} ---DIAGNOSTIC_OF---> {other node}
+    //   {other node} ---HAS_DIAGNOSTIC---> {diagnostic}
+    DIAGNOSTIC = 4100;
+
+    // A generic Object type used in languages with objects but no classes,
+    // such as JavaScript and Lua.  Can also be used as a vanilla type to
+    // represent an rvalue in languages where no other node kind seems to fit.
+    OBJECT = 4500;
+
+    // Used to model object instance types, e.g. in JavaScript or Ruby, where
+    // an instance acts like a Singleton type that can acquire its own fields
+    // and methods.  An indexer can use type inference and/or dynamic analysis
+    // to figure out which attributes are added to the instance at runtime.
+    // Has BASE_TYPE/COMPOSING_TYPE edges to/from the instantiated type.
+    // OBJECT is typically used for object literals in the source code,
+    // whereas INSTANCE is usually used for modeling objects that are known
+    // to be created at runtime.
+    INSTANCE = 4600;
+
+    // Standard pointer type.  BASE_TYPE/COMPOSING_TYPE edges to/from the
+    // pointed-at type.
+    POINTER = 5000;
+
+    // C++/C# references.  BASE_TYPE/COMPOSING_TYPE edges to/from the referent.
+    REFERENCE_TYPE = 5100;
+
+    // A type that is an alias or shorthand for another type, e.g. C typedefs.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the aliased type.
+    TYPE_ALIAS = 5200;
+
+    // A forward-declaration of another type or entity.
+    // DECLARATION_OF/HAS_DECLARATION edges to/from a DEF_DECL_JOIN node.
+    FORWARD_DECLARATION = 5300;
+
+    // Represents (C++) const type wrappers.  We do this (rather than using
+    // a node modifier) to model the notion that in C++, constness can be separated
+    // from its underlying type -- and in particular, cast away.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the underlying type.
+    CONST_TYPE = 5400;
+
+    // Haskell/ML/Scala, also called a Maybe type, representing a value
+    // that is either the base type or "nothing".
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the optioned type.
+    OPTION_TYPE = 5500;
+
+    // A C++ function or class template, or a Java parametric type node.
+    // In Java if you have "class List<T>", the base type is a CLASS node
+    // whose name is "List", and we also create a PARAMETRIC_TYPE node with
+    // BASE_TYPE/COMPOSING_TYPE edges between the base type (CLASS) node.
+    // All the methods and fields go on the base type.
+    // Then when we see List<Integer>, we create a TYPE_SPECIALIZATION node
+    // whose BASE_TYPE points to the PARAMETRIC_TYPE List<T> node.
+    PARAMETRIC_TYPE = 5600;
+
+    // A built-in, indexed, sequential array type; e.g., from C++ or Java.  Can
+    // be used to model "ragged" multidimensional arrays whose last dimension is
+    // variable-sized.  Has BASE_TYPE/COMPOSING_TYPE edges to/from the base type,
+    // which may itself be ARRAY.
+    ARRAY = 5700;
+
+    // A multidimensional array, e.g. from R/Fortran/C#, which is allocated
+    // as a unit and must have all the dimensions fixed in advance.
+    // Has BASE_TYPE/COMPOSING_TYPE edges to/from the base type.
+    MATRIX = 5800;
+
+    // An unordered composite of elements of possibly different types.
+    // Some languages offer it as a built-in/primitive (e.g. Clojure).
+    // BASE_TYPE/COMPOSING_TYPE edges to the element type(s).
+    SET = 5900;
+
+    // Used for the many languages (e.g. Go, Perl, D, Lua, Lisp) that
+    // provide a primitive, built-in map/dictionary/hashtable type.
+    // Sometimes called associative arrays (e.g. PHP) or tables (e.g. Lua).
+    // Has TYPE_PARAMETER/TYPE_PARAMETER_OF edges to/from the key type and
+    // value type, provided the types are computable at compile-time.
+    // The TYPE_PARAMETER edge to the key type has "position" field set to 0.
+    // The TYPE_PARAMETER edge to the value type has "position" field set to 1.
+    // For partial instantiations, e.g. map<int, V>, one or both of the
+    // TYPE_PARAMETER edges may point to a concrete type.  Otherwise they will
+    // point to TYPE_VARIABLE nodes.
+    MAP = 6000;
+
+    // An ordered, fixed-length, often immutable sequence of elements
+    // of possibly differing types.  Sometimes used to implement
+    // multiple-value return.  Is a primitive type in ML and Python.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the member types.
+    // The edges will have their "position" fields counting up from zero, since
+    // order of the member types is significant.
+    TUPLE = 6100;
+
+    // A discriminated union of other types, e.g. from type inference.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the member types.
+    UNION = 6200;
+
+    // The built-in list type for languages that have one (e.g. Lisp, Haskell).
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the member type.  Lists may have
+    // only one member type.  In languages that permit mixed-type lists, the
+    // member type will be a UNION node if more than one member type is found.
+    LIST = 6300;
+
+    // Used for languages with a primitive queue type (e.g. a message queue).
+    QUEUE = 6400;
+
+    // Used for intentionally untyped types, such as Lua's userdata type,
+    // which is just a block of raw memory for storing arbirary C data,
+    // and has no operations other than assignment and identity test.
+    OPAQUE = 6500;
+
+    // Used for languages (e.g. Lua) that have a primitive type for an
+    // independent thread of execution such as a process, thread or coroutine.
+    THREAD = 6600;
+
+    // Used in languages that offer a primitive pipe or channel abstraction
+    // for IPC or intra-thread communication.
+    CHANNEL = 6700;
+
+    // Used in languages to represent the "type" of functions or
+    // statements that do not produce or return a value.
+    // Typically has RETURNED_BY/RETURN_TYPE edges to/from a function type.
+    VOID_TYPE = 6800;
+
+    // The type of 0-tuples and other types with only one possible value.
+    // Typically has COMPOSING_TYPE/BASE_TYPE edges to/from a composite type.
+    UNIT_TYPE = 6900;
+
+    // A partly or fully instantiated parametric type, e.g. Pair<int, B>
+    // or Pair<int, string>.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the base type, which is
+    // a node of kind PARAMETRIC_TYPE (e.g. Pair<A, B>).
+    // TYPE_PARAMETER/TYPE_PARAMETER_OF edges to/from the type arguments.
+    TYPE_SPECIALIZATION = 7000;
+
+    // A named type parameter; e.g. the "V" in List<V>.
+    // Used for all type variables, whether they are unconstrained (e.g.,
+    // "class", "typename" in C++), partly constrained (e.g. "V extends Bar"
+    // in Java), or fully constrained (e.g. N in vector<unsigned N> in C++).
+    // TYPE_PARAMETER_OF/TYPE_PARAMETER edges to/from the parametric type node.
+    // TBD:  will eventually have other edges pointing to any type constraints.
+    TYPE_VARIABLE = 7100;
+
+    // The type of a varargs parameter; similar to an array type.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the base type.
+    VARIADIC_TYPE = 7200;
+
+    // The type of nil/null/none in languages where it is a distinguished type.
+    NULL_TYPE = 7300;
+
+    // A build target appropriate for build tools like Ant.
+    // TODO(cyberiad):  example!
+    TARGET = 8000;
+
+    // A build rule, like
+    // java_library(name = "my_lib",
+    //              srcs = glob([ "*.java" ]),
+    //              deps = [ "//java/com/google/common/base",
+    //                     ],
+    //             )
+    // }
+    // A rule is a named description of the inputs, dependency, configuration
+    // options and process required to produce a particular output.
+    RULE = 8100;
+
+    // An import of a type, package, module, or namespace; for example:
+    // Java:
+    //   import com.google.common.collect.*;
+    // Go:
+    //   import "fmt" (Go)
+    // Python:
+    //   from some import thing
+    // C++:
+    //   using kythe::proto;
+    //
+    // The location of an IMPORT will generally be at the name of the thing
+    // that was imported.  An IMPORT acts as a declaration with respect to
+    // usages of the imported name within the translation unit; it will also
+    // have REQUIRES/REQUIRED_BY edges to the imported object.
+    IMPORT = 8200;
+
+    // A join-node that links entities with their forward-declarations.
+    // It is also used to join multiple (re-)definitions of the same name in the
+    // same scope in languages that allow it, such as JavaScript and Python.
+    // There are four participating edge kinds:
+    //   {def-node} ---DEFINITION_OF---> DEF_DECL_JOIN
+    //   {def-node} <---HAS_DEFINITION--- DEF_DECL_JOIN
+    //   FORWARD_DECLARATION ---DECLARATION_OF---> DEF_DECL_JOIN
+    //   FORWARD_DECLARATION <---HAS_DECLARATION--- DEF_DECL_JOIN
+    DEF_DECL_JOIN = 9000;
+
+    // A join-node that links together entities which share a common alias,
+    // such as function or method overloads.
+    // {def-node} ---DEFINITION_OF---> ALIAS_JOIN
+    // {def-node} <---HAS_DEFINITION--- ALIAS_JOIN
+    ALIAS_JOIN = 9100;
+
+    // A join-node that links together the elements of a package.
+    // {package-join} ---PACKAGE_CONTAINS---> {package-node}
+    // {package-join} <---BELONGS_TO_PACKAGE--- {package-node}
+    // It links together {namespace-join} and {namespace-node} elements
+    // as well.
+    PACKAGE_JOIN = 9200;
+
+    // Used in languages with dynamic capabilities to represent the dynamic
+    // type. Typically has IS_TYPE_OF/HAS_TYPE edges to/from entities.
+    DYNAMIC_TYPE = 9300;
+
+    // Represents a comment.
+    COMMENT = 9400;
+
+    // "Searchable names" are aliases for other nodes, rather than first-class
+    // representations of source language entities.  They exist so that
+    // alternate names can be used (by way of the HAS_DEFINITION edge from the
+    // SEARCHABLE_NAME node) to find interesting entities.
+    //
+    // Searchable names are expected to be fully-qualified.
+    //
+    // This is the one node kind where the display_name matters.
+    // The display_name is used to find Nodes that
+    // NodeDescription.canonical_name references.
+    //
+    // The ticket for a SEARCHABLE_NAME node must have the format
+    //   <language>:ALIAS:<display-name>
+    // where <language> is the ticket prefix for the language in question, and
+    // <display-name> is the exact display name of the node whose searchable
+    // name this represents.  While it is possible this format may change in
+    // the future, it is relied upon by the cross-language pipeline and the
+    // FindEdges API, so any such changes must be coordinated with the rest of
+    // the Kythe pipeline.  Consumers of the API should NOT rely on this format
+    // however; call FindNodes or FindEdges with a display name instead.
+    //
+    // A single definition Node may have several SEARCHABLE_NAME nodes
+    // (multiple searchable names for the same Node).
+    // It also may link together entities which share a common alias,
+    // such as function or method overloads.
+    // {def-node} ---DEFINITION_OF---> SEARCHABLE_NAME
+    // {def-node} <---HAS_DEFINITION--- SEARCHABLE_NAME
+    // We use HAS_DEFINITION edges regardless whether the def-node is a
+    // definition or a declaration.
+    //
+    // We have also started using searchable name to perform cross-language
+    // name resolution.  A Code Generation language's analyzer will emit
+    // links to and from the searchable name in each client language to
+    // denote its true source.
+    // {def-node} ---GENERATES_NAME---> SEARCHABLE_NAME
+    // {def-node} <---NAME_GENERATED_BY--- SEARCHABLE_NAME
+    //
+    // Similarly for interoperability, a client language will emit
+    // links "through" the searchable name:
+    // {lang1-node}    ---XLANG_USES_NAME---> {lang2-sn-node}
+    // {lang2-sn-node} ---XLANG_USES_NAME---> {lang2-node}
+    // {lang1-node}    <---XLANG_PROVIDES_NAME--- {lang2-sn-node}
+    // {lang2-sn-node} <---XLANG_PROVIDES_NAME--- {lang2-node}
+    // The latter half of each of these will be emitted by the post processor.
+    SEARCHABLE_NAME = 9500;
+
+    // >> Internally generated node, analyzers should never use this <<
+    // There are times we know a node must exist because something else points
+    // to it, e.g., Nodes in third-party JARs or standard libraries, but we
+    // don't know much about it (kind, location, etc.).
+    // Rather than assume it doesn't exist, we create a LOST node as needed to
+    // hang the edges from.
+    // As our instrumentation gets better we should migrate these unknown
+    // entities to real Nodes.
+    // >> Internally generated node, analyzers should never use this <<
+    LOST = 9600;
+
+    // TODO(amshali): Move the comments into a design document and link it here.
+    // Representing the whole comment as a tree syntactic structure:
+    // (All the tree links are of type TREE_PARENT and TREE_CHILD)
+    //
+    //                   ls     The list to reduce
+    //                 <-NAME-> <------TEXT------>
+    //       _____________/_____________/
+    // -- @param
+    //    <---->
+    //DOCUMENTATION_TAG
+    //         \____________
+    //    <-------------DOCUMENTATION------------>
+    //                      |
+    // <-----------------COMMENT----------------->
+
+    // If one wants to represent other things in a documentation, For example
+    // in the case of javascript the type of parameter, they could do so by
+    // using the NAME or whatever node kind which is applicable at that point.
+    //
+    //                   ls      {List}   The list to reduce
+    //                 <-NAME-> <-NAME->  <------TEXT------>
+    //       _____________/________/______________/
+    // -- @param
+    //    <---->
+    //DOCUMENTATION_TAG
+    //        \__________________
+    //    <------------------DOCUMENTATION----------------->
+    //                           |
+    // <----------------------COMMENT---------------------->
+
+    // A documentation tag can have other tags in it. For instance consider this
+    // comment:
+    // -- @param ls The list to {@code reduce}
+    //
+    //                                             reduce
+    //                                            <-TEXT->
+    //                                          ___/
+    //                                       @code
+    //                   ls     The list to  <----------->
+    //                 <-NAME-> <--TEXT---> DOCUMENTATION_TAG
+    //       _____________/_____________/_____/
+    // -- @param
+    //    <---->
+    //DOCUMENTATION_TAG
+    //        \__________________
+    //    <------------------DOCUMENTATION----------------->
+    //                           |
+    // <----------------------COMMENT---------------------->
+
+    // Represents a piece of text in the syntactic structure. For instance:
+    // -- a Haskell comment
+    //    <---- TEXT  ---->
+    TEXT = 9700;
+
+    // Represents the literal part of a comment. A comment is essentially a list
+    // of DOCUMENTATION(s). For instance:
+    // -- @param ls The list to reduce
+    //    <-------DOCUMENTATION------>
+    //
+    // A structured comment contains a list of DOCUMENTATION nodes. Note that
+    // the DOCUMENTATION node is conceptually independent of "comment". For
+    // instance python docstrings contains a documentation. For instance,
+    // consider this docstring:
+    //
+    // """This function reduces a list."""
+    //    <--------DOCUMENTATION------>
+    //
+    // The part inside the `"""' is a DOCUMENTATION.
+    DOCUMENTATION = 9800;
+
+    // Represents a tag in a comment. For instance:
+    // -- @param ls The list to reduce
+    //    <---->
+    //DOCUMENTATION_TAG
+    DOCUMENTATION_TAG = 9900;
+
+    // Represents a delimiter such as '{', '}', '(', ',', etc. in the syntax
+    // tree. This node type is used for modeling the structure of the code
+    // or comments. We cannot use the style node kind for this purpose because
+    // that does not carry information on what is the actual delimiter.
+    // With this new node we can use the display_name or NodeContent to attach
+    // the information on what is the actual character for the delimiter.
+    DELIMITER = 10000;
+
+    // Represents (C++) const/volatile/restrict type wrappers and potentially
+    // other restrictions. The type(s) of restriction will be set as one
+    // or more modifiers on the RESTRICTION_TYPE node. We use this new node
+    // kind (rather than using a node modifier on the underlying type's node)
+    // to model the notion that in C++, constness (and other restrictions) can
+    // be separated from its underlying type -- and in particular, cast away.
+    // We use one node kind to model various restrictions (rather than using a
+    // node kind for const and a different node kind for volatile) to ease
+    // ordering problem between restrictions.
+    // BASE_TYPE/COMPOSING_TYPE edges to/from the underlying type.
+    RESTRICTION_TYPE = 10100;
+
+    // Represents the type of a function. A function type essentially describes
+    // the return type and argument types.
+    // RETURN_TYPE/RETURNED_BY edges to/from the return type.
+    // PARAMETER_TYPE/PARAMETER_TYPE_OF edges to/from the type of parameters.
+    // Example:
+    //   void foo(int);
+    // yields edges
+    //   foo ---HAS_TYPE---> FUNCTION_TYPE
+    //   FUNCTION_TYPE ---IS_TYPE_OF---> foo
+    //   FUNCTION_TYPE ---RETURN_TYPE---> VOID_TYPE
+    //   VOID_TYPE ---RETURNED_BY---> FUNCTION_TYPE
+    //   FUNCTION_TYPE ---PARAMETER_TYPE---> INTEGER
+    //   INTEGER ---PARAMETER_TYPE_OF---> FUNCTION_TYPE
+    FUNCTION_TYPE = 10200;
+
+    // Represents a user defined type (e.g., a class and enum in C++) that
+    // could have separate definition and declarations. This kind of nodes
+    // abstract away details of an entity's source location and whether it
+    // is a declaration or definition, etc. Concrete information about
+    // definitions and declarations are preserved by nodes of kinds such as
+    // CLASS and ENUM. The major benefit of the abstraction is to have a
+    // unique node to represent each type.
+    //
+    // Besides type related edges of kinds such as HAS_TYPE/IS_TYPE_OF and
+    // BASE_TYPE/COMPOSING_TYPE, there are four participating edge kinds:
+    //   {def-node} ---DEFINITION_OF---> USER_TYPE
+    //   {def-node} <---HAS_DEFINITION--- USER_TYPE
+    //   {decl-node} ---DECLARATION_OF---> USER_TYPE
+    //   {decl-node} <---HAS_DECLARATION--- USER_TYPE
+    //
+    // A USER_TYPE node has certain similarity to a DEF_DECL_JOIN node. But
+    // we choose not to overload DEF_DECL_JOIN nodes with type information
+    // for simplicity.
+    //
+    // Type alias is also a user-defined type, although it is impossible for
+    // a type alias to have any declarations at all. A USER_TYPE node is
+    // created for a type alias for consistency.
+    USER_TYPE = 10300;
+
+    // Represents a type variable by abstracting away details of source code
+    // appearances of the type variable including source locations.
+    //
+    // Similar to a user defined type such as a class or an enum in C++, a
+    // template parameter could have separate definition and declarations, for
+    // example, in the template's definition, declarations, or out-of-line
+    // definitions of member functions if the template is a class template.
+    // These definition and declarations of template parameters are modeled by
+    // nodes of kind TYPE_VARIABLE. The TYPE_VARIABLE_TYPE node is to model type
+    // properties of the type variable such as what types have been used to
+    // substitute the template parameter.
+    //
+    // Relevant edge kinds include:
+    //  TYPE_VARIABLE ---DEFINITION_OF---> TYPE_VARIABLE_TYPE
+    //  TYPE_VARIABLE <---HAS_DEFINITION--- TYPE_VARIABLE_TYPE
+    //  INTEGER ---SPECIALIZATION_OF---> TYPE_VARIABLE_TYPE
+    //  INTEGER <---SPECIALIZED_BY--- TYPE_VARIABLE_TYPE
+    //  PARAMETRIC_TYPE ---TYPE_PARAMETER---> TYPE_VARIABLE_TYPE
+    //  PARAMETRIC_TYPE <---TYPE_PARAMETER_OF--- TYPE_VARIABLE_TYPE
+    //
+    // The naming of this node kind is far from perfect. However, it does follow
+    // the convention that the existing names of "type" node kinds all end with
+    // "_TYPE".
+    TYPE_VARIABLE_TYPE = 10400;
+
+    // Represents a tag name in a markup language. This node kind can be used to
+    // model the name of an HTML/XML/SGML tag, or the name of comment specific
+    // tag such as @param.
+    TAG_NAME = 11100;
+
+    // Represents a tag in a markup language. This node kind can be used to model
+    // an HTML/XML/SGML tag.
+    MARKUP_TAG = 11200;
+
+    // Represents the attribute of a tag in a markup language.
+    // For instance consider the following HTML tag:
+    //   <a href="http://www.google.com">Google</a>
+    // This node kind can be used to model the attribute "href". Ideally, this
+    // node must have three children; a NAME("href"), a DELIMITER("=") and a
+    // VALUE("\"http://www.google.com\"").
+    MARKUP_ATTRIBUTE = 11300;
+
+    // Represents a type in a comment. For instance consider the following piece
+    // of jsdoc:
+    //   @param {Array<Number>|Boolean} nums array of numbers
+    //
+    // This node type is used to model " {Array<Number>|Boolean}".
+    TYPE_DESCRIPTOR = 11400;
+
+    // A searchable identifier is similar to a searchable name in that it
+    // represents an alias for another source entity but while a searchable
+    // name allows for lookups based on the display_name a searchable identifier
+    // allows for searches based on the identifier of the entity, via its
+    // HAS_IDENTIFIER relationship with the entity that has that identifier.
+    //
+    // Identifiers therefore are *not* expected to be fully qualified, as they
+    // are what a programmer would think of as an identifier in a language.
+    //
+    // The ticket for a SEARCHABLE_IDENTIFIER must have the format:
+    //   <language>:IDENT:<identifier>
+    // where <language> is the ticket prefix for the language in question, and
+    // <identifier> is the exact identifer whose searchable identifer this
+    // represents.
+    //
+    // It is expected that a searchable identifier will have a relationship with
+    // many definition nodes as it is not fully qualified and the same
+    // identifier can appear in multiple definitions in different contexts.
+    // A single definition node however should only have *one* searchable
+    // identifier connected to it as it is expected that a definition node
+    // will only have one identifier.
+    // A searchable name then will link together entities that have the same
+    // identifier, such as class definitions with the same name but in different
+    // namespaces.
+    // {decl-node} ---HAS_IDENTIFIER--> SEARCHABLE_IDENTIFIER
+    // {decl-node} <--- IS_IDENTIFIER_OF--- SEARCHABLE_IDENTIFIER
+    SEARCHABLE_IDENTIFIER = 11500;
+
+    // A statement label, for use in a goto statement.
+    LABEL = 11600;
+
+    // An index info node carries meta-information about the index that
+    // contains it, such as when or where the index was generated.  It is
+    // intended for use by Grok services to verify that they are serving the
+    // expected index data.  See: http://go/grok-index-metadata
+    INDEX_INFO = 31337;
+
+
+  }
+};
+
+message EdgeEnum {
+  enum Kind {
+    // Points from a derived class to its base class, or in Java parlance,
+    // from a subclass to its superlass.
+    // Example (Java):
+    //   class Foo extends Bar
+    // yields edges
+    //   Foo ---EXTENDS---> Bar
+    //   Bar ---EXTENDED_BY---> Foo
+    EXTENDS = 100;
+
+    // Reverse of EXTENDS edge.  Points from super/base class to sub/derived
+    // class.
+    EXTENDED_BY = 200;
+
+    // Points from a type, function, field, variable, attribute or other node
+    // to the entity that serves as the lexically containing scope or namespace.
+    // Hence it links:
+    //   * packages/namespaces to their declared classes and functions
+    //   * classes to their declared fields and methods
+    //   * methods/functions to their declared parameters and local variables
+    //
+    // Example 1 (java):
+    //   package a.b.c;
+    //   class Foo {...}
+    // yields edges
+    //   a.b.c ---DECLARES---> Foo
+    //   Foo ---DECLARED_BY---> a.b.c
+    //
+    // Example 2 (java):
+    //   class Foo {
+    //     int bar;
+    //     void Baz;
+    //   }
+    // yields edges
+    //   Foo ---DECLARES---> bar
+    //   Foo ---DECLARES---> Baz
+    //   bar ---DECLARED_BY---> Foo
+    //   Baz ---DECLARED_BY---> Foo
+    //
+    // Example 3 (c++):
+    //   void F(int x) {
+    //     string y("hi");
+    //   }
+    // yields edges
+    //   F ---DECLARES---> x
+    //   F ---DECLARES---> y
+    //   y ---DECLARED_BY---> F
+    //   x ---DECLARED_BY---> F
+    //
+    // Also used to link a BUILD target to its declaring package.
+    DECLARES = 300;
+
+    // Reverse of the DECLARES edge.
+    DECLARED_BY = 400;
+
+    // Used to model implementations of interface methods, and also to model
+    // superinterface/subinterface relationships.
+    // Example 1:
+    //   class Foo implements Bar
+    // yields edges
+    //   Foo ---IMPLEMENTS---> Bar
+    //   Bar ---IMPLEMENTED_BY---> Foo
+    // Example 2:
+    //   interface Bar { void gronk(); }
+    //   class Foo implements Bar { void gronk() { ... } }
+    // yields edges
+    //   Bar.gronk() ---IMPLEMENTS---> Foo.gronk().
+    //   Foo.gronk() ---IMPLEMENTED_BY---> Bar.gronk();
+    IMPLEMENTS = 500;
+
+    // Reverse of the IMPLEMENTS edge.
+    IMPLEMENTED_BY = 600;
+
+    // Used when one method overrides another, whether directly or indirectly.
+    //
+    // Note: As at 2013-10-15 we're in a transitional state where indexers
+    // are writing these directly, and starting to write DIRECTLY_OVERRIDES
+    // instead, in preparation for the postprocessor generating the OVERRIDES
+    // edges by computing the transitive closure of DIRECTLY_OVERRIDES.
+    //
+    // Example:
+    //   class Bar { void gronk() {...} }
+    //   class Foo extends Bar { void gronk() {...} }
+    //   class Goo extends Goo { void gronk() {...} }
+    // yields edges;
+    //   Foo.gronk() ---OVERRIDES---> Bar.gronk()     # direct
+    //   Bar.gronk() ---OVERRIDDEN_BY---> Foo.gronk() # direct
+    //   Goo.gronk() ---OVERRIDES---> Bar.gronk()     # indirect
+    //   Goo.gronk() ---OVERRIDES---> Foo.gronk()     # direct
+    //   Bar.gronk() ---OVERRIDDEN_BY---> Goo.gronk() # indirect
+    //   Foo.gronk() ---OVERRIDDEN_BY---> Goo.gronk() # direct
+    OVERRIDES = 700;
+
+    // Reverse of OVERRIDES edge.
+    OVERRIDDEN_BY = 800;
+
+    // Used when one method directly overrides another.
+    //
+    // Example:
+    //   class Bar { void gronk() {...} }
+    //   class Foo extends Bar { void gronk() {...} }
+    //   class Goo extends Goo { void gronk() {...} }
+    // yields edges;
+    //   Foo.gronk() ---DIRECTLY_OVERRIDES---> Bar.gronk()
+    //   Bar.gronk() ---DIRECTLY_OVERRIDDEN_BY---> Foo.gronk()
+    //   Goo.gronk() ---DIRECTLY_OVERRIDES---> Foo.gronk()
+    //   Foo.gronk() ---DIRECTLY_OVERRIDDEN_BY---> Goo.gronk()
+    //
+    // There are no DIRECTLY_OVERRIDES/DIRECTLY_OVERRIDDEN_BY edges
+    // between Goo.gronk() and Bar.gronk().
+    DIRECTLY_OVERRIDES = 850;
+
+    // Reverse of DIRECTLY_OVERRIDES edge.
+    DIRECTLY_OVERRIDDEN_BY = 860;
+
+    // Edge from a class to a member inherited from a base class,
+    // whether directly or indirectly.
+    // Example:
+    //   class Baz { protected int baz; }
+    //   class Bar extends Baz { protected int field; }
+    //   class Foo extends Bar {}
+    // yields edges
+    //   Foo ---INHERITS---> Bar.field
+    //   Bar.field ---INHERITED_BY---> Foo
+    //   Foo ---INHERITS---> Baz.baz
+    //   Baz.baz ---INHERITED_BY---> Foo
+    INHERITS = 900;
+
+    // Reverse of INHERITS edge.
+    INHERITED_BY = 1000;
+
+    // Edge from a class to a member directly inherited from a base class.
+    // Example:
+    //   class Bar { protected int field; }
+    //   class Foo extends Bar {}
+    // yields edges
+    //   Foo ---DIRECTLY_INHERITS---> Bar.field
+    //   Bar.field ---DIRECTLY_INHERITED_BY---> Foo
+    DIRECTLY_INHERITS = 1050;
+
+    // Reverse of INHERITS edge.
+    DIRECTLY_INHERITED_BY = 1060;
+
+    // Models relationship to a lexically closed variable, method or class.
+    // Example:
+    //   class Outer {
+    //      int field;
+    //      void blah() {...}
+    //      class Inner {}
+    //   }
+    // yields edges
+    //   Inner ---CAPTURES---> Outer.field
+    //   Inner ---CAPTURES---> Outer.blah
+    //   Outer.field ---CAPTURED_BY---> Inner
+    //   Outer.blah ---CAPTURED_BY---> Inner
+    CAPTURES = 1100;
+
+    // Reverse of the CAPTURES edge.
+    CAPTURED_BY = 1200;
+
+    // Edge used to point from a composite or wrapper type to its underlying
+    // type(s).
+    BASE_TYPE = 1300;
+
+    // The most common reverse edge for BASE_TYPE.  Used to point from any
+    // node N to a composite or wrapper type that uses N in a type constructor.
+    COMPOSING_TYPE = 1400;
+
+    // Edge from a parametric type node to one of its type parameters.
+    // This is usually paired with TYPE_PARAMETER_OF.
+    // Example 1:
+    //   List<T>
+    // yields edges
+    //    List<T> ---TYPE_PARAMETER---> T
+    //    T ---TYPE_PARAMETER_OF---> List<T>
+    // Example 2:
+    //   Map<int, V>
+    // yields edges
+    //    Map<int, V> ---TYPE_PARAMETER---> int
+    //    Map<int, V> ---TYPE_PARAMETER---> V
+    //    int ---TYPE_PARAMETER_OF---> Map<int, V>
+    //    V   ---TYPE_PARAMETER_OF---> Map<int, V>
+    TYPE_PARAMETER = 1500;
+
+    // The reverse of the TYPE_PARAMETER edge.
+    TYPE_PARAMETER_OF = 1550;
+
+    // Points from a TYPE_VARIABLE to a type used to instantiate that variable.
+    // Example:
+    //   Foo<T>
+    //   ...
+    //   Foo<int>
+    // yields edges
+    //   int ---SPECIALIZATION_OF---> T
+    //   T   ---SPECIALIZED_BY---> int
+    SPECIALIZATION_OF = 1600;
+
+    // Reverse of SPECIALIZATION_OF edge.
+    SPECIALIZED_BY = 1700;
+
+    // Used to point from an entity to its type node.
+    // Example:
+    //   int x = 3;
+    // yields edges
+    //   x ---HAS_TYPE---> int
+    //   int ---IS_TYPE_OF---> x
+    // The type of a function is its "arrow type" consisting of
+    // the tuple of its argument types and return type(s).
+    HAS_TYPE = 1800;
+
+    // The reverse of the HAS_TYPE edge.  Points from any type T to a non-type
+    // node whose type is T.
+    // Note that this should be read IS_*THE*_TYPE_OF, not IS_*A*_TYPE_OF.
+    IS_TYPE_OF = 1900;
+
+    // Points from a method to its return type.
+    // In languages where a function can have multiple return types (e.g. Go),
+    // this edge pair can appear multiple times.
+    // Example:
+    //   int zero() { return 0; }
+    // yields edges
+    //   zero() ---RETURN_TYPE---> INTEGER
+    //   INTEGER ---RETURNED_BY---> zero()
+    RETURN_TYPE = 2000;
+
+    // The reverse of the RETURN_TYPE edge.
+    RETURNED_BY = 2100;
+
+    // Represents a function, method or constructor call.  The call site is
+    // modeled as a USAGE node.
+    // Example:
+    //   void foo(int x) {}
+    //   ...
+    //   foo(3);
+    // yields nodes and edges
+    //   a FUNCTION node for foo's declaration
+    //   a USAGE node for foo's invocation
+    //   {USAGE} ---CALL---> {FUNCTION}
+    //   {FUNCTION} ---CALLED_AT---> {USAGE}
+    CALL = 2200;
+
+    // The reverse edge for CALL.  The target node is a USAGE node.
+    CALLED_AT = 2300;
+
+    // Represents class instantiation.  The instantiation site is modeled
+    // as a USAGE  node.
+    // Example:
+    //   class Foo {
+    //     public Foo() {}
+    //   }
+    //   ...
+    //   new Foo();
+    // yields nodes and edges
+    //   a CLASS node for Foo
+    //   a CONSTRUCTOR node for Foo's constructor
+    //   a USAGE node for the constructor call
+    //   {USAGE} ---CALL---> {CONSTRUCTOR}
+    //   {CONSTRUCTOR} ---CALLED_AT---> {USAGE}
+    //   {USAGE} ---INSTANTIATION---> {CLASS}
+    //   {CLASS} ---INSTANTIATED_AT---> {USAGE}
+    INSTANTIATION = 2400;
+
+    // The reverse of the INSTANTIATION edge.
+    INSTANTIATED_AT = 2500;
+
+    // Represents a non-calling reference to an identifier.  The reference site
+    // is modeled as a USAGE node.
+    // Example:
+    //   SomeClass.class;
+    // yields edges
+    //   SomeClass ---REFERENCED_AT---> {USAGE}
+    //   {USAGE} ---REFERENCE---> SomeClass
+    REFERENCE = 2600;
+
+    // The reverse of the REFERENCE edge.
+    REFERENCED_AT = 2700;
+
+    // Points from a property list to one of its properties.
+    // Example (JavaScript):
+    //   var foo = {bar: "hi"};
+    // yields nodes and edges
+    //  VARIABLE node for foo
+    //  INSTANCE node for foo's value (let's call it "instance-1")
+    //  PROPERTY node for bar
+    //  foo ---HAS_TYPE---> instance-1
+    //  instance-1 ---IS_TYPE_OF---> foo
+    //  instance-1 ---BASE_TYPE---> Object
+    //  Object ---COMPOSING_TYPE---> instance-1
+    //  instance-1 ---HAS_PROPERTY---> bar
+    //  bar ---PROPERTY_OF--->instance-1
+    //
+    // Example 2 (BUILD file):
+    //   java_library(name = 'cyclo_analyzer',
+    //                srcs = ['CycloComplexityAnalyzer.java'],
+    //                deps = ['//java/com/google/devtools/kythe/platform/java'])
+    // yields nodes and edges
+    //   BUILD_TARGET node for cyclo_analyzer
+    //   TODO(stevey):  edges?
+    //
+    // TODO(stevey):  HAS_PROPERTY/PROPERTY_OF are really only needed for
+    // dynamic languages that can attach properties without "declaring" them.
+    // For "var foo = {bar: 'hi'}", we could use DECLARES/DECLARED_BY to
+    // link foo and bar.  Need to sort out what exactly we'll record.
+    HAS_PROPERTY = 2800;
+
+    // Reverse of the PROPERTY edge.  Points from a property to its owner.
+    PROPERTY_OF = 2900;
+
+    // Points from a construct in language A to a construct it generates
+    // in language B.
+    // Example (proto generating C++):
+    //   message Foo {
+    //     int32 bar = 1;
+    //   }
+    // yields nodes and edges
+    //   a PROTO_MESSAGE node for Foo in some.proto (call it "proto:Foo")
+    //   a PROTO_FIELD node for bar in some.proto (call it "proto:bar")
+    //   a CLASS node for Foo in some::proto (call it "cpp:Foo")
+    //   several METHOD nodes for bar in some::proto (such as "cpp:set_bar",
+    //   and "cpp:has_bar")
+    //   proto:Foo   ---GENERATES---> cpp:Foo
+    //   proto:bar   ---GENERATES---> cpp:set_bar
+    //   proto:bar   ---GENERATES---> cpp:has_bar
+    //   cpp:Foo     ---GENERATED_BY---> proto:Foo
+    //   cpp:set_bar ---GENERATED_BY---> proto:bar
+    //   cpp:has_bar ---GENERATED_BY---> proto:bar
+    // These links are established by a post-processing stage, analyzers
+    // need to emit the links to/from the searchable name: GENERATES_NAME
+    // and NAME_GENERATED_BY.
+    GENERATES = 3000;
+
+    // The reverse of a GENERATES edge.
+    GENERATED_BY = 3100;
+
+    // Points from a construct in a code-generation language to searchable
+    // names in each of the client languages.  This is used for cross-analyzer
+    // name resolution (since analyzers don't know how each other generate
+    // tickets).  A cross-language post-processor stage resolves these to actual
+    // definitions and declarations and directly links the abstract entity to
+    // the code it generates.  Since this ultimately results in GENERATES /
+    // GENERATED_BY links, consider the same example (where SN represents
+    // searchable names):
+    //  proto:Foo   ---GENERATES_NAME--->   cpp:SN:Foo
+    //  cpp:SN:Foo      ---NAME_GENERATED_BY--->     proto:Foo
+    GENERATES_NAME = 3150;
+
+    // The reverse of a GENERATES_NAME
+    NAME_GENERATED_BY = 3160;
+
+    // Points from a FORWARD_DECLARATION node to its DEF_DECL_JOIN node.
+    DECLARATION_OF = 3200;
+
+    // Reverse of the DECLARATION_OF edge.  Points from DEF_DECL_JOIN to a decl.
+    HAS_DECLARATION = 3300;
+
+    // Points from any node that is a definition in the program to its
+    // DEF_DECL_JOIN node.
+    DEFINITION_OF = 3400;
+
+    // Reverse of the DEFINITION_OF edge.  Points from DEF_DECL_JOIN to any
+    // "definition" node in forward-declaring languages like C++ and Clojure.
+    // It is also used to point to itself when joins are not involved.
+    // In the latter case, it does not have a corresponding reverse edge.
+    HAS_DEFINITION = 3500;
+
+    // C++ compilers emit the vtable and RTTI information for a class with its
+    // "key method", which is the first non-inline, non-pure virtual function
+    // declared in a class.  See
+    // http://gcc.gnu.org/onlinedocs/gcc/Vague-Linkage.html.  Both the class and
+    // any node that would only be emitted with the key method have a KEY_METHOD
+    // edge to the key method.
+    KEY_METHOD = 3600;
+
+    // C++ compilers emit the vtable and RTTI information for a class with its
+    // "key method", which is the first non-inline, non-pure virtual function
+    // declared in a class.  See
+    // http://gcc.gnu.org/onlinedocs/gcc/Vague-Linkage.html.  Both the class and
+    // any node that would only be emitted with the key method have a
+    // KEY_METHOD edge to the key method.
+    //
+    // class --[KEY_METHOD]--> keymethod
+    // keymethod --[KEY_METHOD_OF]--> class
+    KEY_METHOD_OF = 3700;
+
+    // Used for any code dependency, e.g. includes, imports.
+    //
+    // Points from a module A to another module B that is imported by A.
+    // Example (python):
+    //   file foo/bar.py:
+    //     import x.y
+    // yields nodes and edges
+    //   a MODULE node for foo.bar
+    //   a MODULE node for x.y
+    //   foo.bar ---REQUIRES---> x.y
+    //   x.y ---REQUIRED_BY---> foo.bar
+    // In the case of circular imports between A and B, both A and B will
+    // have REQUIRES and REQUIRED_BY edges to each other.
+    //
+    // Also points from any compilation target to one of its dependencies.
+    // Example: BUILD rule 'deps'
+    //   cc_test(name = "py_ext_utils_test",
+    //           srcs = [ "py_ext_utils_test.cc" ],
+    //           deps = [ ":py_ext_utils",
+    //                    "//testing/base/public:gunit_main",
+    //                    "//third_party/python2_4_3",
+    //                    "//util/python:sandbox" ])
+    // yields edges
+    //   py_ext_utils_test ---REQUIRES---> "//testing/base/public:gunit_main"
+    //   py_ext_utils_test ---REQUIRES---> "//third_party/python2_4_3"
+    //   py_ext_utils_test ---REQUIRES---> "//util/python:sandbox"
+    REQUIRES = 3800;
+
+    // The reverse of the REQUIRES edge.
+    REQUIRED_BY = 3900;
+
+    // Links a build target/rule to the files that it uses as inputs.
+    // Example: BUILD rule 'srcs'
+    //   cc_library(name = "mylib",
+    //              srcs = [ "a.cc", "b.cc" ])
+    // yields nodes and edges
+    //   BUILD_RULE node for mylib
+    //   FILE nodes for a.cc and b.cc
+    //   mylib ---HAS_INPUT---> a.cc
+    //   mylib ---HAS_INPUT---> a.cc
+    //   a.cc ---CONSUMED_BY---> mylib
+    //   b.cc ---CONSUMED_BY---> mylib
+    HAS_INPUT = 4000;
+
+    // The reverse of the HAS_INPUT edge.
+    CONSUMED_BY = 4100;
+
+    // Links a build target/rule to to the file(s) it produces.
+    // Example: (BUILD rule that produces output foo.lo)
+    //   cc_library(name = "foo",
+    //              srcs = [ "foo.cc" ],
+    //              alwayslink = 1)
+    // yields nodes and edges
+    //   BUILD_RULE node for foo
+    //   FILE node for generated file foo.lo
+    //   foo ---HAS_OUTPUT---> foo.lo
+    //   foo.lo ---PRODUCED_BY---> foo
+    HAS_OUTPUT = 4200;
+
+    // The reverse of the HAS_OUTPUT edge.
+    PRODUCED_BY = 4300;
+
+    // Used for restricting access/visibility to an explicit finite
+    // set of "clients".  Example:
+    //  * C++ friend classes
+    //    class ---RESTRICTED_TO---> friended-class
+    //  * .NET provides an "InternalsVisibleTo" assembly annotation
+    RESTRICTED_TO = 4400;
+
+    // The reverse of the RESTRICTED_TO edge.
+    ALLOWED_ACCESS_TO = 4500;
+
+    // The following call-graph edges are established directly between two
+    // non-USAGE nodes, such as a class calling a method, or a method calling
+    // another method.  Having special call-graph edges makes it simpler to
+    // filter down to just the ones you need.
+    //
+    // The call graph is stored explicitly in Kythe because otherwise it would be
+    // extremely inconvenient to extract it.  In theory you could find every
+    // USAGE node representing a call site, fetch the AST for that file, query
+    // the AST to figure out the lexical scope enclosing the call site, and use
+    // that to look up the caller.  The Kythe analyzers do exactly this work
+    // during analysis, so for query convenience they also store direct links
+    // between callers and callees.
+
+    // A call-graph link.  source node = caller, target node = callee.
+    // This is similar to, but distinguished from CALL, which links a
+    // called method to the USAGE node.  The CALLGRAPH_TO edge links
+    // a called method to the "scope" enclosing the USAGE:  typically a
+    // function, method, class, interface, file scope or global scope.
+    CALLGRAPH_TO = 4600;
+
+    // A call-graph back-link.  source node = callee, target node = caller.
+    // This is similar to, but distinguished from CALLED_AT, which links a
+    // called method to the USAGE node.  The CALLGRAPH_FROM edge links
+    // a called method to the "scope" enclosing the USAGE node:  typically a
+    // function, method, class, interface, file scope or global scope.
+    CALLGRAPH_FROM = 4700;
+
+    // Used to link a USAGE node to its enclosing "context".  A usage context
+    // does not yet have a robust language-independent definition, but it is
+    // typically the innermost enclosing scope-creating entity for which Kythe
+    // has created a non-USAGE node.  Depending on where the usage appears
+    // syntactically, the usage context might be any of the following:
+    //
+    //   - the enclosing anonymous function, if present
+    //   - the enclosing function, method, or constructor (if inside one)
+    //   - the enclosing static or instance initializer (Java)
+    //   - the enclosing class, interface, enum, struct or similar construct
+    //   - the enclosing namespace (C++)
+    //   - a language specific context such as proto-message or build-rule
+    //   - the containing file, if the usage occurs outside all other contexts
+    //
+    // Although Kythe may someday add finer-grained scopes to the index, the
+    // intention is that the usage context always remain the same for a given
+    // combination of language and syntactic location.
+    //
+    // The source-node for this edge is the USAGE node, and the target-node is
+    // the node for the enclosing context.
+    //
+    // This edge is bidirectionally paired with ENCLOSED_USAGE.  The edge is
+    // one-to-many: each context may have many usages, but each usage has only
+    // one context.
+    USAGE_CONTEXT = 4800;
+
+    // The reverse edge for USAGE_CONTEXT.  Given a node ticket for
+    // one of the contexts described above, asking for the ENCLOSED_USAGE
+    // edges will return the outbound calls (and eventually other types
+    // of reference) occurring within that contextual entity.
+    //
+    // The source node for this edge is any node that many contain usages.  The
+    // target nodes are USAGE nodes of lexically contained calls and
+    // instantiations (and eventually other types of usage).
+    ENCLOSED_USAGE = 4900;
+
+    // Linking annotations to the declarations the annotations are applied to.
+    // Example (java):
+    //   @Deprecated
+    //   int zero() { return 0; }
+    // yields the edges:
+    //   zero() ---ANNOTATED_WITH---> @Deprecated
+    //   @Deprecated ---ANNOTATION_OF---> zero()
+    ANNOTATED_WITH = 5000;
+
+    ANNOTATION_OF = 5100;
+
+    // An ultra-generic link from a parent node to its child node.
+    // Should only be used when the relationship is obvious, e.g. linking
+    // a directory to a file in that directory.
+    PARENT = 5200;
+
+    // The reverse of the PARENT edge.
+    CHILD = 5300;
+
+    // A link between a compiler diagnostic and another node to which it
+    // applies.  Ordinarily the other node will be a FILE.  The indexer may add
+    // additional pairs of these edges if more precise information is known.
+    DIAGNOSTIC_OF = 5400;
+
+    // The reverse of the DIAGNOSTIC_OF edge.
+    HAS_DIAGNOSTIC = 5500;
+
+    // An outline is a tree-structured abstract view of a collection of nodes
+    // that share a common ancestor, usually a FILE.  These edges are used to
+    // encode outline information.
+    //
+    // For example:
+    // # {A.py} is a FILE node
+    // class B:               # {B} is a CLASS node
+    //   def C(self): pass    # {C} is a METHOD node
+    //   def D(self): pass    # {D} is a METHOD node
+    //
+    // Generates the edges:
+    //   {A.py} ---OUTLINE_PARENT---> {B}
+    //   {B}    ---OUTLINE_CHILD--->  {A.py}
+    //   {B}    ---OUTLINE_PARENT---> {C}
+    //   {C}    ---OUTLINE_CHILD--->  {B}
+    //   {B}    ---OUTLINE_PARENT---> {D}
+    //   {D}    ---OUTLINE_CHILD--->  {B}
+    OUTLINE_PARENT = 5600;
+    OUTLINE_CHILD = 5700;
+
+    // A link between a FILE node and another node that is declared in that file.
+    // Example:
+    //   // F.java
+    //   public class F { ... }
+    //
+    //   {F.java}  ---CONTAINS_DECLARATION---> {class:F}
+    //   {class:F} ---DECLARATION_IN_FILE--->  {F.java}
+    CONTAINS_DECLARATION = 5800;
+    DECLARATION_IN_FILE = 5900;
+
+    // A link between a FILE node and a USAGE node that is located in that file.
+    // Example:
+    //   # f.py
+    //   import foo   # USAGE at {foo}
+    //
+    //   {f.py} ---CONTAINS_USAGE---> {foo}
+    //   {foo}  ---USAGE_IN_FILE--->  {f.py}
+    CONTAINS_USAGE = 6000;
+    USAGE_IN_FILE = 6100;
+
+    // A link between a node such as a FUNCTION or METHOD that may throw an
+    // exception, and the type of exception it may throw.  These edges may be
+    // generated even in the absence of explicit notation, if the type of the
+    // thrown exception can be inferred.  These edges may also be generated at
+    // the point where the exception is thrown.
+    //
+    // Example:
+    //   public class F {
+    //     public void foo(int x) throws Exception { ... }
+    //   }
+    //
+    //   {foo} ---THROWS---> {java.lang.Exception}
+    //   {java.lang.Exception} ---THROWN_BY---> {foo}
+    THROWS = 6200;
+    THROWN_BY = 6300;
+
+    // A link between a node where an exception is caught, and the type of
+    // exception it may catch.
+    //
+    // Example:
+    //   def foo():
+    //     try:
+    //       bar()
+    //     except TypeError:
+    //       pass
+    //
+    //   {foo} ---CATCHES---> {TypeError}
+    //   {TypeError} ---CAUGHT_BY---> {foo}
+    CATCHES = 6400;
+    CAUGHT_BY = 6500;
+
+    // A link between a node such as a FUNCTION or METHOD that may throw an
+    // exception, and another such node where that exception is caught.
+    //
+    // Example:
+    //   def foo():
+    //     try:
+    //       bar()
+    //     except TypeError:
+    //       pass
+    //
+    //   def bar():
+    //     raise TypeError
+    //
+    //   {bar} ---THROWGRAPH_TO---> {foo}
+    //   {foo} ---THROWGRAPH_FROM---> {bar}
+    THROWGRAPH_TO = 6600;
+    THROWGRAPH_FROM = 6700;
+
+    // A link between a PACKAGE_JOIN node and the PACKAGE nodes it contains.
+    //
+    // Example:
+    //   Assume A.go and B.go declare "package foo"
+    //
+    // {A.package-node} ---BELONGS_TO_PACKAGE---> {foo-package-join}
+    // {B.package-node} ---BELONGS_TO_PACKAGE---> {foo-package-join}
+    // {foo-package-join} ---PACKAGE_CONTAINS---> {A.package-node}
+    // {foo-package-join} ---PACKAGE_CONTAINS---> {B.package-node}
+    PACKAGE_CONTAINS = 6800;
+    BELONGS_TO_PACKAGE = 6900;
+
+    // A link between a method and a variable which is a used in the method.
+    USES_VARIABLE = 7000;
+    VARIABLE_USED_IN = 7100;
+
+    // generic edges for multiple types of joins.
+    // Node n has an edge BELONGS_TO_JOIN to join node j
+    // join node j has an edge
+    BELONGS_TO_NAMESPACE = 7200;
+    NAMESPACE_CONTAINS = 7300;
+
+    // A link between a comment and the file where it is located
+    // This link is particularly useful when we want to do post processing
+    // over all the comments in all the files.
+    COMMENT_IN_FILE = 7400;
+    CONTAINS_COMMENT = 7500;
+
+    // A link between an element and a documentation comment node.
+    DOCUMENTS = 7600;
+    DOCUMENTED_WITH = 7700;
+
+    // A link between a NODE node and its direct ancestor and/or
+    // descendants in the syntactic structure.
+    //
+    // Example:
+    //   x = y + 1
+    //
+    // Where {assign} is the ticket of the statement node:
+    // {assign} ---TREE_PARENT---> {x} ---TREE_CHILD---> {assign}
+    // {assign} ---TREE_PARENT---> {=} ---TREE_CHILD---> {assign}
+    // {+} ---TREE_PARENT---> {y} ---TREE_CHILD---> {+}
+    // {+} ---TREE_PARENT---> {1} ---TREE_CHILD---> {+}
+    TREE_PARENT = 7800;
+    TREE_CHILD = 7900;
+
+    // A link between a declaration in a client language and its provider
+    // through a SEARCHABLE_NAME in the provider's language.
+    //
+    // Example:
+    //  Sawzall's usage of proto is effectively interop, and it allows using
+    //  Proto types to declare variables, and then reference fields directly.
+    //  So for some message "M" with field "f" we would see the declaration for
+    //  Sawzall's internal declaration, which uses reference, and it would link
+    //  to/from a proto entity via XLANG_PROVIDES_NAME/XLANG_USES_NAME through
+    //  a proto SEARCHABLE_NAME:
+    //
+    // {szl:tk_M_foo}   ---XLANG_USES_NAME---> {proto:SN:M.foo}
+    // {proto:SN:M.foo} ---XLANG_USES_NAME---> {proto:tk@M@foo}
+    // {szl:tk_M_foo}   <---XLANG_PROVIDES_NAME--- {proto:SN:M.foo}
+    // {proto:SN:M.foo} <---XLANG_PROVIDES_NAME--- {proto:tk@M@foo}
+    XLANG_PROVIDES_NAME = 8400;
+
+    // The reverse edge of XLANG_PROVIDES_NAME
+    XLANG_USES_NAME = 8500;
+
+    // A link between a declaration in a client language and the entity it calls
+    // or references in another language via interoperability (across language
+    // boundaries).  These are the links that result from our cross-language
+    // pipeline resolving XLANG_PROVIDES_NAME/XLANG_USES_NAME across the language
+    // boundaries.
+    //
+    // Example:
+    //  To continue the above example (in a post-processed world):
+    //
+    // {szl:tk_M_foo}   ---XLANG_USES---> {proto:tk_M_foo}
+    // {proto:tk_M_foo} ---XLANG_PROVIDES---> {szl:tk_M_foo}
+    XLANG_PROVIDES = 8600;
+
+    // The reverse edge of XLANG_PROVIDES
+    XLANG_USES = 8700;
+
+    // A link between a function type and the type of its parameters.
+    //
+    // Example:
+    //   void foo(int);
+    // yields edges
+    //   foo ---HAS_TYPE---> FUNCTION_TYPE
+    //   FUNCTION_TYPE ---IS_TYPE_OF---> foo
+    //   FUNCTION_TYPE ---PARAMETER_TYPE---> INTEGER
+    //   INTEGER ---PARAMETER_TYPE_OF---> FUNCTION_TYPE
+    PARAMETER_TYPE = 8800;
+
+    // The reverse edge of PARAMETER_TYPE
+    PARAMETER_TYPE_OF = 8900;
+
+    // A link between a variable and its initialized constant value. The value
+    // is stored as a VALUE node with the content of 'display_name' field set to
+    // the string representation of the constant initialization value.
+    //
+    // Example:
+    //   int x = 10;
+    // results:
+    //   10 ---INITIALIZES---> x
+    //   x  ---INITIALIZED_WITH---> 10
+    INITIALIZES = 9000;
+    INITIALIZED_WITH = 9100;
+
+    // Links between original source and the "figment" that was
+    // generated out of the usage of that original code.
+    //
+    // Example:
+    // ========
+    //
+    //   Original source:
+    //   ----------------
+    //   template <typename T1, typename T2> class Pair {
+    //     void foo() { T1* t = nullptr; }
+    //   }
+    //
+    //   Generated figment:
+    //   ------------------
+    //   template<>
+    //   class Pair <int, float> {
+    //      void foo() { int* t = nullptr; }
+    //   }
+    //
+    //   Original usage:
+    //   ------------------
+    //   Pair<int, float> test;
+    //
+    // The HAS_FIGMENT and IS_FIGMENT_OF pair would exist between
+    // the usage node spanning the full set of the "Original Source"
+    // and the FILE node of the "Generated Figment".
+    //
+    // Between the "Original Usage" and the "Generated Figment" class
+    // definition there would be a "normal" edge pair e.g. in this case,
+    // REFERENCED_AT/REFERENCE.
+    HAS_FIGMENT = 9200;
+    IS_FIGMENT_OF = 9300;
+
+    // A link between a searchable identifier and the nodes that is identified
+    // by it. These edges allow searching for nodes based purely on their
+    // identifier.
+    //
+    // Used as:
+    // {decl-node} ---HAS_IDENTIFIER--> SEARCHABLE_IDENTIFIER
+    // {decl-node} <--- IS_IDENTIFIER_OF--- SEARCHABLE_IDENTIFIER
+    HAS_IDENTIFIER = 9400;
+    IS_IDENTIFIER_OF = 9500;
+
+    // The following edges are links for Guice bindings.
+    //
+    // Example:
+    // public class MyModule extends AbstractModule {
+    //   @Override protected void configure() {
+    //     bind(BarInterface.class).to(BarImpl.class);
+    //   }
+    // }
+    // Edges will be:
+    // BarInterface          --- GUICE_BOUND_AT          ---> Usage of BarInterface
+    // Usage of BarInterface --- GUICE_BINDS             ---> BarInterface
+    // BarInterface          --- GUICE_IMPL_PROVIDED_BY  ---> BarImpl
+    // BarImpl               --- GUICE_PROVIDES_IMPL_FOR ---> BarInterface
+    GUICE_BOUND_AT = 9600;
+    GUICE_BINDS = 9700;
+
+    GUICE_PROVIDES_IMPL_FOR = 9800;
+    GUICE_IMPL_PROVIDED_BY = 9900;
+
+    // Links between a type and one of its constructors Guice may use to
+    // instantiate the type. The constructor is either one annotated
+    // with {@code Inject}, or a default one if none of the constructors is
+    // annotated with {@code Injected}.
+    //
+    // Used as:
+    // {type-node} ---HAS_GUICE_CONSTRUCTOR---> {constructor-node}
+    // {constructor-node} ---GUICE_CONSTRUCTOR_FOR---> {type-node}
+    //
+    HAS_GUICE_CONSTRUCTOR = 10000;
+    GUICE_CONSTRUCTOR_FOR = 10100;
+
+    // Links between an injected type and its injection site.
+    // Injection sites include call sites of {@code Injector#getInstance} and
+    // injected constructors.
+    //
+    // Used as:
+    // {injected-type} ---GUICE_INJECTED_AT---> {injection-site}
+    // {injection-site} ---GUICE_INJECTS---> {injected-type}
+    GUICE_INJECTED_AT = 10200;
+    GUICE_INJECTS = 10300;
+  }
+};
+
+// See filters.proto for the definitions or each kind.
+// It is defined here to be used by clients and the server.
+message AvailableFilters {
+  enum Filter {
+    // The first enum value acts as the default, so make the default
+    // filter "unfiltered".
+    UNFILTERED = 0;
+    BROWSER_XREF_FILTER = 1;
+    CALLER_FILTER = 2;
+    ANY_REFERENCE_FILTER = 3;
+    OVERRIDES_FILTER = 4;
+    ANY_REFERENCE_AT_FILTER = 5;
+  }
+};
+

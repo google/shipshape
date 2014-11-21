@@ -1,0 +1,192 @@
+// Defines messages used for serialization.  These should not show up in the
+// rpc api for kythe.  These also should not show up in any analyzer code.
+// It should just be in serializers and deserializers.
+
+syntax = "proto2";
+
+package kythe.proto;
+option java_package = "com.google.devtools.kythe.proto";
+
+import "third_party/kythe/proto/enums.proto";
+import "third_party/kythe/proto/kythe.proto";
+
+// Serialization may fill in parts of this proto.
+// In general you should expect the start and end ticket.
+// Writers should only fill in Nodes if they are the authoritive source
+// for the Node. They shouldn't write partial or gutted Nodes [to avoid
+// merge conflicts]
+message PartialEdge {
+  // The kind of edge linking the two nodes.
+  required EdgeEnum.Kind kind = 1;
+  optional string start_ticket = 2;
+  optional string end_ticket = 3;
+  optional int32 position = 4;
+  optional Node start_node = 5;
+  optional Node end_node = 6;
+}
+
+// Edge sets are used for returning data from RPCs. EdgeSets contain a
+// collection of edges, all originating from the same source node.
+message PagedEdgeSet {
+  optional Node source_node = 1;
+  // Edge kinds that have edges for this source node will be stored
+  // under edge.
+  repeated Edge edge = 2;
+  // Edge kinds that have many edges for a kind (CALLED_AT) will be stored
+  // in additonal protos described by EdgePages.
+  optional EdgePageInfo edge_pages = 3;
+}
+
+// To help with scaling, we don't put a million edges on one source node in
+// protocol buffer.  That would make protos for common objects; "int", "main",
+// System, Log, etc huge and slow.  Instead we break it into smaller protos
+// indexed by edge kind and broken into pages.
+message EdgePageInfo {
+  // Total number or edges in the EdgePages and the original repeated edge field.
+  required int32 total_edges = 1;
+  // Page index will be sorted by kind.
+  repeated PageIndex page_index = 2;
+}
+
+// In order to keep EdgePageInfo small, we don't store Edges here.
+// We just store a key for looking up a page of edges and the type of edge.
+message PageIndex {
+  // Handles kind
+  // optional to deal with new kinds parsing correctly.
+  optional EdgeEnum.Kind kind = 1;
+  required int32 num_edges_on_page = 2;
+  required string page_key = 3;
+}
+
+message Edges {
+  required string page_key = 1;
+  repeated Edge edge = 2;
+  // Source node of the original PagedEdgeSet.  Used in dremel, not serving.
+  required Node source_node = 3;
+}
+
+// Describes how to break into pages;
+message PagingScheme {
+  required int32 num_edges_before_creating_a_page = 1;
+  required int32 num_edges_on_a_page = 2;
+}
+
+// An IndexArtifact message holds a single Kythe index artifact such as a node,
+// partial edge, file decorations, or node content message.  In normal usage,
+// only one of the fields of this message will be set.
+message IndexArtifact {
+  optional Node node = 1;
+  optional PartialEdge partial_edge = 2;
+  optional FileDecorations file_decorations = 3;
+  optional NodeContent node_content = 4;
+}
+
+// Exists for dremel because it doesn't really translate proto2 enums correctly.
+// http://b/issue?id=2406693
+message EdgeWithStringNames {
+  required Node start_node = 1;
+  required Node end_node = 2;
+  required EdgeEnum.Kind edge_kind = 3;
+  required string start_kind_name = 4;
+  required string end_kind_name = 5;
+  required string edge_kind_name = 6;
+  optional uint32 edge_position = 7;
+}
+
+// Represents a list of styles.
+message StyleList {
+  repeated Style style = 1;
+}
+
+// For passing SSTable connection strings into the cross-language mapreduce
+message LanguageTable {
+  // The short name of the language, used to prefix tickets
+  // (e.g. "js" for javascript)
+  required string language = 1;
+
+  // The directory containing the SSTables to access.
+  required string table_path = 2;
+}
+
+// For passing configuration information to the cross-language mapreduce
+message CrossLanguageLookupInfo {
+  required string client_language = 1;
+  repeated LanguageTable language_table = 2;
+}
+
+// This communicates how to patch a SourceLink that the analyzer wired
+// to "original_definition" to "better_definition"
+message ReferencePatch {
+  repeated string original_ticket = 1;
+  required Node better_definition = 2;
+  // This indicates the edge kind by which we resolved the
+  // better definition.
+  required EdgeEnum.Kind resolution_kind = 3;
+}
+
+// The assemblur mapper produces a set of these fragments for each URI, which
+// are then composed into a single FileDecorations message per URI.
+// NOTE: Only one of these is ever expected to be set.
+message DecorationFragment {
+  // This represents the NodeContent for the FILE node, it should contain the
+  // source data, as well as the Styles for the file.
+  optional NodeContent file_content = 1;
+
+  // This represents a single source link for the file decorations, it must be
+  // processed based on the collective ReferencePatch messages received for
+  // the same URI.
+  optional SourceLink source_link = 2;
+
+  // This represents a single declaration for the file decorations.
+  optional Node declaration = 3;
+
+  // This represents a single diagnostic for the given file.
+  optional Diagnostic diagnostic = 4;
+
+  // This represents a single link of the outline tree.  These pieces must be
+  // recombined during reduction.  The root of the tree should be a file-node
+  // whose "kid"s are ultimately transferred to the file decorations message.
+  optional OutlineEntry outline = 5;
+
+  // A message about how to rewrite a given source link to point to the best
+  // possible destination when jumping to its definition.
+  optional ReferencePatch reference_patch = 6;
+}
+
+// This message is what the Patcher uses for surfacing the segments of code
+// for which it invalidated (or otherwise lacks) data for each provided source
+// file.
+message DiffSegment {
+  enum Kind {
+    INSERTED = 1;
+    MODIFIED = 2;
+    REMOVED = 3;
+  }
+  // The kind of alteration made within this segment
+  required Kind kind = 1;
+
+  // The extents of the segment (always RANGE)
+  required Span span = 2;
+}
+
+// This message is what is emitted from the SearchableName map reduce process
+// it maps the ticket of each SEACHABLE_NAME node to the actual node that it 
+// represents.
+message SearchableName {
+  required string searchable_name = 1;
+  repeated Node node = 2;
+}
+
+// This message associates a CommentReply to the ticket of a (possible) JOIN
+// node. This message is used exclusively during the processing of the comment
+// trees to join together the CommentReply(s) of all of the nodes that are 
+// joined together by a particular JOIN node.
+// If a node does not have a JOIN node (doesn't belong to any JOIN set) then the
+// joining ticket will be the ticket of the node, signifying a set with a single
+// CommentReply on it.
+message JoinedCommentReply {
+  // This is the ticket on which the comment trees should be joined, it can be
+  // the ticket of a normal node, or the ticket of a JOIN node if the comment
+  // trees are for a set of JOINed nodes.
+  required string joining_ticket = 1;
+}

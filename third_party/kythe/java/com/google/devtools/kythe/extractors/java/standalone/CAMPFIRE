@@ -1,0 +1,38 @@
+[
+  {
+    "name": "javac_extractor",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "AbstractJavacWrapper.java",
+        "Javac8Wrapper.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/common",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/java",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared",
+        "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared:file_vnames",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/guava",
+        "//third_party/openjdk/lib:tools_jar",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.extractors.java.standalone.Javac8Wrapper"
+    }
+  },
+  {
+    "name": "javac_extractor_deploy",
+    "kind": "java_deploy_jar",
+    "inputs": {
+      "jars": [
+        ":javac_extractor"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.devtools.kythe.extractors.java.standalone.Javac8Wrapper"
+    }
+  }
+]

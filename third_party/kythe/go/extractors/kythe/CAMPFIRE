@@ -1,0 +1,17 @@
+[
+  {
+    "name": "kytheextractor",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "kytheextractor.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/platform/indexinfo",
+        "//third_party/kythe/go/platform/local",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  }
+]

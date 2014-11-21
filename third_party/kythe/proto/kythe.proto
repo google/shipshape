@@ -1,0 +1,755 @@
+// Copyright 2011 Google Inc. All Rights Reserved.
+// Author: rbraunstein@google.com (Ronald Braunstein)
+//
+// Defines the Kythe index entities.
+
+syntax = "proto2";
+
+package kythe.proto;
+option java_package = "com.google.devtools.kythe.proto";
+
+import "third_party/kythe/proto/enums.proto";
+
+// Kythe graph edges are directed, pointing from a source node to a destination
+// node.  Most edge kinds have a complementary edge kind pointing from the
+// destination to the source.
+//
+// The source node is sometimes called the start node or from-node.  Edges are
+// always returned in an EdgeSet, and the source node is a field in the EdgeSet.
+message Edge {
+  // The kind of node relationship expressed by this edge.
+  optional EdgeEnum.Kind kind = 1;
+
+  // The full destination node.  Also known variously as the to-node,
+  // end-node, or target-node.  The end_node will typically be the
+  // declaration seen at compile time.
+  required Node end_node = 2;
+
+  // Edges optionally contain an integer position. For example, a
+  // function may have multiple parameters, in which case the position
+  // field denotes their ordering.  The position index is relative to
+  // all edges from the same source node with the same edge kind.
+  // The position is 0-indexed.
+  optional uint32 position = 3;
+}
+
+// Edge sets are used for returning data from RPCs. EdgeSets contain a
+// collection of edges, all originating from the same source node.
+message EdgeSet {
+  optional Node source_node = 1;
+  // Edge kinds that have edges for this source node will be stored
+  // under edge.
+  repeated Edge edge = 2;
+}
+
+message Node {
+  // A Node's ticket is its globally unique identifier.  Opaque to the user.
+  optional string ticket = 1;
+
+  // The Kind is a rough representation of the structural role a
+  // node plays in the source code.  Node Kind is a Kythe concept, not a
+  // language concept assigned by compilers.  It is used as a coarse
+  // approximation of the node type, both for display in IDEs and for
+  // simple queries.  Kythe also stores the full compiler type
+  // information in the graph using type-nodes and type-relationship
+  // edges.  Type nodes are regular nodes with dedicated node kinds and
+  // modifiers that flag them as type nodes.
+  optional NodeEnum.Kind kind = 2;
+
+  // Short symbolic name for the node, where applicable.  The display
+  // name often contains the identifier, but it is a separate field
+  // so that clients need not parse complex qualified-name formats.
+  optional string identifier = 3;
+
+  // A Kythe fully-qualified name (aka "qname"), intended to be human-readable
+  // and intuitive.  It is often similar to the qualified name assigned by the
+  // language, and in some cases may even be identical.  However, Kythe creates
+  // qualified display names for many entities that are not necessarily named
+  // nor addressable in the language, such as lambdas, lexical scopes and
+  // runtime entities.
+  optional string display_name = 4;
+
+  // Contains information about the source location and span of the node.
+  optional Location location = 5;
+
+  // Flags on the node.
+  optional Modifiers modifiers = 6;
+
+  // A small amount of source code context around the node, for listings.
+  // Given in utf-8 even if original source in a different encoding.
+  optional string snippet = 7;
+
+  // Type-node information about array sizes, numeric precisions, etc.
+  repeated Dimension dimension = 8;
+
+  // Literal content for node kinds that have content, such as files,
+  // diagnostics, and comments.
+  optional NodeContent content = 9;
+
+  optional Language language = 10;
+
+  // Pagerank for the node.  Has a range of [1, 2000000].
+  optional uint32 pagerank = 11 [default = 1];
+
+  // The distinct edge kinds available from the node.  These can be used by the
+  // UI to determine what kinds of edges are available before fetching them.
+  repeated EdgeEnum.Kind outbound_edge_kind = 15;
+}
+
+// Modifiers are metadata flags or qualifiers on a node.  They fall
+// into two broad categories:
+//
+//   A) Language-specific modifiers on names, expressions, statements
+//      or declarations, often assigned by language keywords.
+//      Kythe attempts to generalize these wherever multiple languages
+//      have similar notions with "close enough" semantics for Kythe's
+//      purposes.  An example is "private", which is roughly the same
+//      concept in C++, Java and C#.
+//
+//   C) Kythe-specific modifiers to denote artificial graph nodes and other
+//      extra-language metadata flags.
+//
+// As a general philosophy, Kythe uses explicit modifiers even when the
+// language has implicit rules.  For instance, the default visibility for
+// methods in Java is "package-private" when there is no other modifier.
+// Kythe explicitly assigns such methods the package_scoped modifier.
+message Modifiers {
+  // A "public" name is one that is part of an interface.  The interface may be
+  // explicit or implicit -- a class's public methods form its de-facto
+  // interface.  A public name is not necessarily visible globally.
+  //
+  // Kythe uses "public" in an interface sense rather than a linkage sense.
+  // Nutshell summary:
+  //   "global" == visible everywhere (i.e. part of the "global namespace")
+  //   "public" == part of an interface
+  // Examples:
+  //   * a C++ class name with external linkage:  {global}
+  //     - that same class wrapped in a namespace:  {namespace_scoped}
+  //   * a C++ public method NOT in an explicit namespace:  {global, public}
+  //     - when wrapped in a namespace:  {public, namespace_scoped}
+  //   * a java public method in a public class:  {global, public}
+  //   * a java public method in a private class:  {public}
+  //   * a java private method in a public class:  {private}
+  optional bool public = 100;
+
+  // "private" is context- and language-specific, but generally means
+  // that it is the most restricted inter-function scope.
+  optional bool private = 200;
+
+  // Used for names in classes that are visible only to subclasses.
+  // In Java, the "protected" keyword sets both this modifier and the
+  // "namespace_scoped" modifier.
+  optional bool protected = 300;
+
+  // "global" is used by Kythe to indicate that a name is visible to
+  // every part of the program.  It corresponds to "external linkage"
+  // in C++.  Languages that have true global variables (and don't take
+  // "global" to mean "file-scoped", as in Python) also use this modifier.
+  optional bool global = 400;
+
+  // Used used for names that are visible only within a particular namespace
+  // (e.g. C++, C#) or package (e.g. Java, Go), and are effectively public
+  // within that namespace.  See the documentation for the "public" and "global"
+  // modifiers for examples.
+  optional bool namespace_scoped = 500;
+
+  // Used for names that are visible to the entire containing file.
+  optional bool file_scoped = 600;
+
+  // Scope of Java's "package private" names, which are visible to
+  // all the classes in a package.
+  optional bool package_scoped = 700;
+
+  // Used for names that are visible throughout a shared library or
+  // other linkage assembly.  An example is C#'s "internal" modifier.
+  optional bool library_scoped = 800;
+
+  // Used for names that have dynamic extent; i.e., anyone in the
+  // downstream call chain can access the variable.  Examples:
+  // Lisp "special" vars, Scheme "fluid-let" vars, Perl "local" vars.
+  optional bool dynamically_scoped = 900;
+
+  // Used for variables that have thread-local storage.
+  // TODO(stevey): Fix proto compiler to escape this.
+  optional bool _thread_local = 1000;
+
+  // Context- and language-specific.  Generally used for identifiers
+  // with global or fixed linkage, as opposed to per-invocation or
+  // per-instantiation.
+  optional bool static = 1100;
+
+  // Denotes a name that explicitly hides/replaces the same-named
+  // version in the current lookup context (e.g. scope chain or class
+  // hierarchy).  Used for C# "new_slot", and for Java static methods
+  // with the same signature as a static in the superclass.
+  optional bool shadowing = 1200;
+
+  // Set on parametric types such as java.util.List<V>.
+  optional bool parametric = 1300;
+
+  // Set on raw string literals, in which no characters are interpreted as
+  // special escapes.  This is always (and of necessity) done with special
+  // language syntax.
+  optional bool nonescaped = 1400;
+
+  // Denotes a function that is implemented in a different language.
+  optional bool foreign = 1600;
+
+  // Protected from multiple simultaneous thread accesses.
+  // Only used in languages like Java and C# with a keyword for it.
+  optional bool synchronized = 1700;
+
+  // Mandated to be derived or subclassed; non-instantiatable.
+  // Includes pure virtual functions in C++.
+  optional bool abstract = 1800;
+
+  // Used for functions and methods whose behavior can be overridden (as opposed
+  // to hidden or shadowed) within an inheriting class by a function/method with
+  // the same signature.
+  optional bool virtual = 1900;
+
+  // Denotes non-overrideable methods and non-subclassable classes.
+  // Used any time a normally-allowed derivation/specialization is
+  // prevented on a particular symbol.  Note that Java "final"
+  // variables are given the "immutable" modifier, and Java "final" classes
+  // and methods are given the "terminal" modifier.
+  optional bool terminal = 2000;
+
+  // Used for variables that have been flagged as unmodifiable by a
+  // language keyword, such as Java's "final".
+  optional bool immutable = 2100;
+
+  // Denotes variables whose values can change unexpectedly.  Typically
+  // used for variables that can be written by multiple threads or processes.
+  optional bool volatile = 2200;
+
+  // Hint to the compiler to place the variable in a processor's register.
+  optional bool register = 2300;
+
+  // Used for variables that are not persisted when an object is stored.
+  optional bool transient = 2400;
+
+  // Limits floating-point operations to IEEE 754 precisions.
+  // Corresponds to the Java "strictfp" keyword.
+  optional bool strict_math = 2500;
+
+  // Used to tell the compiler that a function or constructor is a compile-time
+  // constant.  C.f. C++11's "constexpr" keyword or Dart's constant
+  // constructors.
+  // TODO(stevey): Fix proto compiler to escape this.
+  optional bool constexpr_ = 2600;
+
+  // Denotes a variable whose type is expected to be computed by type inference.
+  // For instance, used for C++11's "auto" and C#'s "var".  Also used for
+  // composite type nodes that were synthesized during type inference.
+  optional bool inferred = 2700;
+
+  // Used for numeric types that are explicitly signed representations.
+  // Typically only included on types for which it is not the default.
+  optional bool signed = 2800;
+
+  // Used for numeric types that are explicitly unsigned representations.
+  // Typically only included on types for which it is not the default.
+  optional bool unsigned = 2900;
+
+  // Modifier placed on parameters or fields that may be omitted.
+  // Examples:  proto optional fields, Lisp &optional parameters.
+  optional bool optional = 3000;
+
+  // Fields or values that may occur N>=0 times, e.g. proto repeated fields.
+  optional bool repeated = 3100;
+
+  // Used for a class or function literal with no name.  Kythe may assign an
+  // identifier to a construct that is anonymous at the language level.  The
+  // "anonymous" modifier records that the language did not provide a name.
+  optional bool anonymous = 3200;
+
+  // Used for symbols that are made globally or externally accessible via
+  // an explicit exports mechanism or convention, such as Go's capitalized
+  // names in packages, Python's __all__ list, and Perl's @EXPORT list.
+  optional bool exported = 3300;
+
+  // Used for symbols that were made public by renaming another private symbol.
+  // An example is variables created with JSCompiler's goog.exportSymbol(...).
+  // Also set on variables that were renamed during importing, e.g. Python's
+  // "from foo import bar as baz".
+  optional bool renamed = 3400;
+
+  // Used for nodes that are public only to a finite set of clients.
+  optional bool whitelisted = 3500;
+
+  // Used for names that are "magically available" in a language, typically via
+  // being hardwired into the compiler.  This modifier is applied only when
+  // there is no externs file nor other source location that generates the name.
+  optional bool predeclared = 3600;
+
+  // Used for constructs that are produced by the compiler or runtime without a
+  // distinct code location, such as JavaScript's automatic function prototypes
+  // or Java/C++ default constructors.
+  optional bool autogenerated = 3700;
+
+  // Used for implicit user-defined type-conversion operators (c.f. C#, Scala).
+  optional bool implicit = 3800;
+
+  // Used for artificial nodes used to "join" or "flatten" related node kinds
+  // in certain queries.  See NodeEnum.Kind for further information.
+  optional bool join_node = 3900;
+
+  // Names that are declared obsolete in favor of preferable alternatives.
+  optional bool deprecated = 4000;
+
+  // Node is a definition in languages that allow declarations and definitions
+  // (c++).
+  optional bool definition = 4100;
+
+  // Node is a declaration in languages that allow declarations and definitions
+  // (c++).  Here we follow C++ rules (all definitions are also declarations),
+  // though informally we might speak of "decls" meaning "declarations that are
+  // not definitions").
+  optional bool declaration = 4200;
+
+  // Denotes a function or method as a property getter in languages
+  // where properties are distinct from fields and methods (c.f. C#, Dart).
+  optional bool getter = 4300;
+
+  // Denotes a function or method as a property setter in languages
+  // where properties are distinct from fields and methods (c.f. C#, Dart).
+  optional bool setter = 4400;
+
+  // Used for functions and methods which are used for operator overloading.
+  // (c.f. C++, Dart)
+  optional bool operator = 4500;
+
+  // Indicates a node that represents the receiver of a method invocation, such
+  // as the "self" in a Python method, "this" in Java and C++, and the explicit
+  // receiver declared for a Go method.
+  optional bool receiver = 4600;
+
+  // A modifier to indicate whether a searchable name node has been maximally
+  // qualified.  For example, in C++ this would include:
+  //   int foo::bar(int)
+  //   float foo::bar(float)
+  // and their mangled names, however, not:
+  //   foo::bar
+  // because it doesn't differentiate overloads.
+  optional bool discrete = 4700;
+
+  // Denotes a delimiter as being open or closed. A delimiter is defined as a
+  // sequence of one or more characters used to specify the boundary between
+  // separate regions. For instance, '{' is an 'open' delimiter and '}' is a
+  // close delimiter. '<p>' is an 'open' html delimiter and '</p>' is its close
+  // version.
+  optional bool open_delimiter = 4800;
+  optional bool close_delimiter = 4900;
+
+  // Indicates that this usage node points to "figment" code. This is code
+  // that is generated by the Kythe Indexer to represent language features
+  // which are not present in the orignal source code.
+  // TODO(stevey): add something to the schema indicating which modifiers
+  // belong on which classes of nodes. e.g. has_figment applies to usage nodes.
+  optional bool has_figment = 5000;
+
+  // Indicates that node is part of "figment" code. This is code
+  // that is generated by the Kythe Indexer to represent language features
+  // which are not present in the orignal source code.
+  optional bool is_figment = 5100;
+
+}
+
+message Location {
+  // Kythe URI (go/kythe_uri) for file, directory, or external resource, e.g.,
+  //   kythe://depot/file/base/file.h
+  optional string uri = 1;
+
+  optional Span span = 2;
+}
+
+// A Span is a start and end position, or else an indicator that something
+// doesn't exist physically in the file.
+message Span {
+  // Indicates how the span should be interpreted.
+  enum Type {
+    // Used when the span has nonzero length less than the full file.
+    RANGE = 1;
+
+    // Used when the span is associated with the entire file at no particular
+    // position.  Example:  a diagnostic associated with the whole file.
+    FILE = 2;
+
+    // Used when the span is zero-length.  It is sometimes important to
+    // distinguish true zero-length spans for interval-sorting purposes.
+    // When Span.Type is set to POINT, the end position is not supplied.
+    POINT = 3;
+
+    // Used when the span gives a URI for a file or document outside the
+    // indexed corpus, e.g., a link to human-readable documentation.
+    EXTERNAL = 4;
+
+    // This should be produced exclusively by patching to indicate that the
+    // associated code element has been irreparably changed or removed.
+    // It should not be produced by any analyzers.
+    PATCH_INVALIDATED = 1000;
+  }
+
+  // The position immediately before the first character in the span.
+  optional Position start = 1;
+
+  // The position immediately after the last character in the span.
+  // If the "end" position is not supplied, the interpretation depends
+  // on the span Type:
+  //   - if FILE, the start position is ignored and it spans the whole file.
+  //   - if POINT, then the end position is the same as the start position.
+  optional Position end = 2;
+
+  optional Type type = 3 [default = RANGE];
+}
+
+// "Position" records an exact zero-width source location (not a range or span).
+//
+// Positions are zero-indexed, character-based, and fall between characters.
+// For example, if the first character in a file is 'X', then position 0 is
+// before the 'X' and position 1 is after the 'X'.  For files that contain
+// multi-byte characters, positions will not always correspond to byte offsets.
+//
+// Normally all three fields are set, because it is nontrivial for clients
+// to map between offset and lineno/charno representations.  But a Position
+// is valid if either offset >= 0 or lineno and charno are both >= 0.
+message Position {
+  // 0-based character offset into the resource
+  optional int32 offset = 1 [default = -1];
+
+  // 1-based line number based on 'offset'
+  optional int32 lineno = 2 [default = -1];
+
+  // 0-based column number for 'offset'
+  optional int32 charno = 3 [default = -1];
+}
+
+// "Dimension" records type metadata for types with size or precision.
+// Arrays:
+//   * an ARRAY type-node with a declared size representable with an
+//     unsigned int32 uses a single int32.  If the size is larger than
+//     2e32-1, multiple int32s are used and their bits are concatenated.
+//   * If the size is not supplied then it was either not specified or
+//     unable to be determined statically.
+//
+// Multidimensional arrays:
+//   * modeled as arrays-of-arrays using ARRAY nodes.
+//   * each dimension has its own Dimension field, described above.
+//
+// Matrices:
+//   * "true" multidimensional arrays (e.g. in Fortran) have a single
+//     type node whose Node.Kind is MATRIX.
+//   * All the dimensions must be int32 values.  For example, a 3x4x5 matrix
+//     would have a single Dimension with three int32 values: 3, 4, and 5.
+//   * Kythe does not (yet) support true matrices with N>32-bit dimensions.
+//
+// Integer types:
+//   * the "size" field records the number of bits of precision.
+//     E.g. an int32 would have a size of 32.
+//   * If the size is not supplied then it is not known.
+//
+// Floating-point and fixed-point types:
+//   * the "size" field records the total number of bits of precision.
+//   * E.g. a Java double would have a size of 64.
+//   * If the size is not supplied then it is not known.
+//
+// Complex, Rational and other 2-component numeric types:
+//   * the sizes are assumed to be the same for both components, and only
+//     one of the sizes is specified, using the same rules as for integer types.
+message Dimension {
+  repeated int32 size = 1;
+
+  // Used in languages that allow specifying the start offset of an array.
+  optional int32 offset = 2;
+}
+
+// Represents a link to another code graph entity.
+message SourceLink {
+  // The Node the links points to.
+  // References to File::Open() will point to the conceptual node or the
+  // definition node?
+  // If no node can be found, then a dummy node may be included with an
+  // external URI set in the location field.
+  required Node target_node = 1;
+
+  // Start and end of where the link should appear in the source file.
+  optional Span span = 2;
+
+  // This is set true if the source link is located at a macro expansion point.
+  // TODO(fromberger): Remove this field.
+  optional bool is_macro_expansion = 3;
+
+  // The node representing the usage/reference node (e.g. call site).
+  // This node's span is redundant with the Span field, for historical reasons.
+  optional Node reference_node = 4;
+}
+
+// Represents errors, warnings and informational messages generated during
+// indexing.
+message Diagnostic {
+  enum Type {
+    // First three are compiler diagnostics, would ideally be named COMPILER_.*
+    // Kept existing names to avoid breaking change in kythe-emacs.
+    INFO = 1;
+    WARNING = 2;
+    ERROR = 3;
+    KYTHE_INFO = 101;
+    KYTHE_WARNING = 102;
+    KYTHE_ERROR = 103;
+  }
+  optional Type type = 1 [default = ERROR];
+
+  // The diagnostic message emitted by the reporter.
+  optional string message = 2;
+
+  // This is a language-specific code that stands for a group of related
+  // diagnostic messages, which lets UIs give users finer-grained control over
+  // which ones they have to look at.  It's basically a way to get even
+  // finer-grained visibility control than Type and Category offer.
+  optional string code = 3;
+
+  // If an analyzer is getting errors reported by different error reporters
+  // (such as different parsers), it can optionally give language-specific names
+  // to each reporter, giving clients a way to filter on a subset of the
+  // reporter.
+  optional string reporter = 4;
+
+  // The range of code to which the diagnostic applies.
+  //
+  // TODO(fromberger): Remove this field once the indexers no longer require
+  // it.  The location information will be stored on the DIAGNOSTIC node.
+  optional Span range = 5;
+}
+
+// Represents a style-run of syntactic or semantic markup information.
+// TODO(stevey):  This proto needs to go away and be subsumed by Node.
+message Style {
+  // This enum attempts to capture all the semantic styles that can be applied
+  // to a source file.  If you change or add any entries, make sure to update
+  // java/com/google/devtools/kythe/web/public/stylesheets/code-colors.css,
+  // which uses the lowercased, underscore-to-hyphen versions of these type
+  // names. Try to make entries as language-neutral as possible.
+  enum Type {
+    HYPER_LINK = 1;  // generic hyperlink of some sort
+    STRING = 2;
+    SINGLE_LINE_COMMENT = 3;  // single-line comment
+    KEYWORD = 4;
+
+    // Note: Despite its general name, the IDENTIFIER style is customarily used
+    // only to label identifiers at their point of definition.  For example, in
+    // the C++ code
+    //     int x;     // line 1
+    //     x = 17;    // line 2
+    // the "x" on line 1 would be styled as an IDENTIFIER, but the "x" on line
+    // 2, which is a reference to x and not a definition of it, would not.
+    //
+    // Note that for function and type names, the FUNCTION_NAME and TYPE_NAME
+    // style labels may serve the same purpose, and are ostensibly preferred.
+    //
+    // Although this is somewhat counter-intuitive, it is the expectation of
+    // the existing KytheWeb and Grok Emacs clients, so this behaviour should be
+    // kept until such time as we can replace the current Style mechanism.
+    IDENTIFIER = 5;
+
+    BUILTIN = 6;
+    NUMBER = 7;
+    REGEXP_LITERAL = 8;   // regular expression literal
+    CONSTANT = 9;
+    FUNCTION_NAME = 10;
+    FUNCTION_PARAM = 11;
+    FUNCTION_BODY = 12;  // span over bounds of function body
+    FIELD_NAME = 13;
+    OBJECT_PROP = 14;  // javascript object property name
+    PREPROCESSOR = 15;  // preprocessor conditional or token (define)
+    TODO = 16;  // google TODO(whoever) item
+    DOC_TAG = 17;  // javadoc/jsdoc @whatever tag
+    DOC_TYPE = 18;  // jsdoc {SomeType} qualifier
+    DOC_ARG = 19;  // javadoc/jsdoc arg, e.g. foo in "@param foo ..."
+    // These are used within doc comments and also in HTML/XML literals
+    HTML_TAG = 20;  // html or xml tag name
+    HTML_ATTR_NAME = 21;  // html/xml tag attribute name
+    HTML_ATTR_VALUE = 22;  // html/xml tag attribute value
+    HTML_DELIMITER = 23;  // html/xml tag delimiter (angle bracket)
+    LABEL = 24;  // code label
+    COLOR = 25;  // preset color #RRGGBB in color field
+    CSS = 26;  // preset css style name in color field (try to avoid using)
+    LINT = 27;  // generic lint warning, such as an 80-column violation
+    DELIMITER = 28;  // a code paren, brace or bracket
+    TYPE_NAME = 29;  // a class or enum name
+    TYPE_PARAM = 30;  // type parameter or type argument (in java)
+    PARAMETERIZED_TYPE_ARG = 31; // 'List' in Set<List<String>>
+    BLOCK_COMMENT = 32;  // multi-line comment
+    ANNOTATION = 33;  // java annotation tag, e.g. @SuppressWarnings
+    SYMBOL = 34;  // a Lisp or Ruby symbol
+    DOC_COMMENT = 35;  // js-doc, java-doc etc
+    SKIPPED_CODE = 36;  // code that a preprocessor or compiler parses out.
+
+    // These are produced as a result of patching, they shouldn't be produced
+    // by the analyzers.
+    DIFF_INSERTION = 100;  // code inserted since we last indexed
+    DIFF_MODIFICATION = 101;  // code modified since we last indexed
+    DIFF_DELETION = 102;  // code deleted since we last indexed
+  }
+
+  required Type type = 1;
+
+  required Span span = 2;
+
+  optional string message = 3;  // Hover text
+
+  // a hyperlink for the style run, e.g. a mailto: link
+  optional string url = 4;  // Default is empty string
+
+  optional string color = 5;  // Color or css style (type must be CSS)
+}
+
+// A tree structure representing a code outline.
+message OutlineEntry {
+  required Node node = 1;
+
+  repeated OutlineEntry kid = 2;
+}
+
+// Contains the standard displayable index information associated with a source
+// file.
+message FileDecorations {
+  // Source code that kythe indexed.
+  optional string source_code = 1;
+
+  // Name of the Charset used for encoding the source.
+  optional string charset = 2 [default = "UTF-8"];
+
+  // Styles to be used for syntax highlighting.
+  repeated Style style = 3;
+
+  // Any errors/warnings that the indexer found for this file.
+  repeated Diagnostic diagnostic = 4;
+
+  // List of nodes that are declared in this file.
+  repeated Node declaration = 5;
+
+  // Usages of other nodes (calls, instantiations, references, etc.)
+  repeated SourceLink reference = 6;
+
+  // The file outline, if available.
+  repeated OutlineEntry outline = 7;
+
+  // The MD5 of the file requested.  This the 16 byte array encoded as a 32 char
+  // array of lowercase hex chars.  The field is omitted when there is no source
+  // available.
+  optional string md5_hex_string = 8;
+
+  // Kythe URI for this file, e.g.,
+  //   kythe://depot/file/base/file.cc
+  //   kythe://chrome/src/base/foo.h
+  optional string uri = 9;
+}
+
+// Represents literal source text for nodes that store it, e.g., FILE nodes.
+// The encoded_text field stores the raw bytes, and the encoding field
+// specifies what encoding is used.
+message SourceText {
+  optional bytes encoded_text = 1;
+
+  optional string encoding = 2 [default = "UTF-8"];
+
+  // An MD5 checksum of the text, stored as a 32-character string of lowercase
+  // hex characters encoded in ASCII.
+  optional string md5_hex_string = 3;
+}
+
+// Represents the content of nodes which store literal data (DIAGNOSTIC, FILE).
+message NodeContent {
+  // The literal source for nodes containing source text, encoded as specified
+  // by the charset field.
+  optional SourceText source_text = 1;
+
+  // The ticket of the node to which this content belongs.
+  optional string ticket = 2;
+
+  // The content for nodes representing compiler diagnostics.
+  optional Diagnostic diagnostic = 10;
+
+  // The concrete syntactic structure of the node associated with this content.
+  // This is an optional field which is currently designed to be used for 
+  // discovering the syntactic structure of a composite type. For instance
+  // consider the following type specialization in Java:
+  //   Map<K, List<? extends String>>
+  // For this type we would like to have concrete information about bits and
+  // pieces that construct this type. For example:
+  //   Map -> java.util.Map
+  //   <   :  affiliated_node_ticket is not set. display_text will contain the
+  //          the text ('<') that must be shown for this structure.
+  //   K   -> definition of K
+  //   ... etc.
+  //
+  // Note: this is intended to be used by Doc view. Be aware that this is 
+  // subject to change. Use with caution (contact kythe-dev@) or don't use this
+  // field at all.
+  repeated ConcreteStructure structure = 20;
+
+  // Styles to be used for syntax highlighting.
+  // TODO(fromberger): These should be attached to Nodes directly, and this
+  // field should be removed from the NodeContent message.  For now, we store
+  // them here because we haven't got nodes for all styled things yet.
+  repeated Style style = 900;
+}
+
+message ConcreteStructure {
+  // The node's ticket which is associated with this token. For instance if
+  // the token is Map in 'Map<K, V>', then this field's value is
+  // 'java:java.util.Map'.
+  optional string affiliated_node_ticket = 10;
+
+  // The text used in the source for this token. For instance, for 
+  //   List<String>
+  // the sequence of display_text for the structure of the above type is:
+  //   'List', '<', 'String', '>'.
+  optional string display_text = 20;
+
+  // Forming a tree structure. If any of the above fields are set, this field
+  // will be ignored.
+  repeated ConcreteStructure children = 30;
+}
+
+// The message containing the formatted documentation of a node.
+message FormattedDoc {
+  optional Node source_node = 1;
+  // The formatted rendered documentation.
+  required string formatted_doc = 2;
+
+  // All of the followings are fragment formatted outputs which together
+  // make the `formatted_doc`.
+
+  // The main description of the comment which does not include non-inline
+  // tags such as @param, @see, @author, etc.
+  optional string main_description = 3;
+
+  // The formatted description in the @return or @returns tags.
+  optional string return_description = 4;
+
+  // The formatted description in the @deprecated.
+  optional string deprecated_description = 5;
+
+  // All of the @author tags.
+  repeated string author = 6;
+
+  // All of the @see tags.
+  repeated string see = 7;
+
+  // Formatted @since tag.
+  optional string since = 8;
+
+  // All of the @param tags.
+  repeated string param = 9;
+
+  // All of the @throws or @exception tags.
+  repeated string throws = 10;
+}
+
+// A tuple for returning per-kind counts back to the user.
+message EdgeKindCount {
+  required EdgeEnum.Kind kind = 1;
+  required uint32 count = 2;
+}

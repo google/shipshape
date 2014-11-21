@@ -1,0 +1,20 @@
+[
+  {
+    "name": "kythe_uri_test",
+    "kind": "java_test",
+    "inputs": {
+      "srcs": [
+        "KytheURITest.java"
+      ],
+      "jars": [
+        "//third_party/kythe/java/com/google/devtools/kythe/util",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/junit",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "test_class": "com.google.devtools.kythe.util.KytheURITest"
+    }
+  }
+]
