@@ -1,11 +1,11 @@
 To add a new component to this third_party directory, follow these steps:
 
-1) Have a discussion on grok-dev;
+1) Have a discussion on shipshape-users@googlegroups.com;
 2) Provide a clear rational in the change adding the third_party code;
 3) Add the third_party code in a patch containing no other changes;
 4) Add a third_party/<projectxyz>/README.google file describing the
    origin of the code, its licensing, and any local changes;
 5) Have the change reviewed by multiple people in the team;
-6) Check with jvg@google.com on licensing.
+6) Check with collinwinter@google.com on licensing.
 
 Thank you.
