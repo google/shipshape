@@ -1,0 +1,11 @@
+[
+  {
+    "name": "picocontainer",
+    "kind": "java_external_jar",
+    "inputs": {
+      "srcs": [
+        "picocontainer-1.2.jar"
+      ]
+    }
+  }
+]

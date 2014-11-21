@@ -1,0 +1,13 @@
+URL: http://central.maven.org/maven2/picocontainer/picocontainer/1.2/picocontainer-1.2.jar
+Version: 1.2
+License: BSD
+License File: LICENSE
+
+Description:
+PicoContainer is a highly embeddable, full-service, Inversion of Control (IoC)
+container for components honor the Dependency Injection pattern.
+
+Included in Kythe because IntelliJ depends on PicoContainer.
+
+Local Modifications:
+None.
