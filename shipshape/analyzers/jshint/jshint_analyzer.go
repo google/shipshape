@@ -11,8 +11,8 @@ import (
 
 	"code.google.com/p/goprotobuf/proto"
 	notepb "shipshape/proto/note_proto"
-	rangepb "shipshape/proto/textrange_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
+	rangepb "shipshape/proto/textrange_proto"
 )
 
 const (
@@ -33,7 +33,9 @@ func (JSHintAnalyzer) Category() string { return "JSHint" }
 
 func isJSHintFile(path string) bool {
 	switch filepath.Ext(path) {
-	case ".js", ".html":
+	// TODO(ciera): we can handle .html ONLY if we pull out the
+	// <script> portions. Othewise jshint has a lot of trouble.
+	case ".js":
 		return true
 	default:
 		return false
