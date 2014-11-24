@@ -11,12 +11,13 @@ import (
 	"code.google.com/p/goprotobuf/proto"
 
 	notepb "shipshape/proto/note_proto"
-	rangepb "shipshape/proto/textrange_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
+	rangepb "shipshape/proto/textrange_proto"
 )
 
 const (
-	usageError = "exit status 32"
+	usageError   = "exit status 32"
+	modulePrefix = "************* Module"
 )
 
 var ()
@@ -64,6 +65,10 @@ func (pya *PyLintAnalyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note,
 			// skip first line; just where config is at
 			// skip the empty last line
 			for _, issue := range issues[1 : len(issues)-1] {
+				if strings.HasPrefix(issue, modulePrefix) {
+					continue
+				}
+
 				parts := strings.Split(issue, ":::")
 
 				if len(parts) != 3 {
