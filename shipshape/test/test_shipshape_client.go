@@ -9,8 +9,8 @@ import (
 	"log"
 	"strings"
 
-	"third_party/kythe/go/rpc/client"
 	"shipshape/util/file"
+	"third_party/kythe/go/rpc/client"
 
 	"code.google.com/p/goprotobuf/proto"
 
@@ -21,7 +21,7 @@ import (
 
 var (
 	servicePort = flag.String("service_port", "localhost:10007", "Service port")
-	filePaths   = flag.String("files", "README.md,sample.js,pypackage/foo.py,android-sample/MainActivity/src/com/example/android/tictactoe/MainActivity.java", "List of files (comma-separated)")
+	filePaths   = flag.String("files", "", "List of files (comma-separated)")
 	projectName = flag.String("project_name", "quixotic-treat-519", "Project name of a Cloud project")
 	hash        = flag.String("hash", "master", "Hash in repo for Cloud project")
 	categories  = flag.String("categories", "", "Categories to trigger (comma-separated)")
