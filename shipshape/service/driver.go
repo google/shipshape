@@ -71,10 +71,7 @@ func NewTestDriver(addrToCats map[string]strset.Set) *ShipshapeDriver {
 // taking configuration into account.
 func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {
 	var ars []*rpcpb.AnalyzeResponse
-	// TODO(ciera): If we ever have a long-lived service, getting the categories
-	// should be done once, not on each Run request!
-	td.catMap = td.getAllCategories()
-
+	log.Printf("Received analysis request for event %v, categories %v, repo %v", *in.Event, in.TriggeredCategory, *in.ShipshapeContext.RepoRoot)
 	// However we exit, send back the set of collected AnalyzeResponses
 	defer func() {
 		out <- &rpcpb.ShipshapeResponse{
@@ -82,20 +79,12 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		}
 	}()
 
-	// Fill in the file_paths if they are empty in the context
-	context := proto.Clone(in.ShipshapeContext).(*contextpb.ShipshapeContext)
-	root := context.GetRepoRoot()
-	if len(context.GetFilePath()) == 0 {
-		log.Printf("No files, getting some")
-		newpaths, err := collectAllFiles(root)
-		if err != nil {
-			ars = append(ars, generateFailure("Driver setup", fmt.Sprint(err)))
-			return err
-		}
-		context.FilePath = newpaths
-		log.Printf("Newly supplied files: %v", context.GetFilePath())
+	if in.ShipshapeContext.RepoRoot == nil {
+		return fmt.Errorf("No repo root was set")
 	}
+	root := *in.ShipshapeContext.RepoRoot
 
+	// cd into the root directory
 	orgDir, restore, err := file.ChangeDir(root)
 	if err != nil {
 		log.Printf("Could not change into directory %s from base %s", root, orgDir)
@@ -108,41 +97,59 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		}
 	}()
 
+	// load the config, if it exists
 	cfg, err := loadConfig(configFilename, *in.Event)
 	if err != nil {
+		log.Print("error loading config")
 		// TODO(collinwinter): attach the error to the config file.
 		ars = append(ars, generateFailure("Driver setup", err.Error()))
 		return err
 	}
-	if cfg == nil {
-		log.Printf("No analysis configuration file found, doing nothing")
-		return nil
+
+	// Use the triggered categories if specified
+	var desiredCats strset.Set
+	if len(in.TriggeredCategory) > 0 {
+		desiredCats = strset.New(in.TriggeredCategory...)
+	} else if cfg != nil {
+		desiredCats = strset.New(cfg.categories...)
+	} else {
+		return fmt.Errorf("service needs to be called with triggered categories and/or a repo root with a valid %s file with the event %s", configFilename, *in.Event)
 	}
 
-	// If the user told us explicitly which categories to run, use that list
-	// instead.
-	// TODO(collinwinter): nail down exactly how triggering interacts with a config file.
-	if len(in.TriggeredCategory) > 0 {
-		cfg.categories = in.TriggeredCategory
+	// Find out what categories we have available, and remove/warn on the missing ones
+	td.catMap = td.getAllCategories()
+	allCats := td.allCats()
+	missingCats := strset.New().AddSet(desiredCats).RemoveSet(allCats)
+	for missing := range missingCats {
+		ars = append(ars, generateFailure(missing, fmt.Sprintf("The triggered category %q could not be found at the locations %v", missing, td.AnalyzerLocations)))
 	}
-	if len(cfg.categories) == 0 {
+	desiredCats = desiredCats.RemoveSet(missingCats)
+
+	if len(desiredCats) == 0 {
 		log.Printf("No categories configured to run, doing nothing")
 		return nil
 	}
-	// TODO(collinwinter): detect if the user specified a category that doesn't exist.
 
-	// If the only files we know to analyze are covered by the list of files
-	// to ignore, don't waste time doing anything. We subsequently filter
-	// analysis results down to only the relevant files.
-	context.FilePath = filterPaths(cfg.ignore, context.FilePath)
+	ignorePaths := []string{}
+	if cfg != nil {
+		ignorePaths = cfg.ignore
+	}
+	// Fill in the file_paths if they are empty in the context
+	context := proto.Clone(in.ShipshapeContext).(*contextpb.ShipshapeContext)
+	context.FilePath, err = retrieveAndFilterFiles(*context.RepoRoot, context.FilePath, ignorePaths)
+	if err != nil {
+		log.Print("Had problems accessing files: %v", err.Error())
+		ars = append(ars, generateFailure("Driver setup", fmt.Sprint(err)))
+		return err
+	}
 	if len(context.FilePath) == 0 {
 		log.Printf("No files to run on, doing nothing")
 		return nil
 	}
 
-	log.Printf("Processing with config %v", cfg)
-
-	ars = append(ars, td.callAllAnalyzers(cfg, context)...)
+	log.Print("Analyzing")
+	ars = append(ars, td.callAllAnalyzers(desiredCats, context)...)
+	log.Print("Analysis completed")
 	return nil
 }
 
@@ -164,6 +171,21 @@ func WaitForAnalyzers(analyzerList []string) map[string]error {
 	}
 	wg.Wait()
 	return health
+}
+
+// retrieveAndFilter files returns a list of files (initiated with files if that is non-empty,
+// or from recursing on root if it is) and removes the ones in the ignore list.
+func retrieveAndFilterFiles(root string, files []string, ignore []string) ([]string, error) {
+	if len(files) == 0 {
+		log.Printf("No files, getting some")
+		var err error
+		files, err = collectAllFiles(root)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return filterPaths(ignore, files), nil
 }
 
 // collectAllFiles returns a list of all files for the passed-in root
@@ -193,15 +215,6 @@ func collectAllFiles(root string) ([]string, error) {
 	return paths, nil
 }
 
-// allCats returns the entire set of categories for the driver, across all analyzers
-func (td ShipshapeDriver) allCats() strset.Set {
-	var catSet = strset.New()
-	for _, cats := range td.catMap {
-		catSet.AddSet(cats)
-	}
-	return catSet
-}
-
 // filterPaths drops paths that fall under one of the given directories to ignore.
 // All directory names are assumed to end with /.
 func filterPaths(ignoreDirs []string, filePaths []string) []string {
@@ -221,9 +234,7 @@ nextFile:
 // callAllAnalyzers loops through the analyzer services, determines whether analyze should be called
 // on each, and then calls it with the appropriate set of files and categories.
 // It takes the configuration and the original context, and returns a slice of AnalyzeResponses.
-func (td ShipshapeDriver) callAllAnalyzers(cfg *config, context *contextpb.ShipshapeContext) []*rpcpb.AnalyzeResponse {
-	desiredCats := strset.New(cfg.categories...)
-
+func (td ShipshapeDriver) callAllAnalyzers(desiredCats strset.Set, context *contextpb.ShipshapeContext) []*rpcpb.AnalyzeResponse {
 	var ars []*rpcpb.AnalyzeResponse
 	var chans []chan *rpcpb.AnalyzeResponse
 	for analyzer, providedCats := range td.catMap {
@@ -270,6 +281,15 @@ func filterResults(context *contextpb.ShipshapeContext, response *rpcpb.AnalyzeR
 		Note:    keep,
 		Failure: response.Failure,
 	}
+}
+
+// allCats returns the entire set of categories for the driver, across all analyzers
+func (td ShipshapeDriver) allCats() strset.Set {
+	var catSet = strset.New()
+	for _, cats := range td.catMap {
+		catSet.AddSet(cats)
+	}
+	return catSet
 }
 
 // getAllCategories loops through the analyzers and gets the categories for each of them.
