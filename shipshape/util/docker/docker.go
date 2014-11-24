@@ -55,7 +55,7 @@ func Pull(image string) CommandResult {
 func setupArgs(container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string) []string {
 	var volumesFrom []string
 	for _, container := range volumesFromContainers {
-		volumesFrom = append(volumesFrom, fmt.Sprintf("--volumesFrom=%s", container))
+		volumesFrom = append(volumesFrom, fmt.Sprintf("--volumes-from=%s", container))
 	}
 
 	var environmentVars []string
