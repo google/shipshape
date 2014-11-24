@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"third_party/kythe/go/rpc/server"
 	"shipshape/service"
+	"third_party/kythe/go/rpc/server"
 
 	"code.google.com/p/goprotobuf/proto"
 
@@ -35,10 +35,19 @@ func main() {
 	analyzerList := strings.Split(*analyzers, ",")
 
 	log.Printf("Waiting for analyzers to become healthy...")
-	if err := service.WaitForAnalyzers(analyzerList); err != nil {
-		log.Fatalf("Analyzers failed to become healthy: %v", err)
+	healthErrors := service.WaitForAnalyzers(analyzerList)
+	allHealthy := true
+	for addr, err := range healthErrors {
+		if err != nil {
+			log.Printf("Analyzer at %s failed to become healthy: %v", addr, err)
+			allHealthy = false
+		} else {
+			log.Printf("Analyzer at %s registered", addr)
+		}
 	}
-	log.Printf("All analyzers deemed healthy")
+	if allHealthy {
+		log.Printf("All analyzers deemed healthy")
+	}
 
 	shipshapeService := service.NewDriver(analyzerList)
 
