@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"third_party/kythe/go/rpc/client"
-	"third_party/kythe/go/rpc/server"
 	"shipshape/util/file"
 	strset "shipshape/util/strings"
+	"third_party/kythe/go/rpc/client"
+	"third_party/kythe/go/rpc/server"
 
 	"code.google.com/p/goprotobuf/proto"
 
@@ -146,26 +146,24 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	return nil
 }
 
-// WaitForAnalyzers waits for all the given analyzers to become healthy (their
-// service is up, ready to serve requests). If any analyzer fails to come up
-// within the time limit, return an error immediately.
-func WaitForAnalyzers(analyzerList []string) error {
+// WaitForAnalyzers witll wait for all the given analyzers to become healthy
+// That is, their service is up and ready to serve requests.
+// Returns a mapping of which analyzers had which errors.
+func WaitForAnalyzers(analyzerList []string) map[string]error {
 	var wg sync.WaitGroup
-	healthCheck := make(chan error, len(analyzerList))
+	var health = make(map[string]error)
 
 	for _, analyzerAddr := range analyzerList {
 		wg.Add(1)
 		go func(addr string) {
 			httpClient := getHTTPClient(addr)
-			if err := httpClient.WaitUntilReady(analyzerHealthTimeout); err != nil {
-				healthCheck <- err
-			}
+			err := httpClient.WaitUntilReady(analyzerHealthTimeout)
+			health[addr] = err
 			wg.Done()
 		}(analyzerAddr)
 	}
 	wg.Wait()
-	close(healthCheck)
-	return <-healthCheck
+	return health
 }
 
 // collectAllFiles returns a list of all files for the passed-in root
