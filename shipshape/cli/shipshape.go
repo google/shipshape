@@ -48,13 +48,15 @@ var (
 	local   = flag.Bool("try_local", false, "True if we should use the local copy of this image, and pull only if it doesn't exist. False will always pull.")
 	streams = flag.Bool("streams", false, "True if we should run in streams mode, false if we should run as a service.")
 
-	event      = flag.String("event", "TestClient", "The name of the event to use")
+	event      = flag.String("event", "manual", "The name of the event to use")
 	categories = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
 	stayUp     = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
 	repo       = flag.String("repo", "container.cloud.google.com/_b_shipshape_registry", "The name of the docker repo to use")
+	kytheRepo  = flag.String("kytheRepo", "container.cloud.google.com/_b_kythe_images", "The name of the docker repo to use")
 	// TODO(ciera): use the analyzer images
 	//analyzerImages  = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
 	jsonOutput = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
+	build      = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
 )
 
 const (
@@ -120,7 +122,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 func main() {
 	flag.Parse()
 
-	// 0. Get the directory to analyze.
+	// Get the directory to analyze.
 	if len(flag.Args()) != 1 {
 		glog.Fatal("Usage: shipshape [OPTIONS] <directory>")
 	}
@@ -145,7 +147,7 @@ func main() {
 	image := docker.FullImageName(*repo, image, *tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
-	// 1. Create the request
+	// Create the request
 	// TODO(ciera): What should we do for a local run?
 	// Consider using a LocalContext in SourceContext, or putting a oneof
 	// in the Shipshape location.
@@ -155,7 +157,7 @@ func main() {
 	if *categories != "" {
 		trigger = strings.Split(*categories, ",")
 	} else {
-		glog.Infof("No categories found. Will be using categories specified by the config file for the event %s", *event)
+		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", *event)
 	}
 
 	req := &rpcpb.ShipshapeRequest{
@@ -165,103 +167,166 @@ func main() {
 			RepoRoot:      proto.String(workspace),
 		},
 		Event: proto.String(*event),
+		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
 	}
-	glog.Infof("Using request:\n%v\n", req)
 
-	// 2. If necessary, pull it
+	// If necessary, pull it
 	// If local is true it doesn't meant that docker won't pull it, it will just
 	// look locally first.
 	if !*local {
-		glog.Infof("Pulling image %s", image)
-		result := docker.Pull(image)
-		glog.Infoln(strings.TrimSpace(result.Stdout))
-		if result.Err != nil {
-			glog.Infoln(strings.TrimSpace(result.Stderr))
-			glog.Errorf("Error from pull: %v", result.Err)
-			return
-		}
-		glog.Infoln("Pulling complete")
+		pull(image)
 	}
-
-	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
 
 	// Put in this defer before calling run. Even if run fails, it can
 	// still create the container.
 	if !*stayUp {
-		defer func() {
-			glog.Infoln("Stopping and removing shipping_container")
-			result := docker.Stop("shipping_container", true)
-			glog.Infoln(strings.TrimSpace(result.Stdout))
-			if result.Err != nil {
-				glog.Infoln(strings.TrimSpace(result.Stderr))
-				glog.Infof("Could not stop shipping_container: %v", result.Err)
-			} else {
-				glog.Infoln("Removed.")
-			}
-		}()
+		defer stop("shipping_container")
 	}
 
-	// 3. Run it!
+	var c *client.Client
+
+	// Run it on files
 	if *streams {
-		glog.Infof("Running image %s in stream mode", image)
-		reqBytes, err := proto.Marshal(req)
+		err = streamsAnalyze(absRoot, req)
 		if err != nil {
-			glog.Errorf("Error marshalling %v: %v", req, err)
-			return
-		}
-
-		result := docker.RunAttached(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, nil, reqBytes)
-		glog.Infoln(strings.TrimSpace(result.Stderr))
-
-		if result.Err != nil {
-			glog.Errorf("Error from run: %v", result.Err)
-			return
-		}
-		var msg rpcpb.ShipshapeResponse
-		if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
-			glog.Errorf("Unexpected ShipshapeResponse %v", err)
-			return
-		}
-		err = logMessage(&msg)
-		if err != nil {
-			glog.Errorf("Error processing results: %v", err)
+			glog.Errorf("Error making stream call: %v", err)
 			return
 		}
 	} else {
-		glog.Infof("Running image %s in service mode", image)
-		environment := map[string]string{"START_SERVICE": "true"}
-		result := docker.Run(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, environment)
-		glog.Infoln(strings.TrimSpace(result.Stdout))
-		glog.Infoln(strings.TrimSpace(result.Stderr))
-		if result.Err != nil {
-			glog.Errorf("Error from run: %v", result.Err)
-			return
-		}
-		glog.Infoln("Image running")
-
-		glog.Infoln("About to call out to the shipshape service")
-		c := client.NewHTTPClient("localhost:10007")
-		if err := c.WaitUntilReady(10 * time.Second); err != nil {
+		c, err = startShipshapeService(absRoot)
+		if err != nil {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
 			return
 		}
-		rd := c.Stream("/ShipshapeService/Run", req)
-		defer rd.Close()
-		for {
-			var msg rpcpb.ShipshapeResponse
-			if err := rd.NextResult(&msg); err == io.EOF {
-				break
-			} else if err != nil {
-				glog.Errorf("Error from proto call: %v", err)
+		err = serviceAnalyze(c, req)
+		if err != nil {
+			glog.Errorf("Error making service call: %v", err)
+			return
+		}
+	}
+
+	// If desired, generate compilation units with a kythe image
+	if *build != "" {
+		// TODO(ciera): handle campfire as an option
+		kytheImage := docker.FullImageName(*kytheRepo, "kythe", "latest")
+		if !*local {
+			pull(kytheImage)
+		}
+
+		defer stop("kythe")
+		glog.Infof("Retrieving compilation units with %s", *build)
+		volumeMap := map[string]string{
+			filepath.Join(absRoot, "compilations"): "/compilations",
+			absRoot: "/repo",
+			// TODO(ciera): set this up properly
+			//filepath.Join($HOME,".m2": "/root/.m2",
+		}
+		// TODO(ciera): Can I pass in more than one extractor?
+		// TODO(ciera): Can we exclude files in the .shipshape ignore path?
+		// TODO(ciera): Can we use the same command for campfire extraction?
+		result := docker.RunAttached(kytheImage, "kythe", nil, volumeMap, nil, nil, nil, []string{"--extract", *build})
+		if result.Err != nil {
+			// kythe spews output, so only capture it if something went wrong.
+			glog.Infoln(strings.TrimSpace(result.Stdout))
+			glog.Infoln(strings.TrimSpace(result.Stderr))
+			glog.Errorf("Error from run: %v", result.Err)
+			return
+		}
+		glog.Infoln("CompilationUnits prepared")
+
+		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
+		if !*streams {
+			err = serviceAnalyze(c, req)
+			if err != nil {
+				glog.Errorf("Error making service call: %v", err)
 				return
 			}
-
-			if err := logMessage(&msg); err != nil {
-				glog.Errorf("Error processing results: %v", err)
+		} else {
+			err = streamsAnalyze(absRoot, req)
+			if err != nil {
+				glog.Errorf("Error making stream call: %v", err)
 				return
 			}
 		}
 	}
 
-	glog.Infof("End of Results.")
+	glog.Infoln("End of Results.")
+}
+
+func startShipshapeService(absRoot string) (*client.Client, error) {
+	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
+	glog.Infof("Running image %s in service mode", image)
+	environment := map[string]string{"START_SERVICE": "true"}
+	result := docker.Run(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, environment, nil)
+	glog.Infoln(strings.TrimSpace(result.Stdout))
+	glog.Infoln(strings.TrimSpace(result.Stderr))
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	c := client.NewHTTPClient("localhost:10007")
+	return c, c.WaitUntilReady(10 * time.Second)
+}
+
+func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest) error {
+	glog.Infof("Calling to the shipshape service with %v", req)
+	rd := c.Stream("/ShipshapeService/Run", req)
+	defer rd.Close()
+	for {
+		var msg rpcpb.ShipshapeResponse
+		if err := rd.NextResult(&msg); err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("received an error from calling run: %v", err.Error())
+		}
+
+		if err := logMessage(&msg); err != nil {
+			return fmt.Errorf("could not parse results: %v", err.Error())
+		}
+	}
+	return nil
+}
+
+func streamsAnalyze(absRoot string, req *rpcpb.ShipshapeRequest) error {
+	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
+	glog.Infof("Running image %s in stream mode", image)
+	reqBytes, err := proto.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("error marshalling %v: %v", req, err)
+	}
+
+	result := docker.RunAttached(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, nil, reqBytes, nil)
+	glog.Infoln(strings.TrimSpace(result.Stderr))
+
+	if result.Err != nil {
+		return fmt.Errorf("error from run: %v", result.Err)
+	}
+	var msg rpcpb.ShipshapeResponse
+	if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
+		return fmt.Errorf("unexpected ShipshapeResponse %v", err)
+	}
+	return logMessage(&msg)
+}
+
+func pull(image string) {
+	glog.Infof("Pulling image %s", image)
+	result := docker.Pull(image)
+	glog.Infoln(strings.TrimSpace(result.Stdout))
+	glog.Infoln(strings.TrimSpace(result.Stderr))
+	if result.Err != nil {
+		glog.Errorf("Error from pull: %v", result.Err)
+		return
+	}
+	glog.Infoln("Pulling complete")
+}
+
+func stop(container string) {
+	glog.Infof("Stopping and removing %s", container)
+	result := docker.Stop(container, true)
+	glog.Infoln(strings.TrimSpace(result.Stdout))
+	glog.Infoln(strings.TrimSpace(result.Stderr))
+	if result.Err != nil {
+		glog.Infof("Could not stop %s: %v", container, result.Err)
+	} else {
+		glog.Infoln("Removed.")
+	}
 }

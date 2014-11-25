@@ -45,6 +45,7 @@ var (
 	repoBase    = flag.String("repo_base", "/tmp", "The root of the repo to use, if LOCAL or the base directory to copy repo into if not LOCAL")
 	volumeName  = flag.String("volume_name", "/shipshape-workspace", "The name of the shipping_container volume")
 	event       = flag.String("event", "TestClient", "The name of the event to use")
+	stage       = flag.String("stage", "PRE_BUILD", "The stage to test, either PRE_BUILD or POST_BUILD")
 )
 
 const (
@@ -61,12 +62,13 @@ func main() {
 	var sourceContext *spb.SourceContext
 	var err error
 
-	if *repoKind == cloudRepo {
+	switch *repoKind {
+	case cloudRepo:
 		sourceContext, root, err = file.SetupCloudRepo(*projectName, *hash, *repoBase, *volumeName)
 		if err != nil {
 			log.Fatalf("Failed to setup Cloud repo: %v", err)
 		}
-	} else if *repoKind == local {
+	case local:
 		sourceContext = &spb.SourceContext{
 			CloudRepo: &spb.CloudRepoSourceContext{
 				RepoId: &spb.RepoId{
@@ -81,7 +83,7 @@ func main() {
 			log.Fatal("Must specify the repo_base for local runs")
 		}
 		root = *repoBase
-	} else {
+	default:
 		log.Fatalf("Invalid repo kind %q", *repoKind)
 	}
 
@@ -96,6 +98,16 @@ func main() {
 	if *filePaths != "" {
 		paths = strings.Split(*filePaths, ",")
 	}
+	var stageEnum ctxpb.Stage
+	switch *stage {
+	case "POST_BUILD":
+		stageEnum = ctxpb.Stage_POST_BUILD
+	case "PRE_BUILD":
+		stageEnum = ctxpb.Stage_PRE_BUILD
+	default:
+		log.Fatalf("Invalid stage %q", *stage)
+	}
+
 	req := &rpcpb.ShipshapeRequest{
 		TriggeredCategory: trigger,
 		ShipshapeContext: &ctxpb.ShipshapeContext{
@@ -104,6 +116,7 @@ func main() {
 			RepoRoot:      proto.String(root),
 		},
 		Event: proto.String(*event),
+		Stage: stageEnum.Enum(),
 	}
 	log.Println("About to call out to the shipshape service")
 

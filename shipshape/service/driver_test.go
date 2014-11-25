@@ -18,6 +18,7 @@ package service
 
 import (
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -345,7 +346,57 @@ func TestFilterPaths(t *testing.T) {
 	for _, test := range tests {
 		out := filterPaths(test.ignoreDirs, test.inputFiles)
 		if !reflect.DeepEqual(out, test.expectedFiles) {
-			t.Fatalf("Error on %q: got %v, expected %v", test.label, out, test.expectedFiles)
+			t.Errorf("Error on %q: got %v, expected %v", test.label, out, test.expectedFiles)
+		}
+	}
+}
+
+func TestFindCompilationUnitsGood(t *testing.T) {
+	tests := []struct {
+		dir           string
+		expectedPaths []string
+	}{
+		{
+			"valid_kindex",
+			[]string{"shipshape/test_data/driver/valid_kindex/#2b1a94f4695c38fd074cb80cb8a49c4951b8a12e773073e6dd180d3ffa3fbdfe.kindex"},
+		},
+		{
+			"no_kindex",
+			[]string{},
+		},
+	}
+
+	for _, test := range tests {
+		out, err := findCompilationUnits(filepath.Join("shipshape/test_data/driver", test.dir))
+
+		if err != nil {
+			t.Errorf("Received error from directory %s: %v", test.dir, err.Error())
+		}
+
+		paths := make([]string, 0, len(out))
+		for p, cu := range out {
+			paths = append(paths, p)
+			if cu == nil {
+				t.Errorf("Received no compilation unit for path %s in %s", p, test.dir)
+			}
+		}
+		if !strset.Equal(test.expectedPaths, paths) {
+			t.Errorf("Did not get the right paths for %s: got %v, want %v", test.dir, paths, test.expectedPaths)
+		}
+	}
+}
+
+func TestFindCompilationUnitsError(t *testing.T) {
+	tests := []string{
+		"invalid_kindex",
+		"invalid_dir",
+	}
+
+	for _, test := range tests {
+		_, err := findCompilationUnits(filepath.Join("shipshape/test_data/driver", test))
+
+		if err == nil {
+			t.Errorf("Expected an error, but did not get one for directory %s", test)
 		}
 	}
 }

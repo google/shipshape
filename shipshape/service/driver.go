@@ -27,10 +27,13 @@ import (
 
 	"shipshape/util/file"
 	strset "shipshape/util/strings"
+	"third_party/kythe/go/platform/indexinfo"
 	"third_party/kythe/go/rpc/client"
 	"third_party/kythe/go/rpc/server"
 
 	"code.google.com/p/goprotobuf/proto"
+
+	apb "third_party/kythe/proto/analysis_proto"
 
 	notepb "shipshape/proto/note_proto"
 	contextpb "shipshape/proto/shipshape_context_proto"
@@ -41,6 +44,7 @@ const (
 	// How long to wait for an analyzer service to become healthy.
 	analyzerHealthTimeout = 30 * time.Second
 	configFilename        = ".shipshape"
+	compilationsDir       = "compilations"
 )
 
 var (
@@ -89,9 +93,10 @@ func NewTestDriver(services []serviceInfo) *ShipshapeDriver {
 // taking configuration into account.
 func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {
 	var ars []*rpcpb.AnalyzeResponse
-	log.Printf("Received analysis request for event %v, categories %v, repo %v", *in.Event, in.TriggeredCategory, *in.ShipshapeContext.RepoRoot)
+	log.Printf("Received analysis request for event %v, stage %v, categories %v, repo %v", *in.Event, *in.Stage, in.TriggeredCategory, *in.ShipshapeContext.RepoRoot)
 
 	// However we exit, send back the set of collected AnalyzeResponses
+	// TODO(ciera): we should be streaming back the responses, not sending them all at the end.
 	defer func() {
 		out <- &rpcpb.ShipshapeResponse{
 			AnalyzeResponse: ars,
@@ -166,8 +171,34 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		return nil
 	}
 
-	log.Print("Analyzing")
-	ars = append(ars, sd.callAllAnalyzers(desiredCats, context, contextpb.Stage_PRE_BUILD)...)
+	// TODO(ciera): rather than pass the stage through here and checking all analyzers,
+	// filter out the stages earlier, when we check categories
+	stage := contextpb.Stage_PRE_BUILD
+	if in.Stage != nil {
+		stage = *in.Stage
+	}
+
+	log.Printf("Analyzing stage %s", stage.String())
+	if stage == contextpb.Stage_PRE_BUILD {
+		ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
+	} else {
+		comps := filepath.Join(*context.RepoRoot, compilationsDir)
+		compUnits, err := findCompilationUnits(comps)
+		log.Printf("Found %d compUnits at %s", len(compUnits), comps)
+		if err != nil {
+			log.Printf("Could not retrieve compilation units: %v", err)
+			ars = append(ars, generateFailure("Driver setup", err.Error()))
+			return nil
+		}
+		for path, compUnit := range compUnits {
+			context.CompilationDetails = &contextpb.CompilationDetails{
+				CompilationUnit:            compUnit,
+				CompilationDescriptionPath: proto.String(path),
+			}
+			log.Printf("Calling services with comp unit at %s", path)
+			ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
+		}
+	}
 	log.Print("Analysis completed")
 	return nil
 }
@@ -379,6 +410,31 @@ func callAnalyze(analyzer string, req *rpcpb.AnalyzeRequest, out chan<- *rpcpb.A
 	} else {
 		out <- &resp
 	}
+}
+
+// findCompilationUnits takes a path which contains compilation units, and recursively
+// retrieves all the compilation units from it. Currently, kythe puts the compilation units
+// in directories by language. Returns a mapping from the path to the kindex file and the
+// compilation unit found within it.
+func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
+	var units = make(map[string]*apb.CompilationUnit)
+	walkpath := func(path string, file os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(file.Name(), ".kindex") {
+			info, err := indexinfo.Open(path)
+			if err != nil {
+				return fmt.Errorf("could not open kindex file %s: %v", path, err)
+			}
+			units[path] = info.Compilation
+		}
+		return nil
+	}
+	if err := filepath.Walk(dir, walkpath); err != nil {
+		return nil, err
+	}
+	return units, nil
 }
 
 // generateFailure creates a response with an analysis failure containing the given

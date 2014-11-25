@@ -115,7 +115,7 @@ func setupArgs(container string, portMap map[int]int, volumeMap map[string]strin
 // environment is a map of environment variables and values to set for the container
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func Run(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string) CommandResult {
+func Run(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string, imageArgs []string) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -125,6 +125,7 @@ func Run(image, container string, portMap map[int]int, volumeMap map[string]stri
 	args := []string{"run"}
 	args = append(args, setupArgs(container, portMap, volumeMap, volumesFromContainers, environment)...)
 	args = append(args, "-d", image)
+	args = append(args, imageArgs...)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
@@ -140,7 +141,7 @@ func Run(image, container string, portMap map[int]int, volumeMap map[string]stri
 // environment is a map of environment variables and values to set for the container
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func RunAttached(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string, stdin []byte) CommandResult {
+func RunAttached(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string, stdin []byte, imageArgs []string) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -150,6 +151,7 @@ func RunAttached(image, container string, portMap map[int]int, volumeMap map[str
 	args := []string{"run"}
 	args = append(args, setupArgs(container, portMap, volumeMap, volumesFromContainers, environment)...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
+	args = append(args, imageArgs...)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout

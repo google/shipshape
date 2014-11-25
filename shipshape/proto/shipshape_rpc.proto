@@ -79,6 +79,8 @@ message ShipshapeRequest {
   repeated string triggered_category = 2;
   // The event we are running for
   optional string event = 3;
+  // Which stage to run
+  optional Stage stage = 4;
 }
 
 message ShipshapeResponse {

@@ -17,7 +17,7 @@
 # Script that sets up a test repo and then runs the Shipshape CLI
 # on that test repo.
 
-set -eux
+set -eu
 
 CONVOY_URL='container.cloud.google.com'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
@@ -57,20 +57,65 @@ echo ">>> Detailed output will appear in $LOG_FILE"
 gcloud preview docker --server=$CONVOY_URL --authorize_only
 
 # Create a test repository to run analysis on
+rm -r $LOCAL_WORKSPACE
 mkdir -p $LOCAL_WORKSPACE
 echo "this is not javascript" > $LOCAL_WORKSPACE/test.js
+mkdir -p $LOCAL_WORKSPACE/src/main/java/com/google/shipshape/
+cat <<'EOF' >> $LOCAL_WORKSPACE/src/main/java/com/google/shipshape/App.java
+package com.google.shipshape;
+
+/**
+ * Hello world!
+ *
+ */
+public class App
+{
+  private String str;
+  public App(String str) {
+    str = str;
+  }
+  public static void main( String[] args )
+  {
+    if (args[0] == "Hello");
+    System.out.printf("Hello World!");
+  }
+}
+EOF
+cat <<'EOF' >> $LOCAL_WORKSPACE/pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.google.shipshape</groupId>
+  <artifactId>test-app</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>test-app</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
+EOF
+
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
-../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --repo=$REPO --categories='PostMessage,JSHint' --try_local=$IS_LOCAL_RUN $LOCAL_WORKSPACE >> $LOG_FILE
+../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --repo=$REPO --categories='PostMessage,JSHint,ErrorProne' --build=maven --try_local=$IS_LOCAL_RUN --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
 echo "done."
 
 # Quick sanity checks of output.
 JSHINT_COUNT=$(grep -c JSHint $LOG_FILE)
 POSTMESSAGE_COUNT=$(grep -c PostMessage $LOG_FILE)
+ERRORPRONE_COUNT=$(grep -c ErrorProne $LOG_FILE)
 FAILURE_COUNT=$(grep -ci Failure $LOG_FILE)
 [[ $JSHINT_COUNT == 8 ]] || { echo "Wrong number of JSHint results, expected 8, found $JSHINT_COUNT" 1>&2 ; exit 1; }
 [[ $POSTMESSAGE_COUNT == 1 ]] || { echo "Wrong number of PostMessage results, expected 1, found $POSTMESSAGE_COUNT" 1>&2 ; exit 1; }
+[[ $ERRORPRONE_COUNT == 2 ]] || { echo "Wrong number of ErrorProne results, expected 2, found $ERROR_PRONE_COUNT" 1>&2 ; exit 1; }
 [[ $FAILURE_COUNT == 0 ]] || { echo "Some analyses failed; please check $LOG_FILE" 1>&2 ; exit 1; }
 echo "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
 
