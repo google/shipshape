@@ -7,6 +7,7 @@ set -eux
 CONVOY_URL='cloud.container.google.com'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
+REPO=$CONVOY_URL/_b_shipshape_registry
 CONTAINERS=(
   //shipshape/release/base
   //shipshape/release
@@ -24,9 +25,11 @@ echo $IS_LOCAL_RUN
 if [[ "$IS_LOCAL_RUN" == true ]]; then
   echo "Running with locally built containers"
   ../../campfire clean
+  ../../campfire build //shipshape/cli/...
   for container in ${CONTAINERS[@]}; do
     echo 'Building and deploying '$container' ...'
     ../../campfire package --start_registry=false --docker_tag=$TAG $container
+  REPO=""
   done
 fi
 
@@ -44,7 +47,7 @@ echo "this is not javascript" > $LOCAL_WORKSPACE/test.js
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
-./shipshape --tag=$TAG --categories='PostMessage,JSHint' --use_local=$IS_LOCAL_RUN $LOCAL_WORKSPACE >> $LOG_FILE
+../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --repo=$REPO --categories='PostMessage,JSHint' --try_local=$IS_LOCAL_RUN $LOCAL_WORKSPACE >> $LOG_FILE
 echo "done."
 
 # Quick sanity checks of output.
