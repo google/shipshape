@@ -9,7 +9,7 @@ To build and then install the google analysis plugin follow the below steps.
  have changed or may not be available you need to build them:
 
    `$ ../../campfire clean`
-   `$ ../../campfire build kythe/... shipshape/...`
+   `$ ../../campfire build //third_party/kythe/... //shipshape/...`
 
  If you rebuilt the jars, or if you haven't updated the dependencies lately,
  you should update the plugin dependencies by running:

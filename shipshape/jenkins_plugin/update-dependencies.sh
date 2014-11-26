@@ -18,8 +18,8 @@ mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/textrange
 # And also some protos from kythe;
 
 #mvn install:install-file -Dfile=../../campfire-out/bin/kythe/proto/compilation_proto.jar -DgroupId=com.google.code -DartifactId=kythe-compilation-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/kythe/proto/analysis_proto.jar -DgroupId=com.google.code -DartifactId=kythe-analysis-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/kythe/proto/storage_proto.jar -DgroupId=com.google.code -DartifactId=kythe-storage-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../campfire-out/bin/third_party/kythe/proto/analysis_proto.jar -DgroupId=com.google.code -DartifactId=kythe-analysis-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../campfire-out/bin/third_party/kythe/proto/storage_proto.jar -DgroupId=com.google.code -DartifactId=kythe-storage-proto -Dversion=1.0 -Dpackaging=jar
 
 # And also jars from third party:
 
