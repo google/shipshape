@@ -19,6 +19,7 @@ func (p PostMessageAnalyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Not
 		Category:    proto.String(p.Category()),
 		Description: proto.String("Shipshape analysis results are being produced"),
 		Location:    &notepb.Location{SourceContext: ctx.SourceContext},
+		Severity:    notepb.Note_OTHER.Enum(),
 	}
 	var notearray = []*notepb.Note{note}
 	return notearray, nil

@@ -211,11 +211,12 @@ public class AnalysisRunner extends Builder implements Serializable {
     // TODO(emso): Add fail-fast check for .shipshape file.
 
     final FilePath workspace = build.getWorkspace();
+    int actionableResults = 0;
     try {
-      workspace.act(
-        new Callable<Void, Exception>() {
+      actionableResults = workspace.act(
+        new Callable<Integer, Exception>() {
           @Override
-          public Void call() throws Exception {
+          public Integer call() throws Exception {
             // Anything inside this method (along with called methods) are executed on the Jenkins
             // slave on a master-slave configuration).
 
@@ -250,9 +251,9 @@ public class AnalysisRunner extends Builder implements Serializable {
             ShipshapeResponse res = makeShippingContainerRequest(logger, socket, req, workspacePath,
                 outputPath);
             logger.log(String.format("ShipshapeResponse: %s", res));
-            reportShipshapeResults(logger, res, outputPath);
+            int numRes = reportShipshapeResults(logger, res, outputPath);
             logger.closeStreams();
-            return (Void) null;
+            return numRes;
           }
         });
     } catch (Exception e) {
@@ -263,7 +264,9 @@ public class AnalysisRunner extends Builder implements Serializable {
 
     listener.getLogger().println("[Shipshape] Done");
 
-    return true;
+    // TODO(ciera): use a configurable setting in the plugin to determine whether to fail
+    // and on what kind of results.
+    return actionableResults == 0;
   }
 
   /**
@@ -381,12 +384,13 @@ public class AnalysisRunner extends Builder implements Serializable {
    * @param outputPath Absolute build directory path.
    * @throws ShipshapeException If writing to the result file fails.
    */
-  private void reportShipshapeResults(ShipshapeLogger logger, ShipshapeResponse res,
+  private int reportShipshapeResults(ShipshapeLogger logger, ShipshapeResponse res,
       String outputPath) throws ShipshapeException {
     try {
       PrintWriter writer = new PrintWriter(outputPath + "/" + RESULT_FILE_NAME, FILE_ENCODING);
       int nbrAnalysisResults = 0;
       int nbrAnalysisFailures = 0;
+      int actionableResults = 0;
       StringBuffer resultBuffer = new StringBuffer();
       StringBuffer failureBuffer = new StringBuffer();
       for (AnalyzeResponse analyzeRes : res.getAnalyzeResponseList()) {
@@ -397,6 +401,9 @@ public class AnalysisRunner extends Builder implements Serializable {
               note.getLocation().getPath(), note.getLocation().getRange());
           resultBuffer.append(noteMsg + "\n");
           nbrAnalysisResults++;
+          if (note.getSeverity() != Note.Severity.OTHER) {
+            actionableResults++;
+          }
         }
         for (AnalysisFailure failure : analyzeRes.getFailureList()) {
           String failureMsg =
@@ -422,6 +429,7 @@ public class AnalysisRunner extends Builder implements Serializable {
         writer.println(failureBuffer.toString());
       }
       writer.close();
+      return actionableResults + nbrAnalysisFailures;
     } catch (IOException e)  {
       throw new ShipshapeException(String.format(
           "Failed to write to result file, output path: %s, result file: %s, error: %s",

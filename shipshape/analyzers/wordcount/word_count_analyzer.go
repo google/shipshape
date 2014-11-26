@@ -33,6 +33,7 @@ func (p WordCountAnalyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note,
 			},
 			Category:    proto.String(p.Category()),
 			Description: proto.String(fmt.Sprintf("Word count: %v", count)),
+			Severity:    notepb.Note_OTHER.Enum(),
 		}
 	}
 	return notes, nil

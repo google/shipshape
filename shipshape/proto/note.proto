@@ -53,10 +53,10 @@ message Note {
   // other actionable results (WARNING), and informational notes (OTHER).
   // TODO(supertri): Is there any other kind of prioritization we need?
   enum Severity {
-    // Actionable problem, e.g. that a developer needs to fix.
-    WARNING = 1;
     // Build did not succeed because of this issue.
-    BUILD_ERROR = 2;
+    BUILD_ERROR = 1;
+    // Actionable problem, e.g. that a developer needs to fix.
+    WARNING = 2;
 
     // There are 3 possibilities in the Java library Diagnostic.Kind enum
     // in addition to WARNING and ERROR (one is called "OTHER").
@@ -70,7 +70,7 @@ message Note {
   // Distinguishes between Notes representing build errors or other actionable
   // problems, and informational Notes. Useful for UI because
   // different annotations may need various levels of attention from the user.
-  optional Severity severity = 8;
+  optional Severity severity = 8 [default = WARNING];
 
 }
 
