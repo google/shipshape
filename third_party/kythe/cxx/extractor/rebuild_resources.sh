@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Copyright 2014 Google Inc. All rights reserved.
 #
@@ -14,17 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script regenerates the flex lexer and bison parser used by the verifier.
-# It expects Bison to live at ~/bison/bin/bison. The versions used for the
-# artifacts in the repository are bison 3.0 and flex 2.5.35.
-set -e
-BISON=~/bison/bin/bison
-FLEX=flex
-SCRIPT=$(readlink -f "$0")
-SCRIPT_PATH=$(dirname "$SCRIPT")
-pushd ${SCRIPT_PATH}
-rm -f assertions.tab.cc assertions.tab.hh location.hh position.hh stack.hh lex.yy.c lex.yy.cc
-${FLEX} assertions.ll
-mv lex.yy.c lex.yy.cc
-${BISON} assertions.yy
-popd
+# This script regenerates the cxx_extractor_resources.inc file, which contains
+# Clang version-specific header data that gets embedded in the extractor
+# executable.
+# Use: ./rebuild_resources.sh path/to/resource/dir > cxx_extractor_resources.inc
+RESOURCE_DIR="$1"
+: ${RESOURCE_DIR:?Missing resource directory.}
+echo "const char *kClangCompilerIncludes[] = {"
+for resource in ${RESOURCE_DIR}/include/*
+do
+  echo "\"$(basename "${resource}")\","
+  echo "R\"filecontent($(< ${resource}))filecontent\","
+done
+echo "nullptr};"

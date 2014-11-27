@@ -1,3 +1,20 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// TODO(zarko): figure out where to ship this and under what copyright.
 //===-- CommandLineUtils.cpp - Converts other frontends' args -*- C++ -*---===//
 //
 //                     The LLVM Compiler Infrastructure
@@ -179,8 +196,6 @@ std::vector<std::string>
 GCCArgsToClangArgs(const std::vector<std::string> &gcc_args) {
   // These are GCC-specific arguments which Clang does not yet understand or
   // support without issuing ugly warnings, and cannot otherwise be suppressed.
-  // TODO(chandlerc): Push these back upstream for GCC compatibility, including
-  // the ability to turn off warnings about them.
   const FullMatchRegex unsupported_args_re(
       "-W(no-)?(error=)?coverage-mismatch"
       "|-W(no-)?(error=)?frame-larger-than.*"

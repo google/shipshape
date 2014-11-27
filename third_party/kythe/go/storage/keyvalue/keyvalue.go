@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Package keyvalue implements a generic GraphStore for anything that implements
 // the DB interface.
 package keyvalue
@@ -138,11 +154,14 @@ func (s *Store) Scan(req *spb.ScanRequest, stream chan<- *spb.Entry) error {
 const (
 	// entryKeySep is used to separate the source, factName, edgeKind, and target of an
 	// encoded Entry key
-	entryKeySep = '\n'
+	entryKeySep    = '\n'
+	entryKeySepStr = string(entryKeySep)
 
 	// vNameFieldSep is used to separate the fields of an encoded VName
 	vNameFieldSep = "\000"
 )
+
+var entryKeySepBytes = []byte{entryKeySep}
 
 // EncodeKey returns a canonical encoding of an Entry (minus its value).
 func EncodeKey(source *spb.VName, factName string, edgeKind string, target *spb.VName) ([]byte, error) {
@@ -150,26 +169,24 @@ func EncodeKey(source *spb.VName, factName string, edgeKind string, target *spb.
 		return nil, fmt.Errorf("missing source VName for key encoding")
 	} else if (edgeKind == "" || target == nil) && (edgeKind != "" || target != nil) {
 		return nil, fmt.Errorf("edgeKind and target Ticket must be both non-empty or empty")
-	} else if strings.IndexRune(edgeKind, entryKeySep) != -1 {
+	} else if strings.Index(edgeKind, entryKeySepStr) != -1 {
 		return nil, fmt.Errorf("edgeKind contains key separator")
-	} else if strings.IndexRune(factName, entryKeySep) != -1 {
+	} else if strings.Index(factName, entryKeySepStr) != -1 {
 		return nil, fmt.Errorf("factName contains key separator")
 	}
 
-	keySuffix := bytes.Join([][]byte{
-		nil, []byte(edgeKind), []byte(factName), nil,
-	}, []byte{entryKeySep})
+	keySuffix := []byte(entryKeySepStr + edgeKind + entryKeySepStr + factName + entryKeySepStr)
 
 	srcEncoding, err := encodeVName(source)
 	if err != nil {
 		return nil, fmt.Errorf("error encoding source VName: %v", err)
-	} else if bytes.IndexRune(srcEncoding, entryKeySep) != -1 {
+	} else if bytes.Index(srcEncoding, entryKeySepBytes) != -1 {
 		return nil, fmt.Errorf("source VName contains key separator %v", source)
 	}
 	targetEncoding, err := encodeVName(target)
 	if err != nil {
 		return nil, fmt.Errorf("error encoding target VName: %v", err)
-	} else if bytes.IndexRune(targetEncoding, entryKeySep) != -1 {
+	} else if bytes.Index(targetEncoding, entryKeySepBytes) != -1 {
 		return nil, fmt.Errorf("target VName contains key separator")
 	}
 

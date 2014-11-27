@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // The HttpTransport class allows KRPC calls to be made through an HTTP
 // channel.
 // A typical use of this class is:
@@ -34,7 +50,7 @@ class HttpTransport {
 
   // Starts the HTTP server on the given |port| and will not return until the
   // service stops.
-  // TODO(ivann): Have a way to stop the server, currently this method will
+  // TODO: Have a way to stop the server, currently this method will
   // never return.
   bool StartServing(int port) const;
 

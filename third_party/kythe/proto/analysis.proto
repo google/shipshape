@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 syntax = "proto2";
 
 package kythe.proto;
@@ -27,9 +43,9 @@ message AnalysisOutput {
 
 // Describes a single unit of compilation.
 message CompilationUnit {
-  // The base VName for the compilation.
-  // Used to derive other VNames. Generally, the `signature` and `language`
-  // components are ignored.
+  // The base VName for the compilation and any generated VNames from its
+  // analysis. Generally, the `language` component designates the language of
+  // the compilation's sources.
   optional VName v_name = 1;
 
   // The revision of the compilation.
@@ -75,30 +91,6 @@ message CompilationUnit {
   // exact prefix is considered to be accessible from the same path without
   // that prefix.
   optional string working_directory = 8;
-
-  // TODO(schroederc): Handle language-specific arguments in a more general way.
-  optional JavaArguments java_arguments = 101;
-  // Filled if this describes a go compilation.
-  optional GoArguments go_arguments = 103;
-}
-
-// Describes the java specifics for a CompilationUnit.
-// TODO(schroederc): Legacy protobuf; remove ASAP.
-message JavaArguments {
-  // Separated list of classpaths used in the compilation.
-  // Entries here must have matching entries in required_input unless
-  // the entry is part of the JDK.
-  repeated string classpath = 1;
-
-  // Separated list of sourcepaths used in the compilation.
-  // Entries here must have matching entries in required_input.
-  // E.g. "third-party/java_src/gwt/svn/trunk/src".
-  repeated string sourcepath = 2;
-}
-
-// Describes the Go specifics for a CompilationUnit.
-// Currently only used as a marker to indicate this is a Go compilation.
-message GoArguments {
 }
 
 // A FileInfo specifies metadata for a file under analysis.

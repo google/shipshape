@@ -31,7 +31,8 @@
         "cxx_extractor.cc"
       ],
       "hdrs": [
-        "cxx_extractor.h"
+        "cxx_extractor.h",
+        "cxx_extractor_resources.inc"
       ],
       "cc_libs": [
         "//third_party/kythe/cxx/common:lib",

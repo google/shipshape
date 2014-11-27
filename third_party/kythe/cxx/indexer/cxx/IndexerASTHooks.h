@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // This file uses the Clang style conventions.
 // Defines AST visitors and consumers used by the indexer tool.
 
@@ -217,13 +233,20 @@ enum BehaviorOnUnimplemented : bool {
   Continue = true ///< Continue indexing, possibly emitting less data.
 };
 
+/// \brief Specifies what the indexer should do with template instantiations.
+enum BehaviorOnTemplates : bool {
+  SkipInstantiations = false, ///< Don't visit template instantiations.
+  VisitInstantiations = true  ///< Visit template instantiations.
+};
+
 /// \brief An AST visitor that extracts information for a translation unit and
 /// writes it to a `GraphObserver`.
 class IndexerASTVisitor : public clang::RecursiveASTVisitor<IndexerASTVisitor> {
 public:
   IndexerASTVisitor(clang::ASTContext &C, BehaviorOnUnimplemented B,
-                    GraphObserver *GO = nullptr)
-      : IgnoreUnimplemented(B), Observer(GO ? GO : &NullObserver), Context(C) {}
+                    BehaviorOnTemplates T, GraphObserver *GO = nullptr)
+      : IgnoreUnimplemented(B), TemplateMode(T),
+        Observer(GO ? GO : &NullObserver), Context(C) {}
 
   bool VisitVarDecl(const clang::VarDecl *Decl);
   bool VisitDeclRefExpr(const clang::DeclRefExpr *DRE);
@@ -421,7 +444,9 @@ public:
       clang::VarTemplatePartialSpecializationDecl *TD);
   bool TraverseFunctionTemplateDecl(clang::FunctionTemplateDecl *FTD);
 
-  bool shouldVisitTemplateInstantiations() const { return true; }
+  bool shouldVisitTemplateInstantiations() const {
+    return TemplateMode == BehaviorOnTemplates::VisitInstantiations;
+  }
   bool shouldVisitImplicitCode() const { return true; }
   // Disables data recursion. We intercept Traverse* methods in the RAV, which
   // are not triggered during data recursion.
@@ -435,6 +460,9 @@ public:
 private:
   /// Whether we should stop on missing cases or continue on.
   BehaviorOnUnimplemented IgnoreUnimplemented;
+
+  /// Should we visit template instantiations?
+  BehaviorOnTemplates TemplateMode;
 
   NullGraphObserver NullObserver;
   GraphObserver *const Observer;
@@ -580,11 +608,13 @@ private:
 /// \brief An `ASTConsumer` that passes events to a `GraphObserver`.
 class IndexerASTConsumer : public clang::ASTConsumer {
 public:
-  explicit IndexerASTConsumer(GraphObserver *GO, BehaviorOnUnimplemented B)
-      : Observer(GO), IgnoreUnimplemented(B) {}
+  explicit IndexerASTConsumer(GraphObserver *GO, BehaviorOnUnimplemented B,
+                              BehaviorOnTemplates T)
+      : Observer(GO), IgnoreUnimplemented(B), TemplateMode(T) {}
 
   void HandleTranslationUnit(clang::ASTContext &Context) override {
-    IndexerASTVisitor Visitor(Context, IgnoreUnimplemented, Observer);
+    IndexerASTVisitor Visitor(Context, IgnoreUnimplemented, TemplateMode,
+                              Observer);
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
   }
 
@@ -592,6 +622,8 @@ private:
   GraphObserver *const Observer;
   /// Whether we should stop on missing cases or continue on.
   BehaviorOnUnimplemented IgnoreUnimplemented;
+  /// Whether we should visit template instantiations.
+  BehaviorOnTemplates TemplateMode;
 };
 
 } // namespace kythe

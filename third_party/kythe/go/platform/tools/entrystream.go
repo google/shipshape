@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Binary entrystream provides tools to manipulate a stream of delimited Entry
 // messages. By default, entrystream does nothing to the entry stream.
 //
@@ -80,7 +96,7 @@ func main() {
 		if *countOnly {
 			entryCount++
 		} else if *entrySets {
-			if !proto.Equal(set.Source, entry.Source) || !proto.Equal(set.Target, entry.Target) || set.EdgeKind != entry.GetEdgeKind() {
+			if !storage.VNameEqual(set.Source, entry.Source) || !storage.VNameEqual(set.Target, entry.Target) || set.EdgeKind != entry.GetEdgeKind() {
 				if len(set.Properties) != 0 {
 					failOnErr(encoder.Encode(set))
 				}

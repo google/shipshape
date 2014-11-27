@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // cxx_extractor is meant to be a drop-in replacement for clang/gcc's frontend.
 // It collects all of the resources that clang would use to compile a single
 // source file (as determined by the command line arguments) and produces a
@@ -12,9 +28,9 @@
 // will consider /foo/bar to be the executable it was called as for purposes
 // of argument interpretation. These arguments are then stripped.
 
-// If --resource-dir (a Clang argument) is *not* provided, the path to the
-// extractor's actual executable (or at least the one it was called from) is
-// used to infer the location of certain "builtin" header files.
+// If -resource-dir (a Clang argument) is *not* provided, versions of the
+// compiler header files embedded into the extractor's executable will be
+// mapped to /kythe_builtins and used.
 
 #include "cxx_extractor.h"
 
@@ -27,6 +43,10 @@
 #include "third_party/kythe/proto/analysis.pb.h"
 #include "third_party/kythe/cxx/common/CommandLineUtils.h"
 #include "llvm/Support/Path.h"
+
+/// When a -resource-dir is not specified, map builtin versions of compiler
+/// headers to this directory.
+constexpr char kBuiltinResourceDirectory[] = "/kythe_builtins";
 
 int main(int argc, char* argv[]) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -41,14 +61,16 @@ int main(int argc, char* argv[]) {
   kythe::IndexWriter index_writer;
   // Check to see if an alternate resource-dir was specified; otherwise,
   // invent one. We need this to find stddef.h and friends.
-  if (std::find(final_args.begin(), final_args.end(), "-resource-dir") ==
-      final_args.end()) {
-    std::string llvm_root_directory = actual_executable;
-    llvm_root_directory =
-        llvm_root_directory.substr(0, llvm_root_directory.find_last_of('/'));
-    llvm_root_directory.append(
-        "/../../../../../third_party/llvm/lib/clang/" CLANG_VERSION_STRING);
-    final_args.insert(final_args.begin() + 1, llvm_root_directory);
+  bool map_builtin_resources = true;
+  for (const auto& arg : final_args) {
+    // Handle both -resource-dir=foo and -resource-dir foo.
+    if (llvm::StringRef(arg).startswith("-resource-dir")) {
+      map_builtin_resources = false;
+      break;
+    }
+  }
+  if (map_builtin_resources) {
+    final_args.insert(final_args.begin() + 1, kBuiltinResourceDirectory);
     final_args.insert(final_args.begin() + 1, "-resource-dir");
   }
   // Store the arguments post-filtering.
@@ -97,6 +119,9 @@ int main(int argc, char* argv[]) {
     });
     clang::tooling::ToolInvocation invocation(final_args, extractor.release(),
                                               file_manager.get());
+    if (map_builtin_resources) {
+      kythe::MapCompilerResources(&invocation, kBuiltinResourceDirectory);
+    }
     invocation.run();
   }
   google::protobuf::ShutdownProtobufLibrary();

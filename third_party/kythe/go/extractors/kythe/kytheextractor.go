@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Binary kytheextractor creates a compilation index file from a compilation action.
 // The information is passed through command line arguments; the extractor
 // takes the arguments usually provided to the Go compiler. Additionally,
@@ -22,10 +38,6 @@ import (
 
 	"third_party/kythe/go/platform/indexinfo"
 	"third_party/kythe/go/platform/local"
-
-	apb "third_party/kythe/proto/analysis_proto"
-
-	"code.google.com/p/goprotobuf/proto"
 )
 
 const (
@@ -117,8 +129,8 @@ func (ci *compilationInput) toCompilation() (*local.Compilation, error) {
 	comp := local.NewCompilation()
 
 	comp.SetSignature(ci.extractSignature())
-	comp.Proto.VName.Language = proto.String(languageName)
-	comp.Proto.VName.Corpus = proto.String(corpus)
+	comp.SetLanguage(languageName)
+	comp.SetCorpus(corpus)
 
 	isArg := make(map[string]bool)
 	for _, arg := range ci.Args {
@@ -136,11 +148,6 @@ func (ci *compilationInput) toCompilation() (*local.Compilation, error) {
 	}
 
 	comp.Proto.Argument = ci.Args
-
-	// Set the GoArguments
-	// TODO(mataevs) - this is a hardcode that avoids using the cunit package.
-	// We assume from the beginning that the index file is for a Go compilation.
-	comp.Proto.GoArguments = new(apb.GoArguments)
 
 	return comp, nil
 }

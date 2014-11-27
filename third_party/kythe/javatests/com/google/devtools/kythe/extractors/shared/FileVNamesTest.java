@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.devtools.kythe.extractors.shared;
 
 import com.google.devtools.kythe.proto.Storage.VName;
@@ -99,9 +115,9 @@ public class FileVNamesTest extends TestCase {
         f.lookupBaseVName("grp1/12345/endingGroup"));
 
     assertEquals(VName.newBuilder().setCorpus("kythe").setRoot("java").build(),
-        f.lookupBaseVName("campfire-out/bin/kythe/java/some/path/A.jar!/some/path/A.class"));
+        f.lookupBaseVName("campfire-out/bin/third_party/kythe/java/some/path/A.jar!/some/path/A.class"));
     assertEquals(VName.newBuilder().setCorpus("kythe").setRoot("java").build(),
-        f.lookupBaseVName("kythe/java/com/google/devtools/kythe/util/KytheURI.java"));
+        f.lookupBaseVName("third_party/kythe/java/com/google/devtools/kythe/util/KytheURI.java"));
     assertEquals(VName.newBuilder().setCorpus("otherCorpus").setRoot("java").build(),
         f.lookupBaseVName("otherCorpus/java/com/google/devtools/kythe/util/KytheURI.java"));
   }

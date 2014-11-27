@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // A method represents a unit of work that can be called given an input,
 // serialized as a string, and that will send its outputs to the given output
 // sink.
@@ -194,7 +210,7 @@ std::unique_ptr<Method> MakeMethod(TService* service,
   return details::MakeJSONOutputOnlyMethod(service, func);
 }
 
-// TODO(ivann): Other variants of the MakeMethod template, accept input and
+// TODO: Other variants of the MakeMethod template, accept input and
 // returns JSON output and accepts no input and returns proto stream. These are
 // not implemented yet because we don't have a service that needs them yet.
 }

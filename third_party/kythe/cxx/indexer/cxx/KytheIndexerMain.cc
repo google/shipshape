@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Allows the Kythe C++ indexer to be invoked from the command line. By default,
 // this program reads a single C++ compilation unit from stdin and emits
 // binary Kythe artifacts to stdout as a sequence of Entity protos.
@@ -35,14 +51,18 @@ DEFINE_bool(ignore_unimplemented, false,
             "Continue indexing even if we find something we don't support.");
 DEFINE_bool(flush_after_each_entry, false,
             "Flush output after writing each entry.");
+DEFINE_bool(index_template_instantiations, true,
+            "Index template instantiations.");
+
+namespace kythe {
 
 /// \brief Reads data from a .kindex file into memory.
 /// \param path The path from which the file should be read.
 /// \param virtual_files A vector to be filled with FileData.
 /// \param unit A `CompilationUnit` to be decoded from the .kindex.
 static void DecodeIndexFile(const std::string &path,
-                            std::vector<kythe::proto::FileData> *virtual_files,
-                            kythe::proto::CompilationUnit *unit) {
+                            std::vector<proto::FileData> *virtual_files,
+                            proto::CompilationUnit *unit) {
   using namespace google::protobuf::io;
   int fd = open(path.c_str(), O_RDONLY, S_IREAD | S_IWRITE);
   CHECK_GE(fd, 0) << "Couldn't open input file " << path;
@@ -56,7 +76,7 @@ static void DecodeIndexFile(const std::string &path,
       CHECK(unit->ParseFromCodedStream(&coded_input_stream));
       unit = nullptr;
     } else {
-      kythe::proto::FileData content;
+      proto::FileData content;
       CHECK(content.ParseFromCodedStream(&coded_input_stream));
       CHECK(content.has_info());
       virtual_files->push_back(content);
@@ -110,9 +130,9 @@ Examples:
     }
   }
 
-  std::vector<kythe::proto::FileData> virtual_files;
+  std::vector<proto::FileData> virtual_files;
   clang::FileSystemOptions file_system_options;
-  kythe::proto::CompilationUnit unit;
+  proto::CompilationUnit unit;
 
   if (kindex_file.size()) {
     DecodeIndexFile(kindex_file, &virtual_files, &unit);
@@ -149,7 +169,7 @@ Examples:
     close(read_fd);
     // clang wants the source file to be null-terminated, but this should
     // not be in range of the StringRef. std::string ends with \0.
-    kythe::proto::FileData file_data;
+    proto::FileData file_data;
     file_data.mutable_info()->set_path(source_file_name);
     file_data.set_content(source_data.str());
     virtual_files.push_back(file_data);
@@ -168,21 +188,24 @@ Examples:
   bool had_no_errors;
   {
     google::protobuf::io::FileOutputStream raw_output(write_fd);
-    kythe::FileOutputStream kythe_output(&raw_output);
-    kythe::KytheGraphRecorder kythe_recorder(&kythe_output);
-    kythe::KytheGraphObserver observer(&kythe_recorder);
-    std::map<std::string, kythe::proto::VName> path_to_vname;
+    FileOutputStream kythe_output(&raw_output);
+    KytheGraphRecorder kythe_recorder(&kythe_output);
+    KytheGraphObserver observer(&kythe_recorder);
+    std::map<std::string, proto::VName> path_to_vname;
     for (const auto &input : unit.required_input()) {
       if (input.has_info() && input.info().has_path() && input.has_v_name()) {
         observer.set_path_vname(input.info().path(), input.v_name());
         path_to_vname[input.info().path()] = input.v_name();
       }
     }
-    std::unique_ptr<kythe::IndexerFrontendAction> action(
-        new kythe::IndexerFrontendAction(&observer));
-    action->setIgnoreUnimplemented(
-        FLAGS_ignore_unimplemented ? kythe::BehaviorOnUnimplemented::Continue
-                                   : kythe::BehaviorOnUnimplemented::Abort);
+    std::unique_ptr<IndexerFrontendAction> action(
+        new IndexerFrontendAction(&observer));
+    action->setIgnoreUnimplemented(FLAGS_ignore_unimplemented
+                                       ? BehaviorOnUnimplemented::Continue
+                                       : BehaviorOnUnimplemented::Abort);
+    action->setTemplateMode(FLAGS_index_template_instantiations
+                                ? BehaviorOnTemplates::VisitInstantiations
+                                : BehaviorOnTemplates::SkipInstantiations);
     llvm::IntrusiveRefCntPtr<clang::FileManager> file_manager(
         new clang::FileManager(file_system_options));
     final_args.insert(final_args.begin() + 1, "-fsyntax-only");
@@ -220,3 +243,7 @@ Examples:
 
   return had_no_errors == false;
 }
+
+}  // namespace kythe
+
+int main(int argc, char *argv[]) { return kythe::main(argc, argv); }

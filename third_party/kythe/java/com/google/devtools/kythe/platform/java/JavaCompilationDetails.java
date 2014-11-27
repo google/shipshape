@@ -1,21 +1,32 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.devtools.kythe.platform.java;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.StandardSystemProperty;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.devtools.kythe.common.FormattingLogger;
-import com.google.devtools.kythe.common.PathUtil;
-import com.google.devtools.kythe.extractors.java.JavaCompilationUnitExtractor;
-import com.google.devtools.kythe.platform.shared.FileDataProvider;
 import com.google.devtools.kythe.platform.java.filemanager.CompilationUnitBasedJavaFileManager;
+import com.google.devtools.kythe.platform.shared.FileDataProvider;
 import com.google.devtools.kythe.proto.Analysis.CompilationUnit;
-import com.google.devtools.kythe.proto.Analysis.JavaArguments;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
@@ -33,7 +44,6 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 
-
 /** Provides a {@link JavacAnalyzer} with access to compilation information. */
 public class JavaCompilationDetails {
   private final JavacTask javac;
@@ -43,11 +53,8 @@ public class JavaCompilationDetails {
   private final Throwable analysisCrash;
   private final String encoding;
 
-  private static final FormattingLogger logger = FormattingLogger.getLogger(JavaCompilationDetails.class);
-
-  private static final String[] JRE_JARS = new String[] {
-    "lib/rt.jar", "lib/resources.jar", "lib/jsse.jar", "lib/jce.jar", "lib/charsets.jar"
-  };
+  private static final FormattingLogger logger =
+      FormattingLogger.getLogger(JavaCompilationDetails.class);
 
   private static final Charset DEFAULT_ENCODING = UTF_8;
 
@@ -85,8 +92,8 @@ public class JavaCompilationDetails {
         fileDataProvider, compilationUnit,
         compiler.getStandardFileManager(diagnosticsCollector, null, null), encoding);
 
-    Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromStrings(
-        JavaCompilationUnitExtractor.getSourceFileList(compilationUnit));
+    Iterable<? extends JavaFileObject> sources =
+        fileManager.getJavaFileObjectsFromStrings(compilationUnit.getSourceFileList());
 
     // If we use no writer, output will go to stdErr. The NullWriter is /dev/null.
     Writer javacOut = useStdErr ? null : NullWriter.getInstance();
@@ -192,32 +199,15 @@ public class JavaCompilationDetails {
    */
   private static List<String> optionsFromCompilationUnit(CompilationUnit compilationUnit,
       List<Processor> processors, boolean isLocalAnalysis) {
-    JavaArguments javaArguments = compilationUnit.getJavaArguments();
-
     // Start with the default options, and then add in source
     // Turn on all warnings as well.
     List<String> options = Lists.newArrayList(compilationUnit.getArgumentList());
     options = JavacOptionsUtils.useAllWarnings(options);
     options = JavacOptionsUtils.ensureEncodingSet(options, DEFAULT_ENCODING.name());
 
-    // Set up the sourcepath
-    if (javaArguments.getSourcepathCount() > 0) {
-      options.add("-sourcepath");
-      options.add(Joiner.on(':').join(javaArguments.getSourcepathList()));
-    }
-
-    List<String> paths = Lists.newArrayList();
     if (!isLocalAnalysis) {
-      // Adding jre jars to the classpath
-      String javaHome = StandardSystemProperty.JAVA_HOME.value();
-      for (String jreJar : JRE_JARS) {
-        paths.add(PathUtil.join(javaHome, jreJar));
-      }
+      JavacOptionsUtils.appendJREJarsToClasspath(options);
     }
-    if (javaArguments.getClasspathCount() > 0) {
-      paths.addAll(javaArguments.getClasspathList());
-    }
-    options = JavacOptionsUtils.appendClasspathToOptions(options, paths);
 
     if (processors.isEmpty()) {
       options.add("-proc:none");

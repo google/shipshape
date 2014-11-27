@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "cxx_extractor.h"
 
 #include <unordered_map>
@@ -351,6 +367,23 @@ void IndexWriter::WriteIndex(
 std::unique_ptr<clang::FrontendAction> NewExtractor(
     ExtractorCallback callback) {
   return std::unique_ptr<clang::FrontendAction>(new ExtractorAction(callback));
+}
+
+#include "cxx_extractor_resources.inc"
+
+void MapCompilerResources(clang::tooling::ToolInvocation* invocation,
+                          const char* map_directory) {
+  // kClangCompilerIncludes is a null-terminated list of pairs of pointers to
+  // strings.
+  llvm::StringRef map_directory_ref(map_directory);
+  for (const char** filename = kClangCompilerIncludes; *filename;
+       filename += 2) {
+    const char** data = filename + 1;
+    llvm::SmallString<1024> out_path = map_directory_ref;
+    llvm::sys::path::append(out_path, "include");
+    llvm::sys::path::append(out_path, *filename);
+    invocation->mapVirtualFile(out_path, *data);
+  }
 }
 
 }  // namespace kythe

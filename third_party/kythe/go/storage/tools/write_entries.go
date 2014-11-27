@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Binary write_entries reads a stream of protobuf entries on os.Stdin and
 // writes each to a graphstore server.
 //
@@ -20,6 +36,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sync"
 	"sync/atomic"
 
@@ -41,6 +58,7 @@ func init() {
 var (
 	batchSize  = flag.Int("batch_size", 1024, "Maximum entries per write for consecutive entries with the same source")
 	numWorkers = flag.Int("workers", 1, "Number of concurrent workers writing to the GraphStore")
+	profCPU    = flag.String("cpu_profile", "", "Write CPU profile to the specified file (if nonempty)")
 
 	gs storage.GraphStore
 )
@@ -63,6 +81,16 @@ func main() {
 
 	defer gsutil.LogClose(gs)
 	gsutil.EnsureGracefulExit(gs)
+
+	if *profCPU != "" {
+		f, err := os.Create(*profCPU)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	writes := storage.BatchWrites(stream.ReadEntries(os.Stdin), *batchSize)
 

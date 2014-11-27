@@ -91,6 +91,7 @@
         "template_class_inst_explicit.cc",
         "template_class_inst_implicit.cc",
         "template_class_inst_implicit_dependent.cc",
+        "template_class_skip_implicit_on.cc",
         "template_depname_class.cc",
         "template_depname_inst_class.cc",
         "template_depname_path_graph.cc",

@@ -6,8 +6,9 @@ HAD_ERRORS=0
 VERIFIER=campfire-out/bin/third_party/kythe/cxx/verifier/verifier
 INDEXER=campfire-out/bin/third_party/kythe/cxx/indexer/cxx/indexer
 BASEDIR=third_party/kythe/cxx/indexer/cxx/testdata
+# one_case test-file clang-standard verifier-argument indexer-argument
 function one_case {
-  ${INDEXER} -i $1 -- -std=$2 | ${VERIFIER} $1 $3
+  ${INDEXER} -i $1 $4 -- -std=$2 | ${VERIFIER} $1 $3
   RESULTS=( ${PIPESTATUS[0]} ${PIPESTATUS[1]} )
   if [ ${RESULTS[0]} -ne 0 ]; then
     echo "[ FAILED INDEX: $1 ]"
@@ -73,6 +74,7 @@ one_case "${BASEDIR}/template_class_defn.cc" "c++1y"
 one_case "${BASEDIR}/template_class_inst_implicit.cc" "c++1y"
 one_case "${BASEDIR}/template_class_inst_explicit.cc" "c++1y"
 one_case "${BASEDIR}/template_class_inst_implicit_dependent.cc" "c++1y"
+one_case "${BASEDIR}/template_class_skip_implicit_on.cc" "c++1y" "" "--index_template_instantiations=false"
 one_case "${BASEDIR}/template_depname_class.cc" "c++1y"
 one_case "${BASEDIR}/template_depname_inst_class.cc" "c++1y"
 one_case "${BASEDIR}/template_depname_path_graph.cc" "c++1y"

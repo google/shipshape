@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Program gopackages constructs compilation index files for Go source packages
 // stored in a directory tree that follows the go/build conventions for package
 // organization (root/pkg for compiled objects, root/src/pkg for source).
@@ -24,8 +40,6 @@ import (
 	"sync"
 	"time"
 
-	apb "third_party/kythe/proto/analysis_proto"
-
 	"third_party/kythe/go/platform/indexinfo"
 	"third_party/kythe/go/platform/local"
 )
@@ -38,6 +52,8 @@ var (
 	outputDir       = flag.String("output_dir", "",
 		"Directory where index files should be written (required)")
 )
+
+const languageName = "go"
 
 func init() {
 	flag.Usage = func() {
@@ -227,6 +243,7 @@ func (m *maker) Make(pkg *build.Package) (*indexinfo.IndexInfo, error) {
 	cu.AddDirectory(m.corpusRoot)
 
 	signature := signature(pkg)
+	cu.SetLanguage(languageName)
 	cu.SetSignature(signature)
 	cu.SetCorpus(*corpus)
 	cu.SetOutput(strings.TrimPrefix(pkg.PkgObj, m.corpusRoot))
@@ -262,8 +279,7 @@ func (m *maker) Make(pkg *build.Package) (*indexinfo.IndexInfo, error) {
 		}
 	}
 
-	// Set up fake compiler arguments to simulate enough of what the Blaze Go
-	// rules would do to allow an analyzer to work.
+	// Set up fake compiler arguments to simulate enough to allow an analyzer to work.
 	cu.Proto.Argument = append([]string{
 		"fake-gobuild",
 		"--go-compiler", "fake-go", "-I", strings.TrimRight(m.corpusRoot, "/"),
@@ -274,7 +290,6 @@ func (m *maker) Make(pkg *build.Package) (*indexinfo.IndexInfo, error) {
 		"--package-output", cu.Proto.GetOutputKey(),
 		"--tags", "gc",
 	}, cu.Proto.SourceFile...)
-	cu.Proto.GoArguments = new(apb.GoArguments)
 
 	// TODO(fromberger): Maybe do something with test files.  Perhaps they
 	// should get their own compilations.  Since these compilations cannot be

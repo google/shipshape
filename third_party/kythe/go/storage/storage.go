@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Package storage declares the GraphStore interface and exposes utility functions for
 // key/value-based GraphStore implementations.
 package storage
@@ -7,8 +23,6 @@ import (
 	"log"
 	"strings"
 	"sync"
-
-	"code.google.com/p/goprotobuf/proto"
 
 	spb "third_party/kythe/proto/storage_proto"
 )
@@ -52,7 +66,7 @@ type GraphStore interface {
 
 // EntryMatchesScan returns whether the Entry should be in the result set for the ScanRequest.
 func EntryMatchesScan(req *spb.ScanRequest, entry *spb.Entry) bool {
-	return (req.Target == nil || proto.Equal(entry.Target, req.Target)) &&
+	return (req.Target == nil || VNameEqual(entry.Target, req.Target)) &&
 		(req.GetEdgeKind() == "" || entry.GetEdgeKind() == req.GetEdgeKind()) &&
 		strings.HasPrefix(entry.GetFactName(), req.GetFactPrefix())
 }
@@ -275,7 +289,7 @@ func BatchWrites(entries <-chan *spb.Entry, maxSize int) <-chan *spb.WriteReques
 				FactValue: entry.FactValue,
 			}
 
-			if req != nil && (!proto.Equal(req.Source, entry.Source) || len(req.Update) >= maxSize) {
+			if req != nil && (!VNameEqual(req.Source, entry.Source) || len(req.Update) >= maxSize) {
 				ch <- req
 				req = nil
 			}
@@ -294,4 +308,9 @@ func BatchWrites(entries <-chan *spb.Entry, maxSize int) <-chan *spb.WriteReques
 		}
 	}()
 	return ch
+}
+
+// VNameEqual determines if two VNames are equivalent
+func VNameEqual(v1, v2 *spb.VName) bool {
+	return v1.GetSignature() == v2.GetSignature() && v1.GetCorpus() == v2.GetCorpus() && v1.GetRoot() == v2.GetRoot() && v1.GetPath() == v2.GetPath() && v1.GetLanguage() == v2.GetLanguage()
 }

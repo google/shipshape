@@ -1,6 +1,22 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 syntax = "proto2";
 
-package grok.proto;
+package kythe.proto;
 
 // Design document: <link when written>
 // This proto represents a very preliminary attempt to define a cross-reference
@@ -11,7 +27,7 @@ package grok.proto;
 // VNames.  We may choose to replace those with VNames.  Otherwise, define and
 // link to the preferred ticket encoding.
 // Strawman: Lightly canonicalized proto wire format encoded base64.
-// Strawman: Kythe URI scheme, a cleaned-up version of the Grok scheme.
+// Strawman: Kythe URI scheme, a cleaned-up version of the Kythe scheme.
 
 // XRefService provides access to a Kythe graph for fast read-only access to
 // cross-reference relationships.  What constitutes a "Cross-reference" is not
@@ -128,20 +144,9 @@ message EdgesRequest {
 
   // TODO(fromberger): Should this interface support automatic indirection
   // through "name" nodes?
-  //
-  // Internally, name resolution will be a 2-stage lookup, as now, based on
-  // constructible tickets that point to "real" nodes.  We can collapse that if
-  // we need to; I haven't bothered for now, as CodeSearch never uses it -- no
-  // queries from CS in the last 30 days to FindEdges:
-  //
-  //   dremel> select method_name, client_jobname, count(method_name)
-  //      from grok_replies.rpc_logs.last30days
-  //      where method_name like '%Find%'
-  //      group by method_name, client_jobname order by client_jobname;
-  //
-  // However, in the Kythe model, names are more widely used.  For now, I'm
-  // assuming name-indirecting lookup will be a separate API, and that the
-  // initial clients will just make two (batching) calls if they need to.
+  // For now, I'm assuming name-indirecting lookup will be a separate
+  // API, and that the initial clients will just make two (batching)
+  // calls if they need to.
 }
 
 // An EdgeSet represents a collection of edges outbound from a single node.
@@ -200,10 +205,6 @@ message Fact {
 // file or buffer.  An empty LOCATION denotes the entirety of the referenced
 // file or buffer.
 //
-// This is similar to the Grok Location message, but simplified:
-//  - Location kind no longer distinguishes POINT from RANGE;
-//  - EXTERNAL locations are no longer necessary.
-//  - Offsets are now explicitly defined as byte offsets.
 message Location {
   // The ticket of the file this location belongs to.  If the location
   // represents a memory buffer, the ticket should be omitted.

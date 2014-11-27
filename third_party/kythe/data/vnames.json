@@ -22,6 +22,14 @@
     }
   },
   {
+    "pattern": "(/kythe_builtins/include)/(.*)",
+    "vname": {
+      "corpus": "cstdlib",
+      "root": "@1@",
+      "path": "@2@"
+    }
+  },
+  {
     "pattern": "third_party/([^/]+)/.*\\.jar!/([^\\$]+)(\\$.+)?\\.class",
     "vname": {
       "corpus": "third_party",

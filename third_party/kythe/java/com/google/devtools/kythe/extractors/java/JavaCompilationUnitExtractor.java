@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.devtools.kythe.extractors.java;
 
 import static java.util.stream.Collectors.toList;
@@ -24,7 +40,6 @@ import com.google.devtools.kythe.extractors.shared.FileVNames;
 import com.google.devtools.kythe.proto.Analysis.CompilationUnit;
 import com.google.devtools.kythe.proto.Analysis.CompilationUnit.FileInput;
 import com.google.devtools.kythe.proto.Analysis.FileData;
-import com.google.devtools.kythe.proto.Analysis.JavaArguments;
 import com.google.devtools.kythe.proto.Storage.VName;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -61,15 +76,12 @@ import javax.tools.ToolProvider;
 /**
  * Extracts all required information (set of source files, class paths,
  * and compiler options) from a java compilation command and stores the
- * information to replay the compilation in a bigtable.
+ * information to replay the compilation.
  *
  * The extractor runs the Javac compiler to get a exact description of all files
  * required for the compilation as a whole. It then creates CompilationUnit entries
  * for each source file. We do not do this on a per file basis as the Java
- * Compiler takes too long to do this. (e.g. analyzing
- * //java/com/google/common/collect would take > 10 mins that way).
- *
- * @author jvg@google.com (Jeffrey van Gogh)
+ * Compiler takes too long to do this.
  */
 public class JavaCompilationUnitExtractor {
   private static final FormattingLogger logger =
@@ -120,9 +132,9 @@ public class JavaCompilationUnitExtractor {
     this.trackUnusedDependencies = trackUnusedDependencies;
     this.rootDirectory = rootDirectory;
 
-    // Remove trailing dots.  Interesting trivia: when blaze gets the
-    // JDK out of perforce, the java.home variable is terminated with
-    // "/bin/..".  However, this is not the case for the class files
+    // Remove trailing dots.  Interesting trivia: in some build systems,
+    // the java.home variable is terminated with "/bin/..".
+    // However, this is not the case for the class files
     // that we are trying to filter.
     String tmpjdkJar = null;
     try {
@@ -130,9 +142,7 @@ public class JavaCompilationUnitExtractor {
           PathUtil.dirname(System.getProperty("java.home"))).getCanonicalPath();
     } catch (IOException e) {
       throw new ExtractionException(
-          "JDK path not found: " +
-              PathUtil.dirname(System.getProperty("java.home")),
-          e, false);
+          "JDK path not found: " + PathUtil.dirname(System.getProperty("java.home")), e, false);
     }
     jdkJar = tmpjdkJar;
   }
@@ -146,14 +156,14 @@ public class JavaCompilationUnitExtractor {
       Set<String> newSourcePath, Set<String> newClassPath, List<String> sourceFiles,
       String outputPath, Set<String> unusedJars) {
     CompilationUnit.Builder unit = CompilationUnit.newBuilder();
-    JavaArguments.Builder javaArguments = JavaArguments.newBuilder();
-    javaArguments.addAllClasspath(newClassPath);
-    javaArguments.addAllSourcepath(newSourcePath);
     unit.setVName(VName.newBuilder()
         .setSignature(target)
         .setLanguage("java"));
     unit.addAllArgument(options);
-    unit.setJavaArguments(javaArguments);
+    unit.addArgument("-sourcepath");
+    unit.addArgument(Joiner.on(":").join(newSourcePath));
+    unit.addArgument("-cp");
+    unit.addArgument(Joiner.on(":").join(newClassPath));
     unit.setHasCompileErrors(hasErrors);
     unit.addAllRequiredInput(requiredInputs);
     for (String sourceFile : sourceFiles) {
@@ -161,15 +171,6 @@ public class JavaCompilationUnitExtractor {
     }
     unit.setOutputKey(outputPath);
     return unit.build();
-  }
-
-  /**
-   * Returns the source file list from the given {@code CompilationUnit}. This method returns the
-   * source file list on the {@code CompilationUnit} itself, if present, and returns the explicit
-   * source file list on the {@code CompilationUnit}'s {@code JavaArguments}, if not present.
-   */
-  public static List<String> getSourceFileList(CompilationUnit compilationUnit) {
-    return compilationUnit.getSourceFileList();
   }
 
   @Deprecated
@@ -383,7 +384,7 @@ public class JavaCompilationUnitExtractor {
       return;
     }
 
-    // Make the path relative to the indexer (e.g. a subdir of google3/).
+    // Make the path relative to the indexer (e.g. a subdir of corpus/).
     // If not possible, we store the fullpath.
     String relativePath =
         ExtractorUtils.tryMakeRelative(rootDirectory, uri.getRawSchemeSpecificPart());
@@ -438,7 +439,7 @@ public class JavaCompilationUnitExtractor {
         results.newClassPath.add(strippedPath.substring(0, cindex));
       }
     }
-    // TODO(mdempsky): Better way to identify generated source files?
+    // TODO: Better way to identify generated source files?
     if (requiredInput.getKind() == Kind.SOURCE && strippedPath.contains("-gensrc.jar.files/")) {
       results.explicitSources.add(strippedPath);
       int i = strippedPath.indexOf("-gensrc.jar.files/") + 17;
@@ -540,7 +541,7 @@ public class JavaCompilationUnitExtractor {
           throw new ExtractionException("Bad processorpath entry", e, false);
         }
       }
-      // TODO(mdempsky): Use a more restricted ClassLoader to prevent class path skew?
+      // TODO: Use a more restricted ClassLoader to prevent class path skew?
       ClassLoader parent = getClass().getClassLoader();
       ClassLoader loader = new URLClassLoader(urls.toArray(new URL[0]), parent);
       for (String processor : processors) {
@@ -559,7 +560,7 @@ public class JavaCompilationUnitExtractor {
       // In order for the compiler to load all required .java & .class files
       // we need to have it go through parsing, analysis & generate phases.
       // Unfortunately the latter is needed to get a complete list, this was found
-      // as we were breaking on analyzing certain files (http://b/6160815).
+      // as we were breaking on analyzing certain files.
       compilationUnits = javacTask.parse();
       javacTask.generate();
     } catch (com.sun.tools.javac.util.Abort e) {

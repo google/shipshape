@@ -5,16 +5,15 @@ v_name {
 }
 required_input {
   v_name {
-    path: "kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
+    path: "third_party/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
   }
   info {
-    path: "kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
+    path: "third_party/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
     digest: "cf28b786fa21d0c45156e8011ac809afc454703fa03d767a5aeeed382f902795"
   }
 }
 has_compile_errors: false
-source_file: "kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
-output_key: "campfire-out/gen/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/names_lib"
-java_arguments {
-  sourcepath: "kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata"
-}
+argument: "-sourcepath"
+argument: "third_party/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata"
+source_file: "third_party/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/Names.java"
+output_key: "campfire-out/gen/third_party/kythe/javatests/com/google/devtools/kythe/analyzers/java/testdata/pkg/names_lib"

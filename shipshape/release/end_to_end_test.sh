@@ -4,7 +4,7 @@
 
 set -eux
 
-CONVOY_URL='cloud.container.google.com'
+CONVOY_URL='container.cloud.google.com'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
 REPO=$CONVOY_URL/_b_shipshape_registry

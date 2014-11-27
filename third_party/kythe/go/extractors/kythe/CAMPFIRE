@@ -8,9 +8,7 @@
       ],
       "go_pkgs": [
         "//third_party/kythe/go/platform/indexinfo",
-        "//third_party/kythe/go/platform/local",
-        "//third_party/kythe/proto:analysis_proto",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/kythe/go/platform/local"
       ]
     }
   }
