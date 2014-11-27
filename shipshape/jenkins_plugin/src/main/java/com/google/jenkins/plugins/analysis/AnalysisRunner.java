@@ -143,6 +143,8 @@ public class AnalysisRunner extends Builder implements Serializable {
   public final String project;
   // The revision in the repository.
   public final String revision;
+  // Whether to use verbose output
+  public final boolean verbose;
   // Custom docker socket, e.g., tcp://localhost:4243.
   public final String socket;
 
@@ -154,6 +156,7 @@ public class AnalysisRunner extends Builder implements Serializable {
    * @param host the host of the repo.
    * @param project the name of the GCE project.
    * @param revision the revision in the repository.
+   * @param verbose whether to use verbose output
    * @param socket use the TCP socket to communicate with docker.
    */
   @DataBoundConstructor
@@ -162,12 +165,14 @@ public class AnalysisRunner extends Builder implements Serializable {
       final String host,
       final String project,
       final String revision,
+      final boolean verbose,
       final String socket
       ) {
     this.host = host;
     this.project = project;
     this.revision = revision;
     this.categories = categories;
+    this.verbose = verbose;
     this.socket = socket;
   }
 
@@ -226,13 +231,16 @@ public class AnalysisRunner extends Builder implements Serializable {
             logger.addStream(Paths.get(outputPath, SHIPSHAPE_LOG_FILE_NAME).toString(), true);
 
             // Logging parameter and path values for inspection.
-            logger.log(String.format("Using workspace path: %s", workspacePath));
-            logger.log(String.format("Using output path: %s", outputPath));
-            logger.log(String.format("Using categories: %s", Joiner.on(", ").join(categoryList)));
-            logger.log(String.format("Using host: %s", host));
-            logger.log(String.format("Using project: %s", project));
-            logger.log(String.format("Using revision: %s", revision));
-            logger.log(String.format("Using socket: %s", socket));
+            if (verbose) {
+              logger.log("Verbose mode enabled");
+              logger.log(String.format("Using workspace path: %s", workspacePath));
+              logger.log(String.format("Using output path: %s", outputPath));
+              logger.log(String.format("Using categories: %s", Joiner.on(", ").join(categoryList)));
+              logger.log(String.format("Using host: %s", host));
+              logger.log(String.format("Using project: %s", project));
+              logger.log(String.format("Using revision: %s", revision));
+              logger.log(String.format("Using socket: %s", socket));
+            }
 
             getDockerAccessToken(logger);
 
@@ -445,28 +453,36 @@ public class AnalysisRunner extends Builder implements Serializable {
     boolean success = false;
     long delay = RETRY_INIT_DELAY_MS;
     for (int i = 1; i <= RETRY_MAX_ATTEMPTS; i++) {
-      logger.log(String.format("Running task [%s] (attempt:%d) ...", task.desc(), i));
+      maybeLog(logger, String.format("Running task [%s] (attempt:%d) ...", task.desc(), i));
       try {
         if (task.run()) {
-          logger.log(String.format("Task [%s] succeeded.", task.desc()));
+          maybeLog(logger, String.format("Task [%s] succeeded.", task.desc()));
           success = true;
           break;
         }
-        logger.log(String.format("Task [%s] failed with return false", task.desc()));
+        maybeLog(logger, String.format("Task [%s] failed with return false", task.desc()));
       } catch (Exception e) {
-        logger.log(String.format("Task [%s] failed with exception: %s", task.desc(),
+        maybeLog(logger, String.format("Task [%s] failed with exception: %s", task.desc(),
               e.getMessage()));
       }
       try {
-        logger.log(String.format("Retrying task [%s] in %d ms ...", task.desc(), delay));
+        maybeLog(logger, String.format("Retrying task [%s] in %d ms ...", task.desc(), delay));
         Thread.sleep(delay);
         delay *= RETRY_DELAY_MULTIPLIER;
       } catch (InterruptedException e) {
-        logger.log(String.format("Task [%s] was interrupted: %s", task.desc(),
+        maybeLog(logger, String.format("Task [%s] was interrupted: %s", task.desc(),
               e.getMessage()));
       }
     }
     return success;
+  }
+
+  // TODO(ciera): Instead of using "maybeLog" and verbose checks everwhere, just
+  // set these to log level fine and have verbose print out log level FINE.
+  private void maybeLog(ShipshapeLogger logger, String message) {
+    if (verbose) {
+      logger.log(message);
+    }
   }
 
   /**
@@ -568,7 +584,9 @@ public class AnalysisRunner extends Builder implements Serializable {
    */
   private String runCommand(ShipshapeLogger logger, String[] cmd)
       throws ShipshapeException {
-    logger.log("Running cmd: " + Arrays.toString(cmd));
+    if (verbose) {
+      logger.log("Running cmd: " + Arrays.toString(cmd));
+    }
     Process p = null;
     int exitCode = 0;
     String errorMsg = "";
@@ -596,7 +614,7 @@ public class AnalysisRunner extends Builder implements Serializable {
       throw new ShipshapeException(String.format(
          "Command failed with exit code: %d, error: %s, stdout: %s, stderr: %s",
          exitCode, errorMsg, stdout.toString(), stderr.toString()));
-    } else {
+    } else if (verbose) {
       logger.log(String.format("Finished executing cmd\n\tstdout:\n%s\n\tstderr:\n%s\n",
             stdout.toString().trim(), stderr.toString().trim()));
     }
