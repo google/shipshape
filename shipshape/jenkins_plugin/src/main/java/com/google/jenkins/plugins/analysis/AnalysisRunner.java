@@ -82,18 +82,12 @@ public class AnalysisRunner extends Builder implements Serializable {
   private static final String JENKINS_OUTPUT_MOUNT_POINT = "/shipshape-output";
   private static final String JENKINS_WORKSPACE_MOUNT_POINT = "/shipshape-workspace";
 
-  private static final String DEFAULT_EVENT_NAME = "build";
-
   // The name of the output file, with a blub of analyzer output.
   private static final String RESULT_FILE_NAME = "analysis-log.txt";
   // The name of the shipshape log file. This file name may be used in integration tests.
   private static final String SHIPSHAPE_LOG_FILE_NAME = "shipshape-log.txt";
   // Encoding used for output files.
   private static final String FILE_ENCODING = "UTF-8";
-
-  // Default parameter values going into the shipshape context when no other values
-  // were given for the plugin.
-  private static final String DEFAULT_REVISION = "master";
 
   // Default socket value used for docker communication. This is used as the default for
   // the socket plugin parameter when no other value is given.
@@ -137,12 +131,6 @@ public class AnalysisRunner extends Builder implements Serializable {
   // Plugin parameters (needs to be public final):
   // Comma-separated list of categories to run.
   public final String categories;
-  // The host of the project if the repo type supports that.
-  public final String host;
-  // The name of the project in GCE.
-  public final String project;
-  // The revision in the repository.
-  public final String revision;
   // Whether to use verbose output
   public final boolean verbose;
   // Custom docker socket, e.g., tcp://localhost:4243.
@@ -162,15 +150,8 @@ public class AnalysisRunner extends Builder implements Serializable {
   @DataBoundConstructor
   public AnalysisRunner(
       final String categories,
-      final String host,
-      final String project,
-      final String revision,
       final boolean verbose,
-      final String socket
-      ) {
-    this.host = host;
-    this.project = project;
-    this.revision = revision;
+      final String socket) {
     this.categories = categories;
     this.verbose = verbose;
     this.socket = socket;
@@ -190,19 +171,13 @@ public class AnalysisRunner extends Builder implements Serializable {
   public final boolean perform(
       final AbstractBuild build,
       final Launcher launcher,
-      final BuildListener listener
-      ) throws InterruptedException, IOException {
+      final BuildListener listener) throws InterruptedException, IOException {
 
     listener.getLogger().println("[Shipshape] Ready");
     listener.getLogger().println(String.format("[Shipshape] Repo: %s", REPO));
 
     // Serializable values (strings, primitive types ...) needed on the Jenkins slave should be
     // moved to final variables here to be used in the anonymous Callable class below.
-    final String host = this.host;
-    final String project = (this.project == null || this.project.trim().equals(""))
-        ? "" : this.project;
-    final String revision = (this.revision == null || this.revision.trim().equals(""))
-        ? DEFAULT_REVISION : this.revision;
     final String socket = (this.socket == null || this.socket.trim().equals(""))
         ? DEFAULT_DOCKER_SOCKET : this.socket;
     final List<String> categoryList = Lists.newArrayList(
@@ -230,6 +205,7 @@ public class AnalysisRunner extends Builder implements Serializable {
             // here to enable logging on the Jenkins slave.
             ShipshapeLogger logger = ShipshapeLogger.create(listener);
             logger.addStream(Paths.get(outputPath, SHIPSHAPE_LOG_FILE_NAME).toString(), true);
+            String jobName = build.getProject().getDisplayName();
 
             // Logging parameter and path values for inspection.
             if (verbose) {
@@ -237,16 +213,12 @@ public class AnalysisRunner extends Builder implements Serializable {
               logger.log(String.format("Using workspace path: %s", workspacePath));
               logger.log(String.format("Using output path: %s", outputPath));
               logger.log(String.format("Using categories: %s", Joiner.on(", ").join(categoryList)));
-              logger.log(String.format("Using host: %s", host));
-              logger.log(String.format("Using project: %s", project));
-              logger.log(String.format("Using revision: %s", revision));
               logger.log(String.format("Using socket: %s", socket));
             }
 
             getDockerAccessToken(logger);
 
-            ShipshapeRequest req = constructShipshapeRequest(logger, workspace, categoryList,
-                host, project, revision);
+            ShipshapeRequest req = constructShipshapeRequest(logger, workspace, categoryList, jobName);
             logger.log(String.format("ShipshapeRequest: %s", req));
             ShipshapeResponse res = makeShippingContainerRequest(logger, socket, req, workspacePath,
                 outputPath);
@@ -292,36 +264,19 @@ public class AnalysisRunner extends Builder implements Serializable {
    * @param logger The logger to use.
    * @param workspacePath Path to workspace.
    * @param categoryList The categories to run.
-   * @param host The host in case of a gerrit change.
-   * @param project The project of the repository.
-   * @param revision The revision in the repository.
    * @throws ShipshapeException If reading of files from local workspace failed.
    */
   private ShipshapeRequest constructShipshapeRequest(ShipshapeLogger logger,
-      FilePath workspacePath, List<String> categoryList, String host, String project,
-      String revision) throws ShipshapeException {
+      FilePath workspacePath, List<String> categoryList, String jobName) throws ShipshapeException {
     logger.log("Creating Shipshape request ...");
-    SourceContext sourceContext = null;
-    if (!(host == null || host.equals(""))) {
-      sourceContext = SourceContext.newBuilder().setGerrit(
-          GerritSourceContext.newBuilder()
-              .setHost(host).setProject(project).setRevisionId(revision))
-          .build();
-    } else { // else assuming cloud repo
-      sourceContext = sourceContext.newBuilder().setCloudRepo(CloudRepoSourceContext.newBuilder()
-          .setRevisionId(revision).setRepoId(RepoId.newBuilder()
-            .setProjectRepoId(ProjectRepoId.newBuilder().setProjectId(project))))
-      .build();
-    }
+    // TODO(ciera): Have the service accept requests without a source context.
     ShipshapeContext shipshapeContext = ShipshapeContext.newBuilder()
-        .setSourceContext(sourceContext)
+        .setSourceContext(SourceContext.getDefaultInstance())
         .setRepoRoot(JENKINS_WORKSPACE_MOUNT_POINT)
         .build();
-    // TODO(emso): Find out and use the name of the job as the event name, for instance,
-    // this could be 'canary', 'staging', or similar in a multistage pipeline.
     return ShipshapeRequest.newBuilder()
         .setShipshapeContext(shipshapeContext)
-        .setEvent(DEFAULT_EVENT_NAME)
+        .setEvent(jobName)
         .addAllTriggeredCategory(categoryList)
         .build();
   }

@@ -4,18 +4,6 @@
 		<f:textbox default="PostMessage" />
 	</f:entry>
 
-        <f:entry title="${%Host for Gerrit}" field="host">
-		<f:textbox />
-	</f:entry>
-
-	<f:entry title="${%Project name}" field="project">
-		<f:textbox />
-	</f:entry>
-
-	<f:entry title="${%Revision}" field="revision">
-		<f:textbox />
-	</f:entry>
-
 	<f:entry title="${%Verbose mode}" field="verbose">
 		<f:checkbox default="false"/>
 	</f:entry>
