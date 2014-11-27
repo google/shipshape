@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"third_party/kythe/go/rpc/server"
 	"shipshape/analyzers/codealert"
 	"shipshape/analyzers/govet"
 	"shipshape/analyzers/jshint"
@@ -14,6 +13,9 @@ import (
 	"shipshape/analyzers/pylint"
 	"shipshape/analyzers/wordcount"
 	"shipshape/api"
+	"third_party/kythe/go/rpc/server"
+
+	ctxpb "shipshape/proto/shipshape_context_proto"
 )
 
 var (
@@ -33,7 +35,7 @@ func main() {
 		new(pylint.PyLintAnalyzer),
 		new(govet.GoVetAnalyzer),
 	}
-	analyzerService := api.CreateAnalyzerService(analyzers)
+	analyzerService := api.CreateAnalyzerService(analyzers, ctxpb.Stage_PRE_BUILD)
 
 	s1 := server.Service{Name: "AnalyzerService"}
 	if err := s1.Register(analyzerService); err != nil {

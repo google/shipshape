@@ -33,14 +33,16 @@ var (
 
 type ShipshapeDriver struct {
 	AnalyzerLocations []string
-	// catMap is a mapping from analyzer locations to the categories they have available.
-	// The range of catMap is the same as AnalyzerLocations
-	catMap map[string]strset.Set
+	// serviceMap is a mapping from analyzer locations to the categories they have available
+	// and the stage they should be run at.
+	// The range of serviceMap is the same as AnalyzerLocations
+	serviceMap map[string]serviceInfo
 }
 
-type dispatcherCategories struct {
-	dispatcher string
+type serviceInfo struct {
+	analyzer   string
 	categories strset.Set
+	stage      contextpb.Stage
 }
 
 // NewDriver creates a new driver with with the analyzers at the
@@ -56,15 +58,15 @@ func NewDriver(analyzerLocations []string) *ShipshapeDriver {
 
 // NewTestDriver is only for testing. It creates a ShipshapeDriver
 // with the address to categories map preset.
-func NewTestDriver(addrToCats map[string]strset.Set) *ShipshapeDriver {
+func NewTestDriver(services []serviceInfo) *ShipshapeDriver {
 	var addrs []string
-	var catMap = make(map[string]strset.Set)
-	for addr, cats := range addrToCats {
-		trimmed := strings.TrimPrefix(addr, "http://")
+	var trimmedServices = make(map[string]serviceInfo)
+	for _, info := range services {
+		trimmed := strings.TrimPrefix(info.analyzer, "http://")
 		addrs = append(addrs, trimmed)
-		catMap[trimmed] = cats
+		trimmedServices[trimmed] = serviceInfo{trimmed, info.categories, info.stage}
 	}
-	return &ShipshapeDriver{AnalyzerLocations: addrs, catMap: catMap}
+	return &ShipshapeDriver{AnalyzerLocations: addrs, serviceMap: trimmedServices}
 }
 
 // Run runs the analyzers that this driver knows about on the provided ShipshapeRequest,
@@ -72,6 +74,7 @@ func NewTestDriver(addrToCats map[string]strset.Set) *ShipshapeDriver {
 func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {
 	var ars []*rpcpb.AnalyzeResponse
 	log.Printf("Received analysis request for event %v, categories %v, repo %v", *in.Event, in.TriggeredCategory, *in.ShipshapeContext.RepoRoot)
+
 	// However we exit, send back the set of collected AnalyzeResponses
 	defer func() {
 		out <- &rpcpb.ShipshapeResponse{
@@ -117,7 +120,7 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	}
 
 	// Find out what categories we have available, and remove/warn on the missing ones
-	td.catMap = td.getAllCategories()
+	td.serviceMap = td.getAllServiceInfo()
 	allCats := td.allCats()
 	missingCats := strset.New().AddSet(desiredCats).RemoveSet(allCats)
 	for missing := range missingCats {
@@ -148,7 +151,7 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	}
 
 	log.Print("Analyzing")
-	ars = append(ars, td.callAllAnalyzers(desiredCats, context)...)
+	ars = append(ars, td.callAllAnalyzers(desiredCats, context, contextpb.Stage_PRE_BUILD)...)
 	log.Print("Analysis completed")
 	return nil
 }
@@ -234,11 +237,14 @@ nextFile:
 // callAllAnalyzers loops through the analyzer services, determines whether analyze should be called
 // on each, and then calls it with the appropriate set of files and categories.
 // It takes the configuration and the original context, and returns a slice of AnalyzeResponses.
-func (td ShipshapeDriver) callAllAnalyzers(desiredCats strset.Set, context *contextpb.ShipshapeContext) []*rpcpb.AnalyzeResponse {
+func (td ShipshapeDriver) callAllAnalyzers(desiredCats strset.Set, context *contextpb.ShipshapeContext, stage contextpb.Stage) []*rpcpb.AnalyzeResponse {
 	var ars []*rpcpb.AnalyzeResponse
 	var chans []chan *rpcpb.AnalyzeResponse
-	for analyzer, providedCats := range td.catMap {
-		cats := providedCats.Intersect(desiredCats)
+	for analyzer, info := range td.serviceMap {
+		if info.stage != stage {
+			continue
+		}
+		cats := info.categories.Intersect(desiredCats)
 
 		log.Printf("Analyzer %s filtered to categories %v and files %v", analyzer, cats, context.FilePath)
 
@@ -286,45 +292,57 @@ func filterResults(context *contextpb.ShipshapeContext, response *rpcpb.AnalyzeR
 // allCats returns the entire set of categories for the driver, across all analyzers
 func (td ShipshapeDriver) allCats() strset.Set {
 	var catSet = strset.New()
-	for _, cats := range td.catMap {
-		catSet.AddSet(cats)
+	for _, info := range td.serviceMap {
+		catSet.AddSet(info.categories)
 	}
 	return catSet
 }
 
-// getAllCategories loops through the analyzers and gets the categories for each of them.
-// It returns a mapping from the analyzer address to the set of categories it provides.
-func (td ShipshapeDriver) getAllCategories() map[string]strset.Set {
-	categories := make(map[string]strset.Set)
-	var catChans []chan dispatcherCategories
+// getAllServiceInfo loops through the analyzers and gets the categories and stage for each of them.
+func (td ShipshapeDriver) getAllServiceInfo() map[string]serviceInfo {
+	infos := make(map[string]serviceInfo)
+	var infoChans []chan serviceInfo
 	for _, analyzer := range td.AnalyzerLocations {
-		c := make(chan dispatcherCategories)
-		catChans = append(catChans, c)
-		go callGetCategories(analyzer, c)
+		c := make(chan serviceInfo)
+		infoChans = append(infoChans, c)
+		go callGetAnalyzerInfo(analyzer, c)
 	}
-	for _, c := range catChans {
-		dispatcherCats := <-c
-		categories[dispatcherCats.dispatcher] = dispatcherCats.categories
+	for _, c := range infoChans {
+		serviceInfo := <-c
+		infos[serviceInfo.analyzer] = serviceInfo
 	}
-	return categories
+	return infos
 }
 
-// callGetCategories requests the categories for the specified analyzer and puts them onto the
+// callGetAnalyzerInfo requests the categories for the specified analyzer and puts them onto the
 // channel provided. If anything goes wrong, it returns the empty set.
-func callGetCategories(analyzer string, out chan<- dispatcherCategories) {
+func callGetAnalyzerInfo(analyzer string, out chan<- serviceInfo) {
 	httpClient := getHTTPClient(analyzer)
-	var resp rpcpb.GetCategoryResponse
+	var catResp rpcpb.GetCategoryResponse
+	var stageResp rpcpb.GetStageResponse
 	var cats strset.Set
-	err := httpClient.Call("/AnalyzerService/GetCategory", &rpcpb.GetCategoryRequest{}, &resp)
+	var stage contextpb.Stage
+	// TODO(ciera): Maybe we should just combine these into one call...
+	err := httpClient.Call("/AnalyzerService/GetCategory", &rpcpb.GetCategoryRequest{}, &catResp)
 	if err != nil {
 		log.Printf("Could not get categories from %s: %v", analyzer, err)
 		cats = strset.New()
 	} else {
-		cats = strset.New(resp.Category...)
+		cats = strset.New(catResp.Category...)
 	}
-	out <- dispatcherCategories{
-		dispatcher: analyzer,
+
+	err = httpClient.Call("/AnalyzerService/GetStage", &rpcpb.GetStageRequest{}, &stageResp)
+	if err != nil {
+		log.Printf("Could not get stage from %s: %v", analyzer, err)
+		cats = strset.New()
+	} else {
+		stage = *stageResp.Stage
+	}
+
+	out <- serviceInfo{
+		analyzer:   analyzer,
 		categories: cats,
+		stage:      stage,
 	}
 }
 

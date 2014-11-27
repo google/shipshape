@@ -65,9 +65,9 @@ message CompilationDetails {
 // Indicates what stage of Shipshape to plug in to or Shipshape is running in.
 enum Stage {
   // optionally set: changelist_details.
-  FILES_ONLY = 1;
+  PRE_BUILD = 1;
 
   // guaranteed to be set: compilation_unit.
   // optionally set: changelist_details.
-  COMPILATION_DETAILS = 2;
+  POST_BUILD = 2;
 }

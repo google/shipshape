@@ -39,7 +39,7 @@ public class JavacService {
 
       final Server server = new Server();
       JavaDispatcher<JavaCompilationDetails> dispatcher =
-          new JavaDispatcher<>(analyzers, Stage.COMPILATION_DETAILS, new JavacStateBuilder(service.javacOut));
+          new JavaDispatcher<>(analyzers, Stage.POST_BUILD, new JavacStateBuilder(service.javacOut));
       dispatcher.register(server);
       logger.infofmt("Starting service at %d", service.port);
       new HttpServerFrontend(server, service.port).run();
