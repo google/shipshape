@@ -1,5 +1,4 @@
 FROM google/cloud-dev-java:prod
-# ./jenkins/docker-pull.sh -b dev_containers google/cloud-dev-java:prod
 
 # The default apt source list does not provide nodejs so we need to add a new source that does.
 RUN echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list

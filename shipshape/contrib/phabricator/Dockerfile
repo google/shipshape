@@ -1,4 +1,6 @@
-FROM google/cloud-dev-nodejs
+FROM google/cloud-dev-nodejs:prod
+
+RUN apt-get update && apt-get upgrade -y
 
 RUN apt-get install -y php5 php5-curl
 RUN mkdir /arc
