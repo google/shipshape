@@ -193,9 +193,6 @@ public class AnalysisRunner extends Builder implements Serializable {
       final BuildListener listener
       ) throws InterruptedException, IOException {
 
-    listener.getLogger().println("[Shipshape] Ready");
-    listener.getLogger().println(String.format("[Shipshape] Repo: %s", REPO));
-
     // Serializable values (strings, primitive types ...) needed on the Jenkins slave should be
     // moved to final variables here to be used in the anonymous Callable class below.
     final String host = this.host;
@@ -250,7 +247,9 @@ public class AnalysisRunner extends Builder implements Serializable {
             logger.log(String.format("ShipshapeRequest: %s", req));
             ShipshapeResponse res = makeShippingContainerRequest(logger, socket, req, workspacePath,
                 outputPath);
-            logger.log(String.format("ShipshapeResponse: %s", res));
+            if (verbose) {
+              logger.log(String.format("ShipshapeResponse: %s", res));
+            }
             int numRes = reportShipshapeResults(logger, res, outputPath);
             logger.closeStreams();
             return numRes;
@@ -395,10 +394,22 @@ public class AnalysisRunner extends Builder implements Serializable {
       StringBuffer failureBuffer = new StringBuffer();
       for (AnalyzeResponse analyzeRes : res.getAnalyzeResponseList()) {
         for (Note note : analyzeRes.getNoteList()) {
+          String line = "", col = "";
+
+          if (note.getLocation().hasRange()) {
+            if (note.getLocation().getRange().hasStartLine()) {
+              line = ":" + note.getLocation().getRange().getStartLine();
+            }
+            if (note.getLocation().getRange().hasStartColumn()) {
+              col = ":" + note.getLocation().getRange().getStartColumn();
+            }
+          }
+
           String noteMsg = String.format(
-              "AnalysisResult {Category: '%s', Subcategory: '%s', Description: '%s', Location: %s, Range: %s}",
-              note.getCategory(), note.getSubcategory(), note.getDescription(),
-              note.getLocation().getPath(), note.getLocation().getRange());
+              "%s%s\n\t%s%s%s\n\t%s",
+              note.getCategory(), (note.hasSubcategory() ? ":" + note.getSubcategory() : ""),
+              note.getLocation().getPath(), line, col,
+              note.getDescription());
           resultBuffer.append(noteMsg + "\n");
           nbrAnalysisResults++;
           if (note.getSeverity() != Note.Severity.OTHER) {
@@ -407,7 +418,7 @@ public class AnalysisRunner extends Builder implements Serializable {
         }
         for (AnalysisFailure failure : analyzeRes.getFailureList()) {
           String failureMsg =
-              String.format("AnalysisFailure {Category: '%s', Failure message: '%s'}",
+              String.format("Analyzer %s failed to run: %s",
                 failure.getCategory(), failure.getFailureMessage());
           failureBuffer.append(failureMsg + "\n");
           nbrAnalysisFailures++;
@@ -679,9 +690,10 @@ public class AnalysisRunner extends Builder implements Serializable {
       stderrHandler.join();
 
       ShipshapeResponse response = ShipshapeResponse.parseFrom(stdout.toByteArray());
-      logger.log(String.format(
-          "Finished executing command for sending the Shipshape request\n\tstderr:\n%s\n",
-          stderr.toString()));
+      logger.log("Shipshape response received");
+      if (verbose) {
+        logger.log(String.format("\n\tstderr:\n%s\n", stderr.toString()));
+      }
       return response;
     } catch (InvalidProtocolBufferException e) {
       logger.log(String.format("Failed to parse proto response, error: %s", e.getMessage()));
