@@ -16,11 +16,12 @@ import (
 	"strings"
 	"time"
 
-	"third_party/kythe/go/rpc/client"
 	"shipshape/util/docker"
+	"third_party/kythe/go/rpc/client"
 
 	"code.google.com/p/goprotobuf/proto"
 
+	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rpcpb "shipshape/proto/shipshape_rpc_proto"
 	spb "shipshape/proto/source_context_proto"
@@ -49,7 +50,45 @@ const (
 
 func logMessage(msg *rpcpb.ShipshapeResponse) error {
 	if *jsonOutput == "" {
-		log.Printf("result:\n\n%v\n", proto.MarshalTextString(msg))
+		fileNotes := make(map[string][]*notepb.Note)
+		for _, analysis := range msg.AnalyzeResponse {
+			for _, failure := range analysis.Failure {
+				log.Printf("WARNING: Analyzer %s failed to run: %s", failure.Category, failure.FailureMessage)
+			}
+			for _, note := range analysis.Note {
+				path := ""
+				if note.Location != nil {
+					path = note.Location.GetPath()
+				}
+				fileNotes[path] = append(fileNotes[path], note)
+			}
+		}
+
+		// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+		for path, notes := range fileNotes {
+			if path != "" {
+				log.Println(path)
+			} else {
+				log.Println("Global")
+			}
+			for _, note := range notes {
+				loc := ""
+				subCat := ""
+				if note.Subcategory != nil {
+					subCat = ":" + *note.Subcategory
+				}
+				if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
+					if note.GetLocation().GetRange().StartColumn != nil {
+						loc = fmt.Sprintf("Lint %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
+					} else {
+						loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
+					}
+				}
+
+				log.Printf("%s[%s%s]", loc, *note.Category, subCat)
+				log.Printf("\t%s", *note.Description)
+			}
+		}
 		return nil
 	}
 
