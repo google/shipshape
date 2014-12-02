@@ -10,7 +10,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
   <groupId>com.google.jenkins.plugins.analysis</groupId>
   <artifactId>google-analysis-plugin</artifactId>
-  <version>0.33</version>
+  <version>0.37</version>
   <packaging>hpi</packaging>
   <name>Google Analysis Plugin</name>
 
