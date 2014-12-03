@@ -119,11 +119,12 @@ func main() {
 		glog.Fatalf("Could not get absolute path for %s: %v", dir, err)
 	}
 
-	if res := docker.Authenticate(server); res.Err != nil {
-		glog.Infoln(strings.TrimSpace(result.Stderr))
-		glog.Fatalf("Could not authenticate with %s: %v", server, err.Error())
+	res := docker.Authenticate(server)
+	if res.Err != nil {
+		glog.Infoln(strings.TrimSpace(res.Stderr))
+		glog.Fatalf("Could not authenticate with %s: %v", server, res.Err)
 	}
-	glog.Infoln(strings.TrimSpace(result.Stdout))
+	glog.Infoln(strings.TrimSpace(res.Stdout))
 
 	image := docker.FullImageName(*repo, image, *tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
