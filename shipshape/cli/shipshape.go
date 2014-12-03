@@ -10,13 +10,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"shipshape/util/docker"
+	glog "third_party/go-glog"
 	"third_party/kythe/go/rpc/client"
 
 	"code.google.com/p/goprotobuf/proto"
@@ -53,7 +53,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 		fileNotes := make(map[string][]*notepb.Note)
 		for _, analysis := range msg.AnalyzeResponse {
 			for _, failure := range analysis.Failure {
-				log.Printf("WARNING: Analyzer %s failed to run: %s", failure.Category, failure.FailureMessage)
+				fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", failure.Category, failure.FailureMessage)
 			}
 			for _, note := range analysis.Note {
 				path := ""
@@ -67,9 +67,9 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 		// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
 		for path, notes := range fileNotes {
 			if path != "" {
-				log.Println(path)
+				fmt.Println(path)
 			} else {
-				log.Println("Global")
+				fmt.Println("Global")
 			}
 			for _, note := range notes {
 				loc := ""
@@ -79,15 +79,16 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 				}
 				if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
 					if note.GetLocation().GetRange().StartColumn != nil {
-						loc = fmt.Sprintf("Lint %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
+						loc = fmt.Sprintf("Line %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
 					} else {
 						loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
 					}
 				}
 
-				log.Printf("%s[%s%s]", loc, *note.Category, subCat)
-				log.Printf("\t%s", *note.Description)
+				fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
+				fmt.Printf("\t%s\n", *note.Description)
 			}
+			fmt.Println()
 		}
 		return nil
 	}
@@ -104,21 +105,21 @@ func main() {
 
 	// 0. Get the directory to analyze.
 	if len(flag.Args()) != 1 {
-		log.Fatal("Usage: shipshape [OPTIONS] <directory>")
+		glog.Fatal("Usage: shipshape [OPTIONS] <directory>")
 	}
 
 	dir := flag.Arg(0)
 	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
-		log.Fatalf("%s is not a valid directory", dir)
+		glog.Fatalf("%s is not a valid directory", dir)
 	}
 
 	absRoot, err := filepath.Abs(dir)
 	if err != nil {
-		log.Fatalf("Could not get absolute path for %s: %v", dir, err)
+		glog.Fatalf("Could not get absolute path for %s: %v", dir, err)
 	}
 
 	image := docker.FullImageName(*repo, image, *tag)
-	log.Printf("Starting shipshape using %s on %s", image, absRoot)
+	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
 	// 1. Create the request
 	// TODO(ciera): What should we do for a local run?
@@ -130,7 +131,7 @@ func main() {
 	if *categories != "" {
 		trigger = strings.Split(*categories, ",")
 	} else {
-		log.Printf("No categories found. Will be using categories specified by the config file for the event %s", *event)
+		glog.Infof("No categories found. Will be using categories specified by the config file for the event %s", *event)
 	}
 
 	req := &rpcpb.ShipshapeRequest{
@@ -141,20 +142,21 @@ func main() {
 		},
 		Event: proto.String(*event),
 	}
-	log.Printf("Using request:\n%v\n", req)
+	glog.Infof("Using request:\n%v\n", req)
 
 	// 2. If necessary, pull it
 	// If local is true it doesn't meant that docker won't pull it, it will just
 	// look locally first.
 	if !*local {
-		log.Printf("Pulling image %s", image)
+		glog.Infof("Pulling image %s", image)
 		result := docker.Pull(image)
-		fmt.Println(strings.TrimSpace(result.Stdout))
+		glog.Infoln(strings.TrimSpace(result.Stdout))
 		if result.Err != nil {
-			log.Println(strings.TrimSpace(result.Stderr))
-			log.Panicf("Error from pull: %v", result.Err)
+			glog.Infoln(strings.TrimSpace(result.Stderr))
+			glog.Errorf("Error from pull: %v", result.Err)
+			return
 		}
-		log.Println("Pulling complete")
+		glog.Infoln("Pulling complete")
 	}
 
 	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
@@ -163,55 +165,61 @@ func main() {
 	// still create the container.
 	if !*stayUp {
 		defer func() {
-			log.Println("Stopping and removing shipping_container")
+			glog.Infoln("Stopping and removing shipping_container")
 			result := docker.Stop("shipping_container", true)
-			fmt.Println(strings.TrimSpace(result.Stdout))
+			glog.Infoln(strings.TrimSpace(result.Stdout))
 			if result.Err != nil {
-				log.Println(strings.TrimSpace(result.Stderr))
-				log.Printf("Could not stop shipping_container: %v", result.Err)
+				glog.Infoln(strings.TrimSpace(result.Stderr))
+				glog.Infof("Could not stop shipping_container: %v", result.Err)
 			} else {
-				log.Println("Removed.")
+				glog.Infoln("Removed.")
 			}
 		}()
 	}
 
 	// 3. Run it!
 	if *streams {
-		log.Printf("Running image %s in stream mode", image)
+		glog.Infof("Running image %s in stream mode", image)
 		reqBytes, err := proto.Marshal(req)
 		if err != nil {
-			log.Panicf("Error marshalling %v: %v", req, err)
+			glog.Errorf("Error marshalling %v: %v", req, err)
+			return
 		}
 
 		result := docker.RunAttached(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, nil, reqBytes)
-		log.Println(strings.TrimSpace(result.Stderr))
+		glog.Infoln(strings.TrimSpace(result.Stderr))
 
 		if result.Err != nil {
-			log.Panicf("Error from run: %v", result.Err)
+			glog.Errorf("Error from run: %v", result.Err)
+			return
 		}
 		var msg rpcpb.ShipshapeResponse
 		if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
-			log.Panicf("Unexpected ShipshapeResponse %v", err)
+			glog.Errorf("Unexpected ShipshapeResponse %v", err)
+			return
 		}
 		err = logMessage(&msg)
 		if err != nil {
-			log.Panicf("Error processing results: %v", err)
+			glog.Errorf("Error processing results: %v", err)
+			return
 		}
 	} else {
-		log.Printf("Running image %s in service mode", image)
+		glog.Infof("Running image %s in service mode", image)
 		environment := map[string]string{"START_SERVICE": "true"}
 		result := docker.Run(image, "shipping_container", map[int]int{10007: 10007}, volumeMap, nil, environment)
-		fmt.Println(strings.TrimSpace(result.Stdout))
-		log.Println(strings.TrimSpace(result.Stderr))
+		glog.Infoln(strings.TrimSpace(result.Stdout))
+		glog.Infoln(strings.TrimSpace(result.Stderr))
 		if result.Err != nil {
-			log.Panicf("Error from run: %v", result.Err)
+			glog.Errorf("Error from run: %v", result.Err)
+			return
 		}
-		log.Println("Image running")
+		glog.Infoln("Image running")
 
-		log.Println("About to call out to the shipshape service")
+		glog.Infoln("About to call out to the shipshape service")
 		c := client.NewHTTPClient("localhost:10007")
 		if err := c.WaitUntilReady(10 * time.Second); err != nil {
-			log.Panicf("HTTP client did not become healthy: %v", err)
+			glog.Errorf("HTTP client did not become healthy: %v", err)
+			return
 		}
 		rd := c.Stream("/ShipshapeService/Run", req)
 		defer rd.Close()
@@ -220,14 +228,16 @@ func main() {
 			if err := rd.NextResult(&msg); err == io.EOF {
 				break
 			} else if err != nil {
-				log.Panicf("Error from proto call: %v", err)
+				glog.Errorf("Error from proto call: %v", err)
+				return
 			}
 
 			if err := logMessage(&msg); err != nil {
-				log.Panicf("Error processing results: %v", err)
+				glog.Errorf("Error processing results: %v", err)
+				return
 			}
 		}
 	}
 
-	log.Printf("End of Results.")
+	glog.Infof("End of Results.")
 }

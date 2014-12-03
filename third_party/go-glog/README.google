@@ -1,0 +1,6 @@
+URL: clone of https://github.com/golang/glog on 2014/12/02
+Version: 44145f04b6
+License: Apache
+License File: LICENSE
+Description: Leveled execution logs for Go
+Local Modifications: No modifications.
