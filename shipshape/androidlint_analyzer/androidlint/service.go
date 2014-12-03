@@ -10,9 +10,11 @@ import (
 	"net/http"
 	"os"
 
-	"third_party/kythe/go/rpc/server"
 	"shipshape/androidlint_analyzer/androidlint"
 	"shipshape/api"
+	"third_party/kythe/go/rpc/server"
+
+	ctxpb "shipshape/proto/shipshape_context_proto"
 )
 
 var (
@@ -23,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	s := server.Service{Name: "AnalyzerService"}
-	as := api.CreateAnalyzerService([]api.Analyzer{new(androidlint.Analyzer)})
+	as := api.CreateAnalyzerService([]api.Analyzer{new(androidlint.Analyzer)}, ctxpb.Stage_PRE_BUILD)
 	if err := s.Register(as); err != nil {
 		log.Fatalf("Registering analyzer service failed: %v", err)
 	}

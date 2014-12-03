@@ -3,9 +3,9 @@ package api
 import (
 	"log"
 
-	"third_party/kythe/go/rpc/server"
 	"shipshape/util/file"
 	strset "shipshape/util/strings"
+	"third_party/kythe/go/rpc/server"
 
 	"code.google.com/p/goprotobuf/proto"
 
@@ -18,13 +18,15 @@ import (
 // Third parties can provide their own analyzers by creating a new service with the set of
 // analyzers that they wish to run, and then starting this service using kythe/go/rpc/server.
 // Third parties will need to provide an appropriate Docker image that includes the relevant
-// dependencies, starts up the service, and exposes the port.
+// dependencies, starts up the service, and exposes the port. It requires that all analyzers
+// be run at the same stage.
 type analyzerService struct {
 	analyzers []Analyzer
+	stage     ctxpb.Stage
 }
 
-func CreateAnalyzerService(analyzers []Analyzer) *analyzerService {
-	return &analyzerService{analyzers}
+func CreateAnalyzerService(analyzers []Analyzer, stage ctxpb.Stage) *analyzerService {
+	return &analyzerService{analyzers, stage}
 }
 
 // Analyze will determine which analyzers to run and call them as appropriate. If necessary, it will
@@ -73,6 +75,12 @@ func (s analyzerService) GetCategory(ctx server.Context, in *rpcpb.GetCategoryRe
 	return &rpcpb.GetCategoryResponse{
 		Category: cs,
 	}, nil
+}
+
+// GetStage returns the stage of the analyzers. All registered analyzers must have the same
+// stage, otherwise this will return an error.
+func (s analyzerService) GetStage(ctx server.Context, in *rpcpb.GetStageRequest) (*rpcpb.GetStageResponse, error) {
+	return &rpcpb.GetStageResponse{Stage: s.stage.Enum()}, nil
 }
 
 // runAnalyzer attempts to run the given analyzer on the provided context. It returns the list of notes
