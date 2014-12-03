@@ -5,26 +5,14 @@ To build and then install the google analysis plugin follow the below steps.
 
 1. Build the plugin.
 
- The plugin needs jar files from kythe and shipshape to build. If these jars
- have changed or may not be available you need to build them:
-
-   `$ ../../campfire clean`
-   `$ ../../campfire build //third_party/kythe/... //shipshape/...`
-
- If you rebuilt the jars, or if you haven't updated the dependencies lately,
- you should update the plugin dependencies by running:
+ The plugin needs jar files from kythe and shipshape to build.
+ You can build and update the plugin dependencies by running:
 
     `$ ./update-dependencies.sh`
 
- to mvn install all of them
-
  To build the plugin you run:
 
-    `$ mvn package`
-
- Or, to include repository settings use:
-
-    `$mvn package -s settings.xml` or `./build-plugin.sh`
+    `$ ./build_plugin.sh`
 
  This will generated a .hpi file under the target directory in the root
  plugin directory.
