@@ -58,7 +58,7 @@ function run_javac_dispatcher () {
 
 function bootstrap () {
   if ! which tmux &> /dev/null ; then
-    echo This script needs tmux; run "sudo apt-get install tmux"
+    echo This script needs tmux, run "sudo apt-get install tmux"
     exit 0
   fi
   echo Launching tmux...
