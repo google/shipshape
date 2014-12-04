@@ -71,7 +71,7 @@ func NewTestDriver(services []serviceInfo) *ShipshapeDriver {
 
 // Run runs the analyzers that this driver knows about on the provided ShipshapeRequest,
 // taking configuration into account.
-func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {
+func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {
 	var ars []*rpcpb.AnalyzeResponse
 	log.Printf("Received analysis request for event %v, categories %v, repo %v", *in.Event, in.TriggeredCategory, *in.ShipshapeContext.RepoRoot)
 
@@ -120,11 +120,11 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	}
 
 	// Find out what categories we have available, and remove/warn on the missing ones
-	td.serviceMap = td.getAllServiceInfo()
-	allCats := td.allCats()
+	sd.serviceMap = sd.getAllServiceInfo()
+	allCats := sd.allCats()
 	missingCats := strset.New().AddSet(desiredCats).RemoveSet(allCats)
 	for missing := range missingCats {
-		ars = append(ars, generateFailure(missing, fmt.Sprintf("The triggered category %q could not be found at the locations %v", missing, td.AnalyzerLocations)))
+		ars = append(ars, generateFailure(missing, fmt.Sprintf("The triggered category %q could not be found at the locations %v", missing, sd.AnalyzerLocations)))
 	}
 	desiredCats = desiredCats.RemoveSet(missingCats)
 
@@ -151,7 +151,7 @@ func (td ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	}
 
 	log.Print("Analyzing")
-	ars = append(ars, td.callAllAnalyzers(desiredCats, context, contextpb.Stage_PRE_BUILD)...)
+	ars = append(ars, sd.callAllAnalyzers(desiredCats, context, contextpb.Stage_PRE_BUILD)...)
 	log.Print("Analysis completed")
 	return nil
 }
@@ -237,10 +237,10 @@ nextFile:
 // callAllAnalyzers loops through the analyzer services, determines whether analyze should be called
 // on each, and then calls it with the appropriate set of files and categories.
 // It takes the configuration and the original context, and returns a slice of AnalyzeResponses.
-func (td ShipshapeDriver) callAllAnalyzers(desiredCats strset.Set, context *contextpb.ShipshapeContext, stage contextpb.Stage) []*rpcpb.AnalyzeResponse {
+func (sd ShipshapeDriver) callAllAnalyzers(desiredCats strset.Set, context *contextpb.ShipshapeContext, stage contextpb.Stage) []*rpcpb.AnalyzeResponse {
 	var ars []*rpcpb.AnalyzeResponse
 	var chans []chan *rpcpb.AnalyzeResponse
-	for analyzer, info := range td.serviceMap {
+	for analyzer, info := range sd.serviceMap {
 		if info.stage != stage {
 			continue
 		}
@@ -290,19 +290,19 @@ func filterResults(context *contextpb.ShipshapeContext, response *rpcpb.AnalyzeR
 }
 
 // allCats returns the entire set of categories for the driver, across all analyzers
-func (td ShipshapeDriver) allCats() strset.Set {
+func (sd ShipshapeDriver) allCats() strset.Set {
 	var catSet = strset.New()
-	for _, info := range td.serviceMap {
+	for _, info := range sd.serviceMap {
 		catSet.AddSet(info.categories)
 	}
 	return catSet
 }
 
 // getAllServiceInfo loops through the analyzers and gets the categories and stage for each of them.
-func (td ShipshapeDriver) getAllServiceInfo() map[string]serviceInfo {
+func (sd ShipshapeDriver) getAllServiceInfo() map[string]serviceInfo {
 	infos := make(map[string]serviceInfo)
 	var infoChans []chan serviceInfo
-	for _, analyzer := range td.AnalyzerLocations {
+	for _, analyzer := range sd.AnalyzerLocations {
 		c := make(chan serviceInfo)
 		infoChans = append(infoChans, c)
 		go callGetAnalyzerInfo(analyzer, c)
