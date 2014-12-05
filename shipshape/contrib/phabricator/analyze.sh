@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 # Copyright 2014 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash -e
 # This script is only called from server.js, see that file for usage.
 # directory to clone/sync repo/patch in (/repo/repo_<id>)
 REPO_DIR=$1
