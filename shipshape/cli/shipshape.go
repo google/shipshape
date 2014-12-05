@@ -70,7 +70,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 		fileNotes := make(map[string][]*notepb.Note)
 		for _, analysis := range msg.AnalyzeResponse {
 			for _, failure := range analysis.Failure {
-				fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", failure.Category, failure.FailureMessage)
+				fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", *failure.Category, *failure.FailureMessage)
 			}
 			for _, note := range analysis.Note {
 				path := ""
