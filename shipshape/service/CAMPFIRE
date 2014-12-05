@@ -52,7 +52,7 @@
         "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_rpc_proto",
-        "//shipshape/test",
+        "//shipshape/util/test",
         "//third_party/go-yaml",
         "//third_party/protobuf:protobuf_go"
       ]

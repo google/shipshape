@@ -11,7 +11,7 @@
       ],
       "go_pkgs": [
         "//shipshape/proto:note_proto",
-        "//shipshape/test",
+        "//shipshape/util/test",
         "//third_party/protobuf:protobuf_go"
       ]
     }
