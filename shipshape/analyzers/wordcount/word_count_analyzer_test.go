@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"code.google.com/p/goprotobuf/proto"
-	"shipshape/test"
+	"shipshape/test_util"
 
 	notespb "shipshape/proto/note_proto"
 )

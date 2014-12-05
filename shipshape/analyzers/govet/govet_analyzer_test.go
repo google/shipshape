@@ -50,8 +50,8 @@ func TestErrorsInGoFile(t *testing.T) {
 		lineno   int32
 		message  string
 	}{
-		{hasErrors, 8, "too few arguments in call to Fprintf"},
-		{hasErrors, 9, "no formatting directive in Fprintf call"},
+		{hasErrors, 24, "too few arguments in call to Fprintf"},
+		{hasErrors, 25, "no formatting directive in Fprintf call"},
 	}
 
 	notes, err := gva.analyzeOneFile(ctx, hasErrors)
