@@ -1,0 +1,11 @@
+URL: https://kythe.googlesource.com/kythe-main/+/5dc47cf3c1cffb77d51ba1bce59eea47859aa62f
+Version: 5dc47cf3c1cffb77d51ba1bce59eea47859aa62f
+License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0
+License File: LICENSE
+
+Description:
+Simple build system created at Google.
+
+Local Modifications:
+LICENSE file has been created for compliance purposes. Not included in original
+distribution.

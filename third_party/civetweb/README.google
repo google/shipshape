@@ -1,7 +1,12 @@
-URL: https://github.com/bel2125/civetweb.git
-License: MIT license
+URL: clone of https://github.com/bel2125/civetweb.git on 6/3/2014
+Version: 
+License: MIT License
+License File: LICENSE.md
 
-Local Modifications: Built library locally with C++ support and
-withoug SSL support, using command:locally using command:
-  make lib WITH_CPP=1 COPT='-DNO_SSL_DL -DNO_SSL'
+Description:
+C/C++ embeddable web server
 
+Local Modifications:
+Built library locally with C++ support and without SSL support, using
+command:
+make lib WITH_CPP=1 COPT='-DNO_SSL -DNO_SSL'

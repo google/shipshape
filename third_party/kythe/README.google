@@ -1,0 +1,10 @@
+URL: https://kythe.googlesource.com/kythe-main/+/96a5ff856e540d8d04cd674e6166567bfa79f9a0
+Version: 96a5ff856e540d8d04cd674e6166567bfa79f9a0
+License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0
+License File: LICENSE
+
+Description:
+Open source version of grok.
+
+Local Modifications:
+No Modifications. (Some directories not imported, however).
