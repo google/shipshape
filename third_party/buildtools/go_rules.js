@@ -242,13 +242,13 @@ GoLibrary.prototype.getOutputsFor = function(target, kind) {
     return target.outs;
   }
   var srcs = rule.getAllOutputsFor(
-      target.inputsByKind["srcs"], "build", rule.fileFilter("src_file",
+      target.inputsByKind["srcs"], kind, rule.fileFilter("src_file",
       ".go"));
   var pkgs = rule.getAllOutputsFor(
-      target.inputsByKind["go_pkgs"], "build",
+      target.inputsByKind["go_pkgs"], kind,
       rule.fileFilter("go_archive"));
   var includePaths = rule.getAllOutputsFor(
-      target.inputsByKind["go_pkgs"], "build",
+      target.inputsByKind["go_pkgs"], kind,
       rule.propertyFilter("go_include_path"));
 
   var goCompile = new GoCompile(target, srcs, pkgs, includePaths);
@@ -258,7 +258,7 @@ GoLibrary.prototype.getOutputsFor = function(target, kind) {
 
   if (kind == "test") {
     var testSrcs = rule.getAllOutputsFor(
-        target.inputsByKind["go_tests"], "build",
+        target.inputsByKind["go_tests"], kind,
         rule.fileFilter("src_file", ".go"));
     if (testSrcs.length > 0) {
       var testCompile = new GoCompile(target, srcs.concat(testSrcs),
@@ -295,11 +295,11 @@ GoBinary.prototype.getOutputsFor = function(target, kind) {
     return target.outs;
   }
   var srcs = rule.getAllOutputsFor(target.inputsByKind["srcs"],
-      "build", rule.fileFilter("src_file", ".go"));
+      kind, rule.fileFilter("src_file", ".go"));
   var pkgs = rule.getAllOutputsFor(target.inputsByKind["go_pkgs"],
-      "build", rule.fileFilter("go_archive"));
+      kind, rule.fileFilter("go_archive"));
   var includePaths = rule.getAllOutputsFor(
-      target.inputsByKind["go_pkgs"], "build",
+      target.inputsByKind["go_pkgs"], kind,
       rule.propertyFilter("go_include_path"));
 
   var goCompile = new GoCompile(target, srcs, pkgs, includePaths, true);
@@ -319,7 +319,7 @@ GoExternalLib.prototype.getOutputsFor = function(target, kind) {
     return target.outs;
   }
   var inputs = rule.getAllOutputsFor(target.inputsByKind["srcs"],
-      "build", rule.fileFilter("src_file", ".a"));
+      kind, rule.fileFilter("src_file", ".a"));
 
   var outputs = [];
   for (var i =0 ; i < inputs.length; i++) {
