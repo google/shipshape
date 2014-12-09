@@ -1,9 +1,0 @@
-URL: https://code.google.com/p/goauth2/
-License: New BSD License
-License File: ./goauth2/LICENSE
-
-Description:
-OAuth 2.0 for Go clients.
-
-Local Modifications:
-Built goauth2 using go get
