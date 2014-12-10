@@ -22,6 +22,7 @@ import com.google.devtools.source.v1.SourceContextProto.SourceContext;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.shipshape.proto.NotesProto.Note;
 import com.google.shipshape.proto.ShipshapeContextProto.ShipshapeContext;
+import com.google.shipshape.proto.ShipshapeContextProto.Stage;
 import com.google.shipshape.proto.ShipshapeRpcProto.AnalysisFailure;
 import com.google.shipshape.proto.ShipshapeRpcProto.AnalyzeResponse;
 import com.google.shipshape.proto.ShipshapeRpcProto.ShipshapeRequest;
@@ -103,6 +104,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
   private String socket;
   private String jobName;
   private BuildListener listener;
+  private Stage stage;
   
   /**
    * @param workspace
@@ -112,13 +114,14 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
    * @param jobName
    */
   public ShipshapeSlave(FilePath workspace, boolean isVerbose, ImmutableList<String> categoryList,
-      String socket, String jobName, BuildListener listener) {
+      String socket, String jobName, Stage stage, BuildListener listener) {
     super();
     this.workspace = workspace;
     this.isVerbose = isVerbose;
     this.categoryList = categoryList;
     this.socket = socket;
     this.jobName = jobName;
+    this.stage = stage;
     this.listener = listener;
   }
 
@@ -152,7 +155,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
 
     getDockerAccessToken(logger);
 
-    ShipshapeRequest req = constructShipshapeRequest(logger, workspace, categoryList, jobName);
+    ShipshapeRequest req = constructShipshapeRequest(logger, workspace, categoryList, jobName, stage);
     logger.log(String.format("ShipshapeRequest: %s", req));
     ShipshapeResponse res = makeShippingContainerRequest(logger, socket, req, workspacePath,
         outputPath);
@@ -187,10 +190,11 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
    * @param logger The logger to use.
    * @param workspacePath Path to workspace.
    * @param categoryList The categories to run.
+   * @param stage 
    * @throws ShipshapeException If reading of files from local workspace failed.
    */
   private ShipshapeRequest constructShipshapeRequest(ShipshapeStreamLogger logger,
-      FilePath workspacePath, List<String> categoryList, String jobName)
+      FilePath workspacePath, List<String> categoryList, String jobName, Stage stage)
       throws ShipshapeException {
     logger.log("Creating Shipshape request ...");
     // TODO(ciera): Have the service accept requests without a source context.
@@ -202,6 +206,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
         .setShipshapeContext(shipshapeContext)
         .setEvent(jobName)
         .addAllTriggeredCategory(categoryList)
+        .setStage(stage)
         .build();
   }
 
