@@ -1,6 +1,6 @@
 [
   {
-    "name": "release",
+    "name": "service",
     "kind": "docker_deploy",
     "properties": {
       "docker_name": "service"
