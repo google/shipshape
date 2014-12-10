@@ -218,9 +218,14 @@ func main() {
 		volumeMap := map[string]string{
 			filepath.Join(absRoot, "compilations"): "/compilations",
 			absRoot: "/repo",
-			// TODO(ciera): set this up properly
-			//filepath.Join($HOME,".m2": "/root/.m2",
 		}
+		home := os.Getenv("HOME")
+		if len(home) > 0 {
+			volumeMap[filepath.Join(home, ".m2")] = "/root/.m2"
+		} else {
+			glog.Infof("$HOME is not set. Not using .m2 mapping")
+		}
+
 		// TODO(ciera): Can I pass in more than one extractor?
 		// TODO(ciera): Can we exclude files in the .shipshape ignore path?
 		// TODO(ciera): Can we use the same command for campfire extraction?
