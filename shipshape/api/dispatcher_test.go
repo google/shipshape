@@ -53,7 +53,7 @@ func TestGetCategory(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		a := CreateAnalyzerService(test.analyzers)
+		a := CreateAnalyzerService(test.analyzers, ctxpb.Stage_PRE_BUILD)
 
 		in := &rpcpb.GetCategoryRequest{}
 		resp, _ := a.GetCategory(nil, in)
