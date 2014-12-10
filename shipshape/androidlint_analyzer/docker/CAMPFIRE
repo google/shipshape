@@ -1,6 +1,6 @@
 [
   {
-    "name": "release",
+    "name": "android_lint",
     "kind": "docker_deploy",
     "properties": {
       "docker_name": "android_lint"

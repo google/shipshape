@@ -24,9 +24,9 @@ LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
 REPO=$CONVOY_URL/_b_shipshape_registry
 CONTAINERS=(
-  //shipshape/release/base
-  //shipshape/release
-  //shipshape/androidlint_analyzer/release
+  //shipshape/docker/base:base
+  //shipshape/docker:service
+  //shipshape/androidlint_analyzer/docker:android_lint
 )
 
 # Check tag argument.
