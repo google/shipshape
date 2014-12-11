@@ -254,12 +254,14 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
       stdoutHandler.join();
       stderrHandler.join();
 
-      ShipshapeResponse response = ShipshapeResponse.parseFrom(stdout.toByteArray());
-      logger.log("Shipshape response received");
-      if (isVerbose) {
-        logger.log(String.format("\n\tstderr:\n%s\n", stderr.toString()));
+      if (exitCode == 0) {
+        ShipshapeResponse response = ShipshapeResponse.parseFrom(stdout.toByteArray());
+        logger.log("Shipshape response received");
+        if (isVerbose) {
+          logger.log(String.format("\n\tstderr:\n%s\n", stderr.toString()));
+        }
+        return response;
       }
-      return response;
     } catch (InvalidProtocolBufferException e) {
       logger.log(String.format("Failed to parse proto response, error: %s", e.getMessage()));
       errorMsg = e.getMessage();
