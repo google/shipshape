@@ -18,6 +18,7 @@ package com.google.jenkins.plugins.analysis;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.shipshape.proto.ShipshapeContextProto.Stage;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -63,6 +64,8 @@ public class AnalysisRunner extends Builder {
   public final boolean verbose;
   // Custom docker socket, e.g., tcp://localhost:4243.
   public final String socket;
+  // Stage to run analyses for
+  public final Stage stage;
 
   /**
    * Fields in config.jelly must match the parameter names in the
@@ -75,11 +78,13 @@ public class AnalysisRunner extends Builder {
   @DataBoundConstructor
   public AnalysisRunner(
       final String categories,
+      final Stage stage,
       final boolean verbose,
       final String socket) {
     this.categories = categories;
     this.verbose = verbose;
     this.socket = socket;
+    this.stage = stage;
   }
 
   /**
@@ -111,7 +116,7 @@ public class AnalysisRunner extends Builder {
     int actionableResults = 0;
     try {
       actionableResults = workspace.act(
-          new ShipshapeSlave(workspace, isVerbose, categoryList, socket, jobName, listener));
+          new ShipshapeSlave(workspace, isVerbose, categoryList, socket, jobName, stage, listener));
     } catch (Exception e) {
       listener.getLogger().println(String.format("[Shipshape] Error: %s", e.getMessage()));
       e.printStackTrace(listener.getLogger());
@@ -130,7 +135,6 @@ public class AnalysisRunner extends Builder {
    */
   @Extension
   public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
-
     /**
      * @param aClass Project to check whether this plugin can be used with.
      * @return Whether this descriptor is applicable - always true
@@ -138,6 +142,10 @@ public class AnalysisRunner extends Builder {
     @Override
     public boolean isApplicable(final Class<? extends AbstractProject> aClass) {
       return true;
+    }
+
+    public Stage[] stages() {
+      return new Stage[]{Stage.PRE_BUILD, Stage.POST_BUILD};
     }
 
     /**
