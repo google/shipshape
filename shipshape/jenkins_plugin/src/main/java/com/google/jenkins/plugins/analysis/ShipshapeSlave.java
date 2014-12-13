@@ -18,7 +18,6 @@ package com.google.jenkins.plugins.analysis;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.devtools.source.v1.SourceContextProto.SourceContext;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.shipshape.proto.NotesProto.Note;
 import com.google.shipshape.proto.ShipshapeContextProto.ShipshapeContext;
@@ -193,9 +192,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
       FilePath workspacePath, List<String> categoryList, String jobName)
       throws ShipshapeException {
     logger.log("Creating Shipshape request ...");
-    // TODO(ciera): Have the service accept requests without a source context.
     ShipshapeContext shipshapeContext = ShipshapeContext.newBuilder()
-        .setSourceContext(SourceContext.getDefaultInstance())
         .setRepoRoot(JENKINS_WORKSPACE_MOUNT_POINT)
         .build();
     return ShipshapeRequest.newBuilder()

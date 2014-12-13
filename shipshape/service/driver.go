@@ -324,7 +324,7 @@ func filterResults(context *contextpb.ShipshapeContext, response *rpcpb.AnalyzeR
 	var keep []*notepb.Note
 	for _, note := range response.Note {
 		if note.Category != nil {
-			if note.Location != nil && note.Location.SourceContext != nil && (note.Location.Path == nil || files.Contains(*note.Location.Path)) {
+			if note.Location != nil && (note.Location.Path == nil || files.Contains(*note.Location.Path)) {
 				keep = append(keep, note)
 			}
 		}

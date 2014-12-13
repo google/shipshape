@@ -40,7 +40,6 @@ import (
 	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rpcpb "shipshape/proto/shipshape_rpc_proto"
-	spb "shipshape/proto/source_context_proto"
 )
 
 var (
@@ -148,10 +147,6 @@ func main() {
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
 	// Create the request
-	// TODO(ciera): What should we do for a local run?
-	// Consider using a LocalContext in SourceContext, or putting a oneof
-	// in the Shipshape location.
-	sourceContext := &spb.SourceContext{}
 
 	var trigger []string
 	if *categories != "" {
@@ -163,8 +158,7 @@ func main() {
 	req := &rpcpb.ShipshapeRequest{
 		TriggeredCategory: trigger,
 		ShipshapeContext: &ctxpb.ShipshapeContext{
-			SourceContext: sourceContext,
-			RepoRoot:      proto.String(workspace),
+			RepoRoot: proto.String(workspace),
 		},
 		Event: proto.String(*event),
 		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
