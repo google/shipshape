@@ -1,0 +1,9 @@
+URL: cloned from http://golang.org/x/tools/go on 11/20/2014
+License: New BSD License: http://opensource.org/licenses/BSD-3-Clause
+License File: LICENSE
+
+Description:
+Google go language.
+
+Local Modifications:
+Built using go install

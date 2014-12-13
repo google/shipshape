@@ -1,4 +1,10 @@
-URL: https://github.com/go-yaml/yaml
+URL: cloned from https://github.com/go-yaml/yaml on 11/7/2014
+Version: 2
 License: LGPL with static linking exception.
-Local Modifications: Built using go get
+License File: LICENSE
 
+Description:
+Go YAML parsing library.
+
+Local Modifications:
+Built using go get
