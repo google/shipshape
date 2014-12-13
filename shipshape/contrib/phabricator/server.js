@@ -50,8 +50,8 @@ function processShipshapeJson(jsonFile, revisionID, diffID, callback) {
         }
 
         var files = {};
-        for (var key in result) {
-          files[result[key]] = 1;
+        for (var key in result.response) {
+          files[result.response[key]] = 1;
         }
         var input = fs.readFileSync(jsonFile);
         var parsed = JSON.parse(input);
@@ -60,10 +60,11 @@ function processShipshapeJson(jsonFile, revisionID, diffID, callback) {
           return;
         }
         var relevant = [];
-        for (var response in parsed.analyze_response) {
-          var notes = response.note;
+        for (var r in parsed.analyze_response) {
+          var notes = parsed.analyze_response[r].note;
           if (notes !== undefined) {
-            for (var note in notes) {
+            for (var n in notes) {
+              var note = notes[n];
               if (note.location && note.location.path &&
                   files[note.location.path]) {
                 relevant.push(note);
