@@ -1,4 +1,10 @@
-URL: Extracted from Jenkins Plugin Tutorial using instrumented Javac
-License: Creative Commons 4.0 International http://creativecommons.org/licenses/by/4.0/
-Local Modifications: No modifications.
+URL: https://code.google.com/a/google.com/p/jenkins-plugin-tutorial-2 on 4/22/2014
+Version: 1.532.3
+License: MIT License
+License File: LICENSE.txt
 
+Description:
+Jenkins CI system
+
+Local Modifications:
+No Modifications.
