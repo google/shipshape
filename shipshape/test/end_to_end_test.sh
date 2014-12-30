@@ -61,7 +61,7 @@ echo ">>> Detailed output will appear in $LOG_FILE"
 gcloud preview docker --server=$CONVOY_URL --authorize_only
 
 # Create a test repository to run analysis on
-rm -r $LOCAL_WORKSPACE
+rm -r $LOCAL_WORKSPACE || true
 mkdir -p $LOCAL_WORKSPACE
 echo "this is not javascript" > $LOCAL_WORKSPACE/test.js
 mkdir -p $LOCAL_WORKSPACE/src/main/java/com/google/shipshape/
