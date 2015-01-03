@@ -102,7 +102,7 @@ func (ala *Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error
 					Description: proto.String(issue.Message),
 					Location: &notepb.Location{
 						SourceContext: ctx.SourceContext,
-						Path:          proto.String(issue.Location.File),
+						Path:          proto.String(filepath.Join(prj, issue.Location.File)),
 						Range: &rangepb.TextRange{
 							StartLine:   proto.Int(issue.Location.Line),
 							StartColumn: proto.Int(issue.Location.Column),
