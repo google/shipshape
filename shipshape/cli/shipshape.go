@@ -51,8 +51,8 @@ var (
 	event      = flag.String("event", "manual", "The name of the event to use")
 	categories = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
 	stayUp     = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
-	repo       = flag.String("repo", "container.cloud.google.com/_b_shipshape_registry", "The name of the docker repo to use")
-	kytheRepo  = flag.String("kytheRepo", "container.cloud.google.com/_b_kythe_images", "The name of the docker repo to use")
+	repo       = flag.String("repo", "gcr.io/_b_shipshape_registry", "The name of the docker repo to use")
+	kytheRepo  = flag.String("kytheRepo", "gcr.io/kythe_repo", "The name of the docker repo to use")
 	// TODO(ciera): use the analyzer images
 	//analyzerImages  = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
 	jsonOutput = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
@@ -64,7 +64,7 @@ const (
 	logsDir   = "/shipshape-output"
 	localLogs = "/tmp"
 	image     = "service"
-	server    = "container.cloud.google.com"
+	server    = "gcr.io"
 )
 
 func logMessage(msg *rpcpb.ShipshapeResponse) error {

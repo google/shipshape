@@ -17,7 +17,7 @@
 set -eux
 
 CONVOY_BUCKET=dev_containers
-CONVOY_SERVER=container.cloud.google.com
+CONVOY_SERVER=gcr.io
 DEFAULT_TAG=latest
 
 DEV_IMAGES=(

@@ -37,7 +37,7 @@ arc patch --update --force --diff $DIFF_ID
 # TODO(jvg): remove when gcloud sdk releases fix for refresh token
 # authorize docker for use by the shipshape CLI (it pulls down the service)
 gcloud auth print-access-token
-gcloud preview docker --server=container.cloud.google.com --authorize_only
+gcloud preview docker --server=gcr.io --authorize_only
 /shipshape/cli/shipshape --categories="$SHIPSHAPE_CATEGORIES" \
   --json_output=$JSON_OUTPUT $REPO_DIR
 #TODO(jvg): delete patch branch
