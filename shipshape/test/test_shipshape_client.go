@@ -69,16 +69,6 @@ func main() {
 			log.Fatalf("Failed to setup Cloud repo: %v", err)
 		}
 	case local:
-		sourceContext = &spb.SourceContext{
-			CloudRepo: &spb.CloudRepoSourceContext{
-				RepoId: &spb.RepoId{
-					ProjectRepoId: &spb.ProjectRepoId{
-						ProjectId: projectName,
-					},
-				},
-				RevisionId: hash,
-			},
-		}
 		if *repoBase == "/tmp" {
 			log.Fatal("Must specify the repo_base for local runs")
 		}

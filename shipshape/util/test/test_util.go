@@ -30,7 +30,6 @@ import (
 	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rpcpb "shipshape/proto/shipshape_rpc_proto"
-	srcctxpb "shipshape/proto/source_context_proto"
 )
 
 type Analyzer interface {
@@ -48,8 +47,7 @@ func CreateContext(testDir string, filepaths []string) (*ctxpb.ShipshapeContext,
 
 func CreateLocation(path string) *notepb.Location {
 	return &notepb.Location{
-		SourceContext: &srcctxpb.SourceContext{},
-		Path:          proto.String(path),
+		Path: proto.String(path),
 	}
 }
 
