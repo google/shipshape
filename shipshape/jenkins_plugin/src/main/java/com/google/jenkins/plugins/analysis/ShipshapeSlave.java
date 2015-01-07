@@ -48,7 +48,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
   private static final long serialVersionUID = 1L;
 
   // Repo
-  private static final String REPO_HOST = "gcr.io"
+  private static final String REPO_HOST = "gcr.io";
   private static final String REPO_REGISTRY = "shipshape_registry";
   private static final String REPO = REPO_HOST + "/_b_" + REPO_REGISTRY;
 
