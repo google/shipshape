@@ -1,15 +1,20 @@
-var util = require("util");
-var fs = require("fs");
-var engine = require("./engine.js");
-var rule = require("./rule.js");
-var commands = require("./commands.js");
-var path = require("path");
+'use strict';
+
+var fs = require('fs');
+var path = require('path');
+
+var commands = require('./commands.js');
+var engine = require('./engine.js');
+var shared = require('./shared.js');
+
+var SETTINGS_LOCATIONS = ['.', process.env.HOME];
+var SETTINGS_FILENAME = '.campfire_settings';
 
 function findRoot(dir) {
-  if (fs.existsSync(path.join(dir, ".campfire_settings"))) {
+  if (fs.existsSync(path.join(dir, SETTINGS_FILENAME))) {
     return dir;
   }
-  if (dir == "/") {
+  if (dir == '/') {
     return undefined;
   }
   return findRoot(path.dirname(dir));
@@ -18,23 +23,23 @@ var cwd = process.cwd();
 var campfireRoot = findRoot(cwd);
 
 if (!campfireRoot) {
-  console.log("Unable to locate .campfire_settings in any parent" +
-      " directory of current working directory");
+  console.error('Unable to locate ' + SETTINGS_FILENAME + ' in any parent' +
+      ' directory of current working directory');
   process.exit(1);
 }
 var relative = cwd.substring(campfireRoot.length + 1);
-var lockfile = path.join(campfireRoot, ".campfire_lock");
+var lockfile = path.join(campfireRoot, '.campfire_lock');
 
 function inheritConfiguration(allConfigurations, inheritFrom,
-    configObject) {
+                              configObject) {
   if (!(inheritFrom in allConfigurations)) {
-    console.log("No such configuration '" + inheritFrom + "'");
+    console.error("No such configuration '" + inheritFrom + "'");
     process.exit(1);
   }
   var parentConfig = allConfigurations[inheritFrom];
   if ('@inherit' in parentConfig) {
     inheritConfiguration(allConfigurations, parentConfig['@inherit'],
-        configObject);
+                         configObject);
   }
   for (var key in parentConfig) {
     if (key == '@inherit' || !parentConfig.hasOwnProperty(key)) {
@@ -53,27 +58,36 @@ function inheritConfiguration(allConfigurations, inheritFrom,
   }
 }
 
+function readSettings() {
+  var settings = [];
+  for (var i = 0; i < SETTINGS_LOCATIONS.length; i++) {
+    var file = path.join(SETTINGS_LOCATIONS[i], SETTINGS_FILENAME);
+    if (fs.existsSync(file)) {
+      settings.push(JSON.parse(fs.readFileSync(file)));
+    }
+  }
+  return shared.merge.apply(null, settings);
+}
+
 function runCampfire() {
   process.chdir(campfireRoot);
-  var data = fs.readFileSync(".campfire_settings");
-  var settings = JSON.parse(data);
+  var settings = readSettings();
 
-  var e = new engine.Engine(settings, campfireRoot, relative);
-  if (!e.settings.properties) {
-    e.settings.properties = {};
+  if (!settings.properties) {
+    settings.properties = {};
   }
-  if (!e.settings.configurations) {
-    e.settings.configurations = {};
+  if (!settings.configurations) {
+    settings.configurations = {};
   }
-  if (!e.settings.configurations.base) {
-    e.settings.configurations.base = {};
+  if (!settings.configurations.base) {
+    settings.configurations.base = {};
   }
   var cmdlineConfig = {};
   var targets = [];
-  var command = process.argv[2];
-  for (var i =3; i < process.argv.length; i++) {
+  var command = process.argv[2]; // ['node', 'main', <command>, args...]
+  for (var i = 3; i < process.argv.length; i++) {
     var value = process.argv[i];
-    if (value.indexOf("--") === 0) {
+    if (value.indexOf('--') === 0) {
       var rest = value.substring(2);
       var eqIndex = value.indexOf('=');
       if (eqIndex == -1) {
@@ -88,61 +102,69 @@ function runCampfire() {
     targets.push(value);
   }
   if (!('configuration' in cmdlineConfig)) {
-    if ('configuration' in e.settings) {
-      cmdlineConfig['configuration'] = e.settings['configuration'];
+    if ('configuration' in settings) {
+      cmdlineConfig['configuration'] = settings['configuration'];
     } else {
-      console.log("No default configuration and no configuration " +
-          "specified.");
-      console.log("Specify a configuration with ");
-      console.log("     --configuration='foo' or ");
-      console.log("     'configuration': 'foo' in the top level of");
-      console.log("     your .campfire_settings file.");
+      console.error('No default configuration and no configuration ' +
+          'specified.');
+      console.error('Specify a configuration with --configuration=foo ' +
+          'or "configuration": "foo" in the top level of your ' +
+          SETTINGS_FILENAME + ' file.');
       process.exit(1);
     }
   }
   cmdlineConfig['@inherit'] = cmdlineConfig['configuration'];
-  e.settings.configurations['@cmdline'] = cmdlineConfig;
-  inheritConfiguration(e.settings.configurations,
-      '@cmdline', e.settings.properties);
+  settings.configurations['@cmdline'] = cmdlineConfig;
+  inheritConfiguration(settings.configurations,
+                       '@cmdline', settings.properties);
   if (!command || command == 'help') {
-    console.log("usage: campfire command, arguments");
-    console.log("");
-    console.log("the following commands are available:");
+    console.log('usage: campfire command, arguments');
+    console.log('');
+    console.log('the following commands are available:');
     for (var availableCommand in commands.commands) {
-      console.log("\t" + availableCommand+":\t" +
+      console.log('\t' + availableCommand + ':\t' +
           commands.commands[availableCommand].help);
     }
   } else {
     var resolvedCommand = commands.commands[command];
     if (!resolvedCommand) {
-      console.log("Unknown command: " + command);
+      console.error('Unknown command: ' + command);
       process.exit(1);
     }
-    resolvedCommand.run(e, targets);
+    resolvedCommand.run(new engine.Engine(settings, campfireRoot, relative),
+                        targets);
   }
 }
 
 function acquireLock(lastPID, lastOrphaned) {
   var lock = undefined;
-  var pid = new Buffer(process.pid+'');
+  var pid = new Buffer(process.pid + '');
   var conflictingPID;
   try {
-    lock = fs.openSync(lockfile, "wx");
+    lock = fs.openSync(lockfile, 'wx');
     var written = 0;
     while (written < pid.length) {
       written +=
-          fs.writeSync(lock, pid, written, pid.length-written, 0);
+      fs.writeSync(lock, pid, written, pid.length - written, 0);
     }
     fs.closeSync(lock);
   } catch (err) {
-    if (err.code != "EEXIST") {
-      console.log("Error creating lock file:");
-      console.log(err);
+    if (err.code != 'EEXIST') {
+      console.error('Error creating lock file:');
+      console.error(err);
       process.exit(2);
     }
     conflictingPID = fs.readFileSync(lockfile).toString();
   }
   if (!lock) {
+    if (process.argv[3] === '--require_lock_immediately') {
+      // If we have this special flag set directly after the
+      // build/test/etc. command, not acquiring the lock immediately is a
+      // failure.
+      console.error('ERROR: failed to acquire lock immediately');
+      process.exit(1);
+    }
+
     var orphaned = false;
     try {
       process.kill(conflictingPID, 0);
@@ -151,11 +173,11 @@ function acquireLock(lastPID, lastOrphaned) {
     }
     if (lastPID !== conflictingPID || lastOrphaned !== orphaned) {
       if (orphaned) {
-        console.log("Stray lock file detected; please remove '" +
+        console.warn("Stray lock file detected; please remove '" +
             lockfile + "'");
       } else {
-        console.log("Waiting for Campfire lock [held by " +
-        conflictingPID + "]");
+        console.warn('Waiting for Campfire lock [held by ' +
+            conflictingPID + ']');
       }
     }
     setTimeout(acquireLock, 250, conflictingPID, orphaned);
@@ -167,11 +189,10 @@ function acquireLock(lastPID, lastOrphaned) {
     fs.unlink(lockfile);
   });
   process.on('SIGINT', function() {
-    console.log("Caught interrupt signal");
+    console.warn('Caught interrupt signal');
     fs.unlink(lockfile);
     process.exit(130);
   });
-
   runCampfire();
 }
 

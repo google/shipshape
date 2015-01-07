@@ -25,7 +25,7 @@ final class CampfireTestEngine extends ArcanistUnitTestEngine {
       return array('//...');
     }
 
-    $query_command = "./campfire query --print_names %s";
+    $query_command = "./campfire query --require_lock_immediately --print_names %s";
     $files = json_encode($this->getExistingPaths());
     $future = new ExecFuture($query_command, 'dependsOn('.$files.')');
     $future->setCWD($this->project_root);
@@ -42,7 +42,7 @@ final class CampfireTestEngine extends ArcanistUnitTestEngine {
   }
 
   private function runTest($target) {
-    $future = new ExecFuture('./campfire test %s', $target);
+    $future = new ExecFuture('./campfire test --require_lock_immediately %s', $target);
     $future->setCWD($this->project_root);
     $status = $future->resolve();
     return $this->parseTestResult($target, $status);
@@ -57,7 +57,7 @@ final class CampfireTestEngine extends ArcanistUnitTestEngine {
     if ($code == 0) {
       $result->setResult(ArcanistUnitTestResult::RESULT_PASS);
     } else {
-      $result->setResult(strpos($output, '.testlog for more details.') !== false
+      $result->setResult(strpos($output, 'Test failure code:') !== false
           ? ArcanistUnitTestResult::RESULT_FAIL
           : ArcanistUnitTestResult::RESULT_BROKEN);
       $result->setUserData($output);

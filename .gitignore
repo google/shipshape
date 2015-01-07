@@ -22,3 +22,4 @@ MANIFEST-*
 /campfire-out
 /doxygen-out
 /bazel-*
+*.ninja*

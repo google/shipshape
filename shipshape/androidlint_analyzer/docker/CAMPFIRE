@@ -3,6 +3,7 @@
     "name": "android_lint",
     "kind": "docker_deploy",
     "properties": {
+      "docker_namespace": "gcr.io/_b_shipshape-registry",
       "docker_name": "android_lint"
     },
     "inputs": {
