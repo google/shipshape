@@ -27,7 +27,7 @@ RUN apt-get update && apt-get upgrade -y  && \
   pylint
 
 # Setup jshint
-RUN curl https://www.npmjs.org/install.sh | sponge | clean=no   sh
+RUN curl -L https://www.npmjs.org/install.sh | sponge | clean=no   sh
 RUN npm install -g jshint
 
 # Install Go, needed for the go vet analyzer
