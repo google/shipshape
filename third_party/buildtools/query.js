@@ -1,37 +1,29 @@
-'use strict';
-
-var DEFAULT_BUILD_KIND = 'build';
-
-/**
- * Returns the set of targets that are dependencies of the given target/targets.
- */
-var deps = function() {
-  function dfs(targets, action) {
-    var discovered = {};
-    while (targets.length > 0) {
-      var current = targets.pop();
-      if (!discovered[current.id]) {
-        discovered[current.id] = true;
-        action(current);
-        for (var i = 0; i < current.inputs.length; ++i) {
-          if (current.inputs[i].json) {
-            targets.push(current.inputs[i]);
-          }
+var dfs = function(targets, action) {
+  var discovered = {};
+  while (targets.length > 0) {
+    current = targets.pop();
+    if (!discovered[current.id]) {
+      discovered[current.id] = true;
+      action(current);
+      for (var i = 0; i < current.inputs.length; ++i) {
+        if (current.inputs[i].json) {
+          targets.push(current.inputs[i]);
         }
       }
     }
   }
-  return function(targets) {
-    targets = resolveTargets(targets);
-    var deparr = [];
-    dfs(targets, function(node) {
-      deparr.push(node);
-    });
-    return deparr;
-  };
-}();
+};
 
-function filterByKind(kind) {
+var deps = function(targets) {
+  targets = resolveTargets(targets);
+  var deparr = [];
+  dfs(targets, function(node) {
+    deparr.push(node);
+  });
+  return deparr;
+};
+
+var filterByKind = function(kind) {
   return function(target) {
     // see if a parent (outputs) has this target
     // as an input with the appropriate kind.
@@ -48,37 +40,28 @@ function filterByKind(kind) {
     }
     return false;
   };
-}
+};
 
-/**
- * Returns a subset of targets that has rule kinds matching {@code pattern}.
- */
-function kind(pattern, targets) {
+var kind = function(pattern, targets) {
   targets = resolveTargets(targets);
   return targets.filter(function(target) {
     return target.rule &&
         target.rule.config_name &&
         target.rule.config_name.match(pattern);
   });
-}
+};
 
-/**
- * Returns the set of files outputs for the given target(s).
- */
 function outputs(targets, kind) {
-  kind = kind || DEFAULT_BUILD_KIND;
+  kind = kind || "build";
   targets = resolveTargets(targets);
   var outs = [];
-  for (var i = 0; i < targets.length; i++) {
+  for (var i=0; i < targets.length; i++) {
     var target = targets[i];
     outs = outs.concat(target.rule.getOutputsFor(target, kind));
   }
   return outs;
 }
 
-/**
- * Returns the set of file inputs for the given target(s).
- */
 function files(targets) {
   targets = resolveTargets(targets);
   var res = [];
@@ -93,11 +76,11 @@ function files(targets) {
   return res;
 }
 
-/**
- * Returns the set of targets that depends on the given target(s)/file(s).
- */
+// Returns the set of targets that depends on the given targets/files.
 function dependsOn(targets) {
   targets = resolveTargets(targets);
+  resolveTargets('//...'); // Fully resolve targets graph
+
   var resSet = {};
   var work = targets;
   while (work.length > 0) {
@@ -122,12 +105,10 @@ function dependsOn(targets) {
   return res;
 }
 
-// Internal function used to resolve a target string specification or array of
-// specifications to an array of resolved target configurations.
 function resolveTargets(targets) {
   targets = Array.isArray(targets) ? targets : [targets];
   return targets.map(function(target) {
-    if (typeof target != 'string') {
+    if (typeof target != "string") {
       return [target];
     }
     var rt = global.query_engine.resolveTargets(target);
@@ -138,21 +119,11 @@ function resolveTargets(targets) {
   }).reduce(function(p, n) { return p.concat(n); }, []);
 }
 
-// Query engine entry point.  Executes the given query, returning the resolved
-// set of target results.
 exports.queryEval = function(query) {
-  // Fully resolve targets graph
-  var all = global.query_engine.resolveTargets('//...');
-  for (var i = 0; i < all.length; i++) {
-    if (all[i].rule.getBuilds) {
-      all[i].rule.getBuilds(all[i]);
-    }
-  }
-
   try {
     return resolveTargets(eval(query));
-  } catch (err) {
-    console.error(err);
+  } catch(err) {
+    console.log(err);
     return undefined;
   }
 };

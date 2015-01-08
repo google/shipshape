@@ -3,7 +3,6 @@
     "name": "phipshape",
     "kind": "docker_deploy",
     "properties": {
-      "docker_namespace": "gcr.io/_b_shipshape-registry",
       "docker_name": "phipshape"
     },
     "inputs": {

@@ -1,34 +1,31 @@
 {
   "rules": [
-    "./cc_rules.js",
-    "./doc_rules.js",
-    "./docker_rules.js",
-    "./go_rules.js",
     "./java_rules.js",
-    "./kythe_rules.js",
     "./proto_rules.js",
+    "./cc_rules.js",
+    "./go_rules.js",
+    "./docker_rules.js",
     "./sh_rules.js"
   ],
   "configuration": "amd64-release",
   "configurations": {
     "base": {
-      "out_label": "",
-
-      "cc_path": "clang",
-      "cxx_path": "clang++",
-      "go_path": "go",
-      "go_testmain_generator": "//buildtools:go_testmain_generator",
+      "ansi": "progress",
       "jdk_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/",
+      "protoc_path": "third_party/protobuf/bin",
       "junit_path": "third_party/junit/junit-4.11.jar",
-      "ninja_path": "ninja",
-
-      "copts": ["-std=c++11", "-pthread", "-fno-rtti", "-Wall", "-Werror", "-Wno-unused-variable"],
-      "docker_namespace": "gcr.io/kythe_repo"
+      "go_testmain_generator": "//third_party/buildtools:go_testmain_generator",
+      "out_label": "",
+      "copts": ["-std=c++11", "-pthread", "-fno-rtti", "-Wall", "-Werror", "-Wno-unused-variable", "-Wno-unused-but-set-variable"],
+      "docker_gcs_bucket": "kythe-docker",
+      "docker_registry_port": 5000,
+      "gcloud_config_volume": "gcloud-config"
     },
     "amd64": {
       "@inherit": "base",
-      "ninja_path": "third_party/ninja/ninja",
-      "protoc_path": "third_party/protobuf/bin",
+      "crosstool_cxx_path": "/google/src/files/62158027/depot/google3/third_party/crosstool/v17/stable/wrappers/bin/x86_64-grtev3-linux-gnu-g++",
+      "crosstool_cc_path": "/google/src/files/62158027/depot/google3/third_party/crosstool/v17/stable/wrappers/bin/x86_64-grtev3-linux-gnu-gcc",
+      "go_path": "/usr/lib/google-golang/pkg/tool/linux_amd64/",
       "+copts": ["-DCAMPFIRE_CONFIGURATION=amd64"]
     },
     "amd64-debug": {
