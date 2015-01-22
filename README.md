@@ -1,4 +1,5 @@
-Overview of Shipshape:
+# Overview of Shipshape #
+
 Shipshape is a static program analysis platform that allows custom analyzers to
 plug in through a common interface. Shipshape is packaged in a docker image.
 When that image is run, a Shipshape analyzer service starts up and processes
@@ -12,34 +13,41 @@ party libraries used by Shipshape are all in the "third_party" directory.
 Shipshape uses a build tool called "campfire"; the source code for this build
 tool is located in third_party/buildtools.
 
-Setup:
-See if you have docker installed:
-$ which docker
-If you don't have docker installed:
-$ apt-get install docker.io
 
-Building/running CLI entirely locally:
-$ ./test/end_to_end_test.sh local
+# Setup #
+
+See if you have docker installed:
+`$ which docker`
+If you don't have docker installed:
+`$ apt-get install docker.io`
+
+
+# Building/running CLI entirely locally #
+
+`$ ./test/end_to_end_test.sh local`
 This will build the shipshape CLI and all docker containers used locally, and
 also run them once on test input. To rerun the CLI on your code with the locally
 build docker images:
-$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
-      --try_local=true --tag=local <Directory>
+`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
+      --try_local=true --tag=local <Directory>`
 
-Building/running CLI with prod docker images:
+
+# Building/running CLI with prod docker images #
+
 If you want to pull the latest (released) version of shipshape, you need
 "gcloud preview docker". You can get this by running:
-$ gcloud components update preview
+`$ gcloud components update preview`
 To build shipshape:
-$ ./campfire build shipshape/...
+`$ ./campfire build shipshape/...`
 To run the shipshape CLI:
-$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>
+`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>`
 
 To run the Jenkins plugin:
 Instructions are located in shipshape/jenkins_plugin/README.md
 
 
-Package structure of shipshape:
+# Package structure of shipshape #
+
 analyzers -- implementation for several simple analyzers run by the
   go_dispatcher. The canonical simplest analyzer is in analyzers/postmessage
 
