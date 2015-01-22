@@ -17,17 +17,22 @@ tool is located in third_party/buildtools.
 # Setup #
 
 See if you have docker installed:
+
 `$ which docker`
+
 If you don't have docker installed:
+
 `$ apt-get install docker.io`
 
 
 # Building/running CLI entirely locally #
 
 `$ ./test/end_to_end_test.sh local`
+
 This will build the shipshape CLI and all docker containers used locally, and
 also run them once on test input. To rerun the CLI on your code with the locally
 build docker images:
+
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
       --try_local=true --tag=local <Directory>`
 
@@ -36,13 +41,20 @@ build docker images:
 
 If you want to pull the latest (released) version of shipshape, you need
 "gcloud preview docker". You can get this by running:
+
 `$ gcloud components update preview`
+
 To build shipshape:
+
 `$ ./campfire build shipshape/...`
+
 To run the shipshape CLI:
+
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>`
 
-To run the Jenkins plugin:
+
+# Running the Jenkins plugin #
+
 Instructions are located in shipshape/jenkins_plugin/README.md
 
 
