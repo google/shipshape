@@ -23,7 +23,7 @@ import (
 	strset "shipshape/util/strings"
 	"third_party/kythe/go/rpc/server"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"

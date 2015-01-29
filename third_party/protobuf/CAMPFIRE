@@ -25,7 +25,7 @@
     "kind": "go_external_lib",
     "inputs": {
       "srcs": [
-        "pkg/linux_amd64/code.google.com/p/goprotobuf/proto.a"
+        "pkg/linux_amd64/github.com/golang/protobuf/proto.a"
       ]
     },
     "properties": {

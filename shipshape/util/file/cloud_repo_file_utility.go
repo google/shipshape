@@ -27,7 +27,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	spb "shipshape/proto/source_context_proto"
 )

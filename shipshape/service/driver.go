@@ -31,7 +31,7 @@ import (
 	"third_party/kythe/go/rpc/client"
 	"third_party/kythe/go/rpc/server"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	apb "third_party/kythe/proto/analysis_proto"
 

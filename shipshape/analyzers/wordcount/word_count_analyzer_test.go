@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 	"shipshape/util/test"
 
 	notespb "shipshape/proto/note_proto"

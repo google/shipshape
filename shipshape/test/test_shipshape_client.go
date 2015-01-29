@@ -28,7 +28,7 @@ import (
 	"shipshape/util/file"
 	"third_party/kythe/go/rpc/client"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rpcpb "shipshape/proto/shipshape_rpc_proto"

@@ -20,7 +20,7 @@ import (
 	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 type PostMessageAnalyzer struct {

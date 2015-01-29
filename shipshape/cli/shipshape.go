@@ -35,7 +35,7 @@ import (
 	glog "third_party/go-glog"
 	"third_party/kythe/go/rpc/client"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"

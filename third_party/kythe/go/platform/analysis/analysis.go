@@ -33,7 +33,7 @@ package analysis
 import (
     "errors"
 
-    "code.google.com/p/goprotobuf/proto"
+    "github.com/golang/protobuf/proto"
 
     apb "third_party/kythe/proto/analysis_proto"
 

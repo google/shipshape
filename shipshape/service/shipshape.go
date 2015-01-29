@@ -28,7 +28,7 @@ import (
 	"shipshape/service"
 	"third_party/kythe/go/rpc/server"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	rpcpb "shipshape/proto/shipshape_rpc_proto"
 )

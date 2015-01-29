@@ -29,7 +29,7 @@ import (
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rangepb "shipshape/proto/textrange_proto"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 )
 
 const (
