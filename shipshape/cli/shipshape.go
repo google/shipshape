@@ -180,13 +180,13 @@ func main() {
 
 	// Run it on files
 	if *streams {
-		err = streamsAnalyze(absRoot, req)
+		err = streamsAnalyze(image, absRoot, req)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
 			return
 		}
 	} else {
-		c, err = startShipshapeService(absRoot)
+		c, err = startShipshapeService(image, absRoot)
 		if err != nil {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
 			return
@@ -251,7 +251,7 @@ func main() {
 	glog.Infoln("End of Results.")
 }
 
-func startShipshapeService(absRoot string) (*client.Client, error) {
+func startShipshapeService(image, absRoot string) (*client.Client, error) {
 	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
 	glog.Infof("Running image %s in service mode", image)
 	environment := map[string]string{"START_SERVICE": "true"}
@@ -284,7 +284,7 @@ func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest) error {
 	return nil
 }
 
-func streamsAnalyze(absRoot string, req *rpcpb.ShipshapeRequest) error {
+func streamsAnalyze(image, absRoot string, req *rpcpb.ShipshapeRequest) error {
 	volumeMap := map[string]string{absRoot: workspace, localLogs: logsDir}
 	glog.Infof("Running image %s in stream mode", image)
 	reqBytes, err := proto.Marshal(req)
