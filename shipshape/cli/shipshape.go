@@ -240,7 +240,7 @@ func main() {
 				return
 			}
 		} else {
-			err = streamsAnalyze(absRoot, req)
+			err = streamsAnalyze(image, absRoot, req)
 			if err != nil {
 				glog.Errorf("Error making stream call: %v", err)
 				return
