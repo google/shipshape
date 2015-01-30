@@ -63,7 +63,6 @@ const (
 	logsDir   = "/shipshape-output"
 	localLogs = "/tmp"
 	image     = "service"
-	server    = "gcr.io"
 )
 
 func logMessage(msg *rpcpb.ShipshapeResponse) error {
@@ -136,10 +135,10 @@ func main() {
 		glog.Fatalf("Could not get absolute path for %s: %v", dir, err)
 	}
 
-	res := docker.Authenticate(server)
+	res := docker.Authenticate()
 	if res.Err != nil {
 		glog.Infoln(strings.TrimSpace(res.Stderr))
-		glog.Fatalf("Could not authenticate with %s: %v", server, res.Err)
+		glog.Fatalf("Could not authenticate: %v", res.Err)
 	}
 	glog.Infoln(strings.TrimSpace(res.Stdout))
 

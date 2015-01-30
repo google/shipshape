@@ -54,9 +54,9 @@ func FullImageName(repo, image, tag string) string {
 	return fullImage
 }
 
-// Authenticate runs gcloud docker authentication for the server provided
-func Authenticate(server string) CommandResult {
-	cmd := exec.Command("gcloud", "preview", "docker", fmt.Sprintf("--server=%s", server), "--authorize_only")
+// Authenticate runs gcloud docker authentication
+func Authenticate() CommandResult {
+	cmd := exec.Command("gcloud", "preview", "docker", "--authorize_only")
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	cmd.Stdout = stdout
