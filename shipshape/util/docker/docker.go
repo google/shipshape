@@ -23,9 +23,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
+)
+
+const (
+	shipshapeWork = "/shipshape-workspace"
+	shipshapeLogs = "/shipshape-output"
 )
 
 // TODO(ciera): add some checking to ensure docker is installed.
@@ -79,10 +86,10 @@ func Pull(image string) CommandResult {
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
 
-func setupArgs(container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string) []string {
-	var volumesFrom []string
-	for _, container := range volumesFromContainers {
-		volumesFrom = append(volumesFrom, fmt.Sprintf("--volumes-from=%s", container))
+func setupArgs(container string, portMap map[int]int, volumeMap map[string]string, linkContainers []string, environment map[string]string) []string {
+	var linkArgs []string
+	for _, container := range linkContainers {
+		linkArgs = append(linkArgs, fmt.Sprintf("--link=%s:%s", container, container))
 	}
 
 	var environmentVars []string
@@ -97,35 +104,33 @@ func setupArgs(container string, portMap map[int]int, volumeMap map[string]strin
 
 	var exposePorts []string
 	for hostPort, containerPort := range portMap {
-		exposePorts = append(exposePorts, fmt.Sprintf("-p=%d:%d", hostPort, containerPort))
+		exposePorts = append(exposePorts, fmt.Sprintf("-p=127.0.0.1:%d:%d", hostPort, containerPort))
 	}
 
 	args := exposePorts
-	args = append(args, volumesFrom...)
+	args = append(args, linkArgs...)
 	args = append(args, volumeList...)
 	args = append(args, environmentVars...)
 	args = append(args, fmt.Sprintf("--name=%s", container))
 	return args
 }
 
-// Run runs a docker container with the specified configuration.
-// portMap is a map from host port to container port.
-// volumeMap is a map from host directories to container directories
-// volumesFromContainers is a list of other containers to use shared volumes from
-// environment is a map of environment variables and values to set for the container
-// It returns stdout, stderr, and any errors from running.
-// This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func Run(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string, imageArgs []string) CommandResult {
+// RunAnalyzer runs the analyzer image with container analyzerContainer. It runs it at port (mapped
+// to internal port 10005), and binds the volumes for the workspacePath and logsPath
+func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
-	if len(container) == 0 {
+	if len(analyzerContainer) == 0 {
 		return CommandResult{"", "", errors.New("need to provide a name for the container")}
 	}
 
+	volumeMap := map[string]string{
+		workspacePath: shipshapeWork,
+		logsPath:      shipshapeLogs,
+	}
 	args := []string{"run"}
-	args = append(args, setupArgs(container, portMap, volumeMap, volumesFromContainers, environment)...)
+	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
-	args = append(args, imageArgs...)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
@@ -134,29 +139,96 @@ func Run(image, container string, portMap map[int]int, volumeMap map[string]stri
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
 
-// RunAttached runs a docker container with the specified configuration.
-// portMap is a map from host port to container port.
-// volumeMap is a map from host directories to container directories
-// volumesFromContainers is a list of other containers to use shared volumes from
-// environment is a map of environment variables and values to set for the container
-// It returns stdout, stderr, and any errors from running.
-// This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func RunAttached(image, container string, portMap map[int]int, volumeMap map[string]string, volumesFromContainers []string, environment map[string]string, stdin []byte, imageArgs []string) CommandResult {
+// RunService runs the shipshape service at image, as the container named container. It binds the
+// shipshape workspace and logs appropriately and starts with the third party analyzers already
+// running at analyzerContainers
+func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
 		return CommandResult{"", "", errors.New("need to provide a name for the container")}
 	}
 
+	volumeMap := map[string]string{workspacePath: shipshapeWork, logsPath: shipshapeLogs}
+
+	var locations []string
+	for _, container := range analyzerContainers {
+		locations = append(locations, fmt.Sprintf(`$%s_PORT_10005_TCP_ADDR:$%s_PORT_10005_TCP_PORT`, strings.ToUpper(container), strings.ToUpper(container)))
+	}
+	locations = append(locations, "localhost:10005", "localhost:10006")
+
 	args := []string{"run"}
-	args = append(args, setupArgs(container, portMap, volumeMap, volumesFromContainers, environment)...)
-	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
-	args = append(args, imageArgs...)
+	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
+	args = append(args, "-d", image)
+	fmt.Printf("%v", args)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	cmd.Stdin = bytes.NewBuffer(stdin)
+	err := cmd.Run()
+	return CommandResult{stdout.String(), stderr.String(), err}
+}
+
+// RunStreams runs the specified shipshape image in streams mode, as the container named container.
+// It binds the shipshape workspace and logs appropriately and starts with the third party analyzers
+// already running at analyzerContainers. It uses input as the stdin.
+func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte) CommandResult {
+	stdout := bytes.NewBuffer(nil)
+	stderr := bytes.NewBuffer(nil)
+	if len(container) == 0 {
+		return CommandResult{"", "", errors.New("need to provide a name for the container")}
+	}
+
+	volumeMap := map[string]string{workspacePath: shipshapeWork, logsPath: shipshapeLogs}
+
+	var locations []string
+	for _, container := range analyzerContainers {
+		locations = append(locations, fmt.Sprintf(`$%s_PORT_10005_TCP_ADDR:$%s_PORT_10005_TCP_PORT`, strings.ToUpper(container), strings.ToUpper(container)))
+	}
+	locations = append(locations, "localhost:10005", "localhost:10006")
+
+	args := []string{"run"}
+	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
+	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
+
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	cmd.Stdin = bytes.NewBuffer(input)
+	err := cmd.Run()
+	return CommandResult{stdout.String(), stderr.String(), err}
+}
+
+// RunKythe runs the specified kythe docker image at the named container. It uses the
+// source root and extractor specified.
+// It returns stdout, stderr, and any errors from running.
+// This is a blocking call, and should be wrapped in a go routine for asynchonous use.
+func RunKythe(image, container, sourcePath, extractor string) CommandResult {
+	stdout := bytes.NewBuffer(nil)
+	stderr := bytes.NewBuffer(nil)
+	if len(container) == 0 {
+		return CommandResult{"", "", errors.New("need to provide a name for the container")}
+	}
+
+	volumeMap := map[string]string{
+		filepath.Join(sourcePath, "compilations"): "/compilations",
+		sourcePath: "/repo",
+	}
+	home := os.Getenv("HOME")
+	if len(home) > 0 {
+		volumeMap[filepath.Join(home, ".m2")] = "/root/.m2"
+	}
+
+	// TODO(ciera): Can we exclude files in the .shipshape ignore path?
+	// TODO(ciera): Can we use the same command for campfire extraction?
+	args := []string{"run"}
+	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
+	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
+	args = append(args, "--extract", extractor)
+
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 	err := cmd.Run()
 	return CommandResult{stdout.String(), stderr.String(), err}
 }

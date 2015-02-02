@@ -11,6 +11,8 @@ message GlobalConfig {
   // The URLs must point to a Docker image that can be downloaded and run.
   // The container must respond to the Shipshape RPC API on port 10005;
   // Shipshape will map this to a different external port.
+  // For example,
+  // container.cloud.google.com/_b_shipshape_registry/android_lint:prod
   repeated string images = 1;
 
   // A list of subtrees to ignore when running analysis. Each entry in the list
