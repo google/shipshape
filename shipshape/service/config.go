@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -108,6 +109,17 @@ func validateConfig(rawConfig *configpb.ShipshapeConfig) error {
 		}
 	}
 	return nil
+}
+
+// GlobalConfig retrieves the global configuration settings for the specified
+// configuration file. Right now, this is just the list of third-party analyzer
+// images to run.
+func GlobalConfig(path string) ([]string, error) {
+	cfg, err := loadConfig(filepath.Join(path, configFilename), "")
+	if err != nil || cfg == nil {
+		return nil, err
+	}
+	return cfg.images, nil
 }
 
 // loadConfig looks at given path for a Shipshape config file, loading the configuration

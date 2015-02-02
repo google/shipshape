@@ -20,8 +20,8 @@ java -jar javac_dispatcher.jar &> /shipshape-output/javac_dispatcher.log &
 if [ -z "$START_SERVICE" ]
 then
   echo 'Running shipping container in streaming mode' > /shipshape-output/shipping_container.log
-  ./shipshape
+  ./shipshape --analyzer_services="$(eval echo $ANALYZERS)"
 else
-  ./shipshape --start_service &> /shipshape-output/shipping_container.log
+  ./shipshape --start_service --analyzer_services="$(eval echo $ANALYZERS)" &> /shipshape-output/shipping_container.log
 fi
 

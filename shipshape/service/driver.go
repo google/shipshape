@@ -45,6 +45,7 @@ const (
 	analyzerHealthTimeout = 30 * time.Second
 	configFilename        = ".shipshape"
 	compilationsDir       = "compilations"
+	sourceContainer       = "shipping_container"
 )
 
 var (
@@ -121,7 +122,6 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		}
 	}()
 
-	// load the config, if it exists
 	cfg, err := loadConfig(configFilename, *in.Event)
 	if err != nil {
 		log.Print("error loading config")
@@ -154,6 +154,7 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		return nil
 	}
 
+	// TODO(ciera): move this global ignore stuff into the CLI processing
 	ignorePaths := []string{}
 	if cfg != nil {
 		ignorePaths = cfg.ignore
