@@ -110,7 +110,7 @@ EOF
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
-../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --try_local=$IS_LOCAL_RUN --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 
 # Quick sanity checks of output.
