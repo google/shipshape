@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -237,14 +238,14 @@ func RunKythe(image, container, sourcePath, extractor string) CommandResult {
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
 // If requested, also remove the container.
-func Stop(container string, remove bool) CommandResult {
+func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if container == "" {
 		return CommandResult{"", "", errors.New("need to provide a name for the container")}
 	}
 
-	cmd := exec.Command("docker", "stop", container)
+	cmd := exec.Command("docker", "stop", fmt.Sprintf("-t=%d", int(waitTime.Seconds())), container)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
