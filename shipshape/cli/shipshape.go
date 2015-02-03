@@ -181,9 +181,12 @@ func main() {
 	// Put in this defer before calling run. Even if run fails, it can
 	// still create the container.
 	if !*stayUp {
-		defer stop("shipping_container")
+		// TODO(ciera): Rather than immediately sending a SIGKILL,
+		// we should use the default 10 seconds and properly handle
+		// SIGTERMs in the endpoint script.
+		defer stop("shipping_container", 0)
 		for _, container := range containers {
-			defer stop(container)
+			defer stop(container, 0)
 		}
 	}
 
@@ -220,7 +223,7 @@ func main() {
 		kytheImage := docker.FullImageName(*kytheRepo, "kythe", "latest")
 		pull(kytheImage)
 
-		defer stop("kythe")
+		defer stop("kythe", 10*time.Second)
 		glog.Infof("Retrieving compilation units with %s", *build)
 
 		result := docker.RunKythe(kytheImage, "kythe", absRoot, *build)
@@ -315,9 +318,9 @@ func pull(image string) {
 	glog.Infoln("Pulling complete")
 }
 
-func stop(container string) {
+func stop(container string, timeWait time.Duration) {
 	glog.Infof("Stopping and removing %s", container)
-	result := docker.Stop(container, true)
+	result := docker.Stop(container, timeWait, true)
 	glog.Infoln(strings.TrimSpace(result.Stdout))
 	glog.Infoln(strings.TrimSpace(result.Stderr))
 	if result.Err != nil {
