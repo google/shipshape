@@ -34,7 +34,7 @@ also run them once on test input. To rerun the CLI on your code with the locally
 build docker images:
 
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
-      --try_local=true --tag=local <Directory>`
+      --tag=local <Directory>`
 
 
 # Building/running CLI with prod docker images #
@@ -48,7 +48,7 @@ To build shipshape:
 
 `$ ./campfire build shipshape/...`
 
-To run the shipshape CLI:
+To run the shipshape CLI (requires access to a GCS bucket, email shipshape@google.com first):
 
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>`
 
@@ -99,3 +99,24 @@ test_data -- test data used by unit and integration tests
 util -- various go utilities that simplify Shipshape code, e.g. for working with
   slices, execing docker commands, or writing tests
 
+
+# Writing an analyzer #
+
+To write a new analyzer service, you can use the androidlint_analyzer as an example
+
+androidlint/analyzer.go -- implements the analyzer interface. Basically a wrapper
+  that calls out to androidlint as subprocess and translates the output into Notes
+  (see the proto dir for more information on the Note message).
+androidlint/service.go -- sets up running android lint as a service. You will want
+  to copy this file and update the names to reflect your analyzer.
+androidlint/CAMPFIRE -- build file for this analyzer. Should copy and update names.
+docker/Dockerfile,endpoint.sh -- Dockerfile and shell script need to build a docker
+  image containing this analyzer. All dependencies needed to run the analyzer should
+  be pulled down in the Dockerfile.
+docker/CAMPFIRE -- build file for creating a docker image. Should copy and update names.
+
+You can try building the android lint docker image by running (in root of repo):
+    ./campfire package --start_registry=false --docker_tag=local //shipshape/androidlint_analyzer/docker:android_lint
+
+Once you have built an image, verify that it shows up in your list of docker images:
+    docker ps
