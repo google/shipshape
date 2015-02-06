@@ -28,7 +28,7 @@ import (
 
 	"shipshape/androidlint_analyzer/androidlint"
 	"shipshape/api"
-	"third_party/kythe/go/rpc/server"
+	"shipshape/util/rpc/server"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"
 )

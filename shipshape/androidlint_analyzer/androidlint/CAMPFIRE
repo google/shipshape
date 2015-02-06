@@ -8,7 +8,7 @@
       ],
       "go_pkgs": [
         ":androidlint",
-        "//third_party/kythe/go/rpc/server",
+        "//shipshape/util/rpc/server",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//third_party/protobuf:protobuf_go"
@@ -23,7 +23,7 @@
         "analyzer.go"
       ],
       "go_pkgs": [
-        "//third_party/kythe/go/rpc/client",
+        "//shipshape/util/rpc/client",
         "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",

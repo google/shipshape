@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"shipshape/util/file"
-	"third_party/kythe/go/rpc/client"
+	"shipshape/util/rpc/client"
 
 	"github.com/golang/protobuf/proto"
 

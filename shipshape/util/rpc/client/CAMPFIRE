@@ -1,0 +1,27 @@
+[
+  {
+    "name": "client",
+    "kind": "go_library",
+    "inputs": {
+      "srcs": [
+        "client.go"
+      ],
+      "go_pkgs": [
+        "//shipshape/util/httpencoding",
+        "//shipshape/util/rpc/protocol"
+      ]
+    }
+  },
+  {
+    "name": "example",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "example.go"
+      ],
+      "go_pkgs": [
+        ":client"
+      ]
+    }
+  }
+]

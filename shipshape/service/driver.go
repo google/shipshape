@@ -28,8 +28,8 @@ import (
 	"shipshape/util/file"
 	strset "shipshape/util/strings"
 	"third_party/kythe/go/platform/indexinfo"
-	"third_party/kythe/go/rpc/client"
-	"third_party/kythe/go/rpc/server"
+	"shipshape/util/rpc/client"
+	"shipshape/util/rpc/server"
 
 	"github.com/golang/protobuf/proto"
 

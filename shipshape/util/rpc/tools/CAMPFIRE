@@ -1,0 +1,14 @@
+[
+  {
+    "name": "unwrap_results",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "unwrap_results.go"
+      ],
+      "go_pkgs": [
+        "//shipshape/util/rpc/client"
+      ]
+    }
+  }
+]

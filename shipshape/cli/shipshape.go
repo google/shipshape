@@ -35,7 +35,7 @@ import (
 	"shipshape/service"
 	"shipshape/util/docker"
 	glog "third_party/go-glog"
-	"third_party/kythe/go/rpc/client"
+	"shipshape/util/rpc/client"
 
 	"github.com/golang/protobuf/proto"
 

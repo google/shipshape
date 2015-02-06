@@ -10,7 +10,7 @@
         "code_alert_analyzer_test.go"
       ],
       "go_pkgs": [
-        "//third_party/kythe/go/rpc/client",
+        "//shipshape/util/rpc/client",
         "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",

@@ -29,7 +29,7 @@ import (
 	"shipshape/analyzers/pylint"
 	"shipshape/analyzers/wordcount"
 	"shipshape/api"
-	"third_party/kythe/go/rpc/server"
+	"shipshape/util/rpc/server"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"
 )

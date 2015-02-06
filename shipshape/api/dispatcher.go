@@ -21,7 +21,7 @@ import (
 
 	"shipshape/util/file"
 	strset "shipshape/util/strings"
-	"third_party/kythe/go/rpc/server"
+	"shipshape/util/rpc/server"
 
 	"github.com/golang/protobuf/proto"
 

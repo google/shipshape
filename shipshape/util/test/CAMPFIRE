@@ -7,8 +7,8 @@
         "test_util.go"
       ],
       "go_pkgs": [
-        "//third_party/kythe/go/rpc/client",
-        "//third_party/kythe/go/rpc/server",
+        "//shipshape/util/rpc/client",
+        "//shipshape/util/rpc/server",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",

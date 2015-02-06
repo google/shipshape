@@ -25,7 +25,7 @@ import (
 
 	strset "shipshape/util/strings"
 	testutil "shipshape/util/test"
-	"third_party/kythe/go/rpc/server"
+	"shipshape/util/rpc/server"
 
 	"github.com/golang/protobuf/proto"
 
