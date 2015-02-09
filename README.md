@@ -33,8 +33,10 @@ This will build the shipshape CLI and all docker containers used locally, and
 also run them once on test input. To rerun the CLI on your code with the locally
 build docker images:
 
-`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
-      --tag=local <Directory>`
+```
+$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
+      --tag=local <Directory>
+```
 
 
 # Building/running CLI with prod docker images #
@@ -121,7 +123,10 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
 
 You can try building the android lint docker image by running (in root of repo):
 
-`$ ./campfire package --start_registry=false --docker_tag=local //shipshape/androidlint_analyzer/docker:android_lint`
+```
+$ ./campfire package --start_registry=false --docker_tag=local \
+    //shipshape/androidlint_analyzer/docker:android_lint
+```
 
 Once you have built an image, verify that it shows up in your list of docker images:
 
@@ -129,4 +134,7 @@ Once you have built an image, verify that it shows up in your list of docker ima
 
 Now, you can run the shipshape CLI with your analyzer added by passing in via the analyzer_images flag:
 
-`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="AndroidLint" --analyzer_images=android_lint:local --tag=local <Directory>`
+```
+$ ./campfire-out/bin/shipshape/cli/shipshape --categories="AndroidLint" \
+    --analyzer_images=android_lint:local --tag=local <Directory>
+```
