@@ -107,19 +107,26 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
 **androidlint/analyzer.go** -- implements the analyzer interface. Basically a wrapper
   that calls out to androidlint as subprocess and translates the output into Notes
   (see the proto dir for more information on the Note message).
+
 **androidlint/service.go** -- sets up running android lint as a service. You will want
   to copy this file and update the names to reflect your analyzer.
+
 **androidlint/CAMPFIRE** -- build file for this analyzer. Should copy and update names.
+
 **docker/Dockerfile,endpoint.sh** -- Dockerfile and shell script need to build a docker
   image containing this analyzer. All dependencies needed to run the analyzer should
   be pulled down in the Dockerfile.
+
 **docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
 
 You can try building the android lint docker image by running (in root of repo):
-`./campfire package --start_registry=false --docker_tag=local //shipshape/androidlint_analyzer/docker:android_lint`
+
+`$ ./campfire package --start_registry=false --docker_tag=local //shipshape/androidlint_analyzer/docker:android_lint`
 
 Once you have built an image, verify that it shows up in your list of docker images:
-`docker images`
+
+`$ docker images`
 
 Now, you can run the shipshape CLI with your analyzer added by passing in via the analyzer_images flag:
+
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="AndroidLint" --analyzer_images=android_lint:local --tag=local <Directory>`
