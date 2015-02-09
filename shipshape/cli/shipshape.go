@@ -34,8 +34,8 @@ import (
 
 	"shipshape/service"
 	"shipshape/util/docker"
-	glog "third_party/go-glog"
 	"shipshape/util/rpc/client"
+	glog "third_party/go-glog"
 
 	"github.com/golang/protobuf/proto"
 
@@ -48,15 +48,14 @@ var (
 	tag     = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	streams = flag.Bool("streams", false, "True if we should run in streams mode, false if we should run as a service.")
 
-	event      = flag.String("event", "manual", "The name of the event to use")
-	categories = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
-	stayUp     = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
-	repo       = flag.String("repo", "gcr.io/_b_shipshape_registry", "The name of the docker repo to use")
-	kytheRepo  = flag.String("kytheRepo", "gcr.io/kythe_repo", "The name of the docker repo to use")
-	// TODO(ciera): use the analyzer images
-	//analyzerImages  = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
-	jsonOutput = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
-	build      = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
+	event          = flag.String("event", "manual", "The name of the event to use")
+	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
+	stayUp         = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
+	repo           = flag.String("repo", "gcr.io/_b_shipshape_registry", "The name of the docker repo to use")
+	kytheRepo      = flag.String("kytheRepo", "gcr.io/kythe_repo", "The name of the docker repo to use")
+	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
+	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
+	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
 )
 
 const (
@@ -123,17 +122,20 @@ func main() {
 
 	// Get the directory to analyze.
 	if len(flag.Args()) != 1 {
-		glog.Fatal("Usage: shipshape [OPTIONS] <directory>")
+		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
+		return
 	}
 
 	dir := flag.Arg(0)
 	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
-		glog.Fatalf("%s is not a valid directory", dir)
+		fmt.Println("%s is not a valid directory", dir)
+		return
 	}
 
 	absRoot, err := filepath.Abs(dir)
 	if err != nil {
-		glog.Fatalf("Could not get absolute path for %s: %v", dir, err)
+		fmt.Println("Could not get absolute path for %s: %v", dir, err)
+		return
 	}
 
 	res := docker.Authenticate()
@@ -164,9 +166,14 @@ func main() {
 		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
 	}
 
-	thirdPartyAnalyzers, err := service.GlobalConfig(absRoot)
-	if err != nil {
-		glog.Infof("Could not get global config; using only the default analyzers: %v", err)
+	var thirdPartyAnalyzers []string
+	if *analyzerImages == "" {
+		thirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
+		if err != nil {
+			glog.Infof("Could not get global config; using only the default analyzers: %v", err)
+		}
+	} else {
+		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
 	}
 
 	var containers []string
