@@ -33,8 +33,10 @@ This will build the shipshape CLI and all docker containers used locally, and
 also run them once on test input. To rerun the CLI on your code with the locally
 build docker images:
 
-`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
-      --tag=local <Directory>`
+```
+$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
+      --tag=local <Directory>
+```
 
 
 # Building/running CLI with prod docker images #
@@ -60,30 +62,30 @@ Instructions are located in shipshape/jenkins_plugin/README.md
 
 # Package structure of shipshape #
 
-analyzers -- implementation for several simple analyzers run by the
+**analyzers** -- implementation for several simple analyzers run by the
   go_dispatcher. The canonical simplest analyzer is in analyzers/postmessage
 
-androidlint_analyzer -- implementation for AndroidLint packaged as a complete
+**androidlint_analyzer** -- implementation for AndroidLint packaged as a complete
   Shipshape analyzer service, using libraries from the service package
 
-api -- go API used by analyzers running under the go_dispatcher
+**api** -- go API used by analyzers running under the go_dispatcher
 
-cli -- code for the CLI that pulls down a Shipshape service, starts it running
+**cli** -- code for the CLI that pulls down a Shipshape service, starts it running
   on a specified directory, and outputs analysis results
 
-docker -- Dockerfiles for the various docker packages produced by Shipshape
+**docker** -- Dockerfiles for the various docker packages produced by Shipshape
 
-java -- code for a javac dispatcher analyzer service that runs analyzers that
+**java** -- code for a javac dispatcher analyzer service that runs analyzers that
   build off of javac
 
-jenkins_plugin -- code for the jenkins plugin that runs Shipshape
+**jenkins_plugin** -- code for the jenkins plugin that runs Shipshape
 
-proto -- the protocol buffer APIs for writing new analyzers. Shipshape analyzers
+**proto** -- the protocol buffer APIs for writing new analyzers. Shipshape analyzers
   are services that implement the rpcs listed in the ShipshapeService interface
   in proto/shipshape_rpc.proto. Analyzers produce structured output in the form
   of Note messages, defined in proto/note.proto
 
-service -- core Shipshape code.
+**service** -- core Shipshape code.
   go_dispatcher -- dispatching Shipshape analyzer service for the go language.
     calls out to analyzers in the analyzer package.
   shipshape -- main shipshape service loop
@@ -91,12 +93,12 @@ service -- core Shipshape code.
     (including the go_dispatcher and the javac_analyzer)
   config -- processes .shipshape config files to determine which analyzers run
 
-test -- manual integration tests to simplify the process of running Shipshape 
+**test** -- manual integration tests to simplify the process of running Shipshape 
   locally on test input, useful when developing new analyzer services
 
-test_data -- test data used by unit and integration tests
+**test_data** -- test data used by unit and integration tests
 
-util -- various go utilities that simplify Shipshape code, e.g. for working with
+**util** -- various go utilities that simplify Shipshape code, e.g. for working with
   slices, execing docker commands, or writing tests
 
 
@@ -104,19 +106,35 @@ util -- various go utilities that simplify Shipshape code, e.g. for working with
 
 To write a new analyzer service, you can use the androidlint_analyzer as an example
 
-androidlint/analyzer.go -- implements the analyzer interface. Basically a wrapper
+**androidlint/analyzer.go** -- implements the analyzer interface. Basically a wrapper
   that calls out to androidlint as subprocess and translates the output into Notes
   (see the proto dir for more information on the Note message).
-androidlint/service.go -- sets up running android lint as a service. You will want
+
+**androidlint/service.go** -- sets up running android lint as a service. You will want
   to copy this file and update the names to reflect your analyzer.
-androidlint/CAMPFIRE -- build file for this analyzer. Should copy and update names.
-docker/Dockerfile,endpoint.sh -- Dockerfile and shell script need to build a docker
+
+**androidlint/CAMPFIRE** -- build file for this analyzer. Should copy and update names.
+
+**docker/Dockerfile,endpoint.sh** -- Dockerfile and shell script need to build a docker
   image containing this analyzer. All dependencies needed to run the analyzer should
   be pulled down in the Dockerfile.
-docker/CAMPFIRE -- build file for creating a docker image. Should copy and update names.
+
+**docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
 
 You can try building the android lint docker image by running (in root of repo):
-    ./campfire package --start_registry=false --docker_tag=local //shipshape/androidlint_analyzer/docker:android_lint
+
+```
+$ ./campfire package --start_registry=false --docker_tag=local \
+    //shipshape/androidlint_analyzer/docker:android_lint
+```
 
 Once you have built an image, verify that it shows up in your list of docker images:
-    docker ps
+
+`$ docker images`
+
+Now, you can run the shipshape CLI with your analyzer added by passing in via the analyzer_images flag:
+
+```
+$ ./campfire-out/bin/shipshape/cli/shipshape --categories="AndroidLint" \
+    --analyzer_images=android_lint:local --tag=local <Directory>
+```
