@@ -14,23 +14,23 @@ func TestAnalyze(t *testing.T) {
 	}{
 		{
 			"shipshape/androidlint_analyzer/test_data",
-			[]string{"GameActivity/res/values/strings.xml"},
-			20,
+			[]string{"TicTacToeLib/res/values/strings.xml"},
+			9,
 		},
 		{
 			"shipshape/androidlint_analyzer/test_data",
-			[]string{"GameActivity/res/values/strings.xml", "MainActivity/res/values/strings.xml"},
-			28,
+			[]string{"TicTacToeLib/res/values/strings.xml", "TicTacToeMain/res/values/strings.xml"},
+			17,
 		},
 		{
-			"shipshape/androidlint_analyzer/test_data/MainActivity",
+			"shipshape/androidlint_analyzer/test_data/TicTacToeMain",
 			[]string{"res/values/strings.xml"},
 			8,
 		},
 		{
 			"shipshape/androidlint_analyzer/test_data",
-			[]string{"GameActivity/src/com/example/android/tictactoe/library/GameView.java"},
-			20,
+			[]string{"TicTacToeLib/src/com/example/android/tictactoe/library/GameView.java"},
+			9,
 		},
 		{
 			"shipshape/androidlint_analyzer/test_data",
