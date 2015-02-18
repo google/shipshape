@@ -87,41 +87,38 @@ public class App
 }
 EOF
 cat <<'EOF' >> $LOCAL_WORKSPACE/pom.xml
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.shipshape</groupId>
+  <groupId>testtesttest</groupId>
   <artifactId>test-app</artifactId>
-  <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>test-app</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 </project>
 EOF
-
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
 ../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+echo "Analysis complete, checking results..."
+# Run a second time for AndroidLint. We have to do this separately because
+# otherwise kythe will try to build all the java files, even the ones that maven
+# doesn't build.
+cp -r ../androidlint_analyzer/test_data/TicTacToeLib $LOCAL_WORKSPACE/
+echo "---- Running CLI over test repo, android test" &>> $LOG_FILE
+../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 
 # Quick sanity checks of output.
 JSHINT_COUNT=$(grep JSHint $LOG_FILE | wc -l)
 POSTMESSAGE_COUNT=$(grep PostMessage $LOG_FILE | wc -l)
 ERRORPRONE_COUNT=$(grep ErrorProne $LOG_FILE | wc -l)
+ANDROIDLINT_COUNT=$(grep AndroidLint $LOG_FILE | wc -l)
 FAILURE_COUNT=$(grep Failure $LOG_FILE | wc -l)
 [[ $JSHINT_COUNT == 8 ]] || { echo "Wrong number of JSHint results, expected 8, found $JSHINT_COUNT" 1>&2 ; exit 1; }
 [[ $POSTMESSAGE_COUNT == 1 ]] || { echo "Wrong number of PostMessage results, expected 1, found $POSTMESSAGE_COUNT" 1>&2 ; exit 1; }
 [[ $ERRORPRONE_COUNT == 2 ]] || { echo "Wrong number of ErrorProne results, expected 2, found $ERRORPRONE_COUNT" 1>&2 ; exit 1; }
+[[ $ANDROIDLINT_COUNT == 8 ]] || { echo "Wrong number of AndroidLint results, expected 9, found $ANDROIDLINT_COUNT" 1>&2 ; exit 1; }
 [[ $FAILURE_COUNT == 0 ]] || { echo "Some analyses failed; please check $LOG_FILE" 1>&2 ; exit 1; }
+
 echo "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
 
 exit 0
