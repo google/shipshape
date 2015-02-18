@@ -248,3 +248,28 @@ func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
+
+func OutOfDate(image string) bool {
+	return true
+}
+
+func ImageMatches(image, container string) (bool, error) {
+	imageHash, err := inspect(image, "{{.Id}}")
+	if err != nil {
+		return false, err
+	}
+	containerHash, err := inspect(container, "{{.Id}}")
+	if err != nil {
+		return false, err
+	}
+	return bytes.Equal(imageHash, containerHash), nil
+}
+
+func inspect(name, format string) ([]byte, error) {
+	var formatter string
+	if len(format) != 0 {
+		formatter = fmt.Sprintf("--format='%s'", format)
+	}
+	cmd := exec.Command("docker", "inspect", formatter, name)
+	return cmd.CombinedOutput()
+}
