@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.devtools.kythe.platform.rpc;
+package com.google.shipshape.util.rpc;
 
 import static java.util.Spliterators.AbstractSpliterator;
 

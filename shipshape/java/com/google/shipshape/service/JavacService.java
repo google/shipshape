@@ -18,8 +18,8 @@ package com.google.shipshape.service;
 
 import com.google.common.base.Throwables;
 import com.google.devtools.kythe.common.FormattingLogger;
-import com.google.devtools.kythe.platform.rpc.HttpServerFrontend;
-import com.google.devtools.kythe.platform.rpc.Server;
+import com.google.shipshape.util.rpc.HttpServerFrontend;
+import com.google.shipshape.util.rpc.Server;
 import com.google.devtools.kythe.platform.java.JavaCompilationDetails;
 import com.google.shipshape.analyzers.ErrorProneAnalyzer;
 import com.google.shipshape.proto.ShipshapeContextProto.Stage;

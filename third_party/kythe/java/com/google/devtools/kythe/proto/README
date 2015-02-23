@@ -1,4 +1,0 @@
-
-WARNING: The files in the directory are pseudo-generated as interfaces for Java
-  KRPC services and clients.  These are expected to be removed and replaced with
-  a more robust RPC layer in the future.
