@@ -51,7 +51,7 @@ func (Analyzer) Category() string { return "AndroidLint" }
 // Analyze runs android lint on all Android projects that are implicitly
 // referenced by the list of files on the depot path. In case of an error, it
 // returns partial results.
-func (ala *Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
+func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
 	var notes []*notepb.Note
 
 	// Get the list of Android Projects
@@ -140,10 +140,9 @@ func getProject(path string) (string, bool) {
 		return "", false
 	}
 	if fi.IsDir() {
-		if path == "." || path == string(filepath.Separator) {
-			return "", false
-		} else if isAndroidRoot(path) {
-			return path, true
+		isAndroid := isAndroidRoot(path)
+		if isAndroid || path == "." || path == string(filepath.Separator) {
+			return path, isAndroid
 		}
 	}
 	return getProject(filepath.Dir(path))

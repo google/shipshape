@@ -28,6 +28,9 @@
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//third_party/protobuf:protobuf_go"
+      ],
+      "go_tests": [
+      	"analyzer_test.go"
       ]
     }
   }
