@@ -176,13 +176,12 @@ func main() {
 		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
 	}
 
-	var containers []string
-	// If necessary, pull it
-	// If local is true it doesn't meant that docker won't pull it, it will just
-	// look locally first.
+	// If we are not running in local mode, pull the latest copy
+	// Notice this will use the local tag as a signal to not pull the
+	// third-party analyzers either.
 	if *tag != "local" {
 		pull(image)
-		containers = pullAnalyzers(thirdPartyAnalyzers)
+		pullAnalyzers(thirdPartyAnalyzers)
 	}
 
 	// Put in this defer before calling run. Even if run fails, it can
@@ -192,7 +191,10 @@ func main() {
 		// we should use the default 10 seconds and properly handle
 		// SIGTERMs in the endpoint script.
 		defer stop("shipping_container", 0)
-		for _, container := range containers {
+		// Stop all the analyzers, even the ones that had trouble starting,
+		// in case they did actually start
+		for id, analyzerRepo := range thirdPartyAnalyzers {
+			container, _ := getContainerAndAddress(analyzerRepo, id)
 			defer stop(container, 0)
 		}
 	}
@@ -337,22 +339,18 @@ func stop(container string, timeWait time.Duration) {
 	}
 }
 
-func pullAnalyzers(images []string) []string {
-	var containers []string
+func pullAnalyzers(images []string) {
 	var wg sync.WaitGroup
-	for id, analyzerRepo := range images {
+	for _, analyzerRepo := range images {
 		wg.Add(1)
 		go func() {
-			analyzerContainer, _ := getContainerAndAddress(analyzerRepo, id)
 			pull(analyzerRepo)
-			containers = append(containers, analyzerContainer)
 			wg.Done()
 		}()
 	}
 	glog.Info("Pulling dockerized analyzers...")
 	wg.Wait()
 	glog.Info("Analyzers pulled")
-	return containers
 }
 
 func startAnalyzers(sourceDir string, images []string) (containers []string, errs []error) {
