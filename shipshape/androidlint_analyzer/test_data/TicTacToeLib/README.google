@@ -1,0 +1,10 @@
+URL: clone of https://github.com/android/platform_development/tree/master/samples/TicTacToeLib on 2015/02/18
+Version: cbb9f0d00e119c35e1d1fbd03fbfea2885cfe1e9
+License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0
+License File: LICENSE
+
+Description:
+Sample android project, for use with TicTacToeMain.
+
+Local Modifications:
+No Modifications.
