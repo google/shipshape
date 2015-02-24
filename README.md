@@ -104,7 +104,7 @@ Instructions are located in shipshape/jenkins_plugin/README.md
 
 # Writing an analyzer #
 
-To write a new analyzer service, you can use the androidlint_analyzer as an example
+To write a new analyzer service, you can use the androidlint_analyzer as an example.
 
 **androidlint/analyzer.go** -- implements the analyzer interface. Basically a wrapper
   that calls out to androidlint as subprocess and translates the output into Notes
@@ -113,6 +113,10 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
 **androidlint/service.go** -- sets up running android lint as a service. You will want
   to copy this file and update the names to reflect your analyzer.
 
+**androidlint/analyzer_test.go** -- some sample tests of the analyzer.
+
+**androidlint/test_data** -- test data used by the analyzer unit tests.
+
 **androidlint/CAMPFIRE** -- build file for this analyzer. Should copy and update names.
 
 **docker/Dockerfile,endpoint.sh** -- Dockerfile and shell script need to build a docker
@@ -120,6 +124,12 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
   be pulled down in the Dockerfile.
 
 **docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
+
+You can build and test the android lint analyzer by running (in root of repo):
+```
+$ ./campfire build //shipshape/androidlint_analyzer/androidlint/...
+$ ./campfire test //shipshape/androidlint_analyzer/androidlint/...
+```
 
 You can try building the android lint docker image by running (in root of repo):
 
