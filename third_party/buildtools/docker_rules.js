@@ -106,7 +106,7 @@ function dockerTagPush(target, tag) {
   var pushCommand = "docker push "
   var convoyServer = target.owner.getProperty("convoy_server");
   if (convoyServer) {
-    pushCommand = "gcloud preview docker --server=" + convoyServer.value + " push ";
+    pushCommand = "gcloud preview docker push ";
   }
   return ["docker tag " + target.name.value +":latest " + remote,
           pushCommand + remote];
@@ -223,7 +223,7 @@ DockerDeploy.prototype.getOutputsFor = function(target, kind) {
     if (convoyBucket) {
       var tokens = name.value.split("/");
       var remoteName = convoyServer.value +
-          "/_b_" + convoyBucket.value + "/" + tokens[tokens.length-1];
+          "/" + convoyBucket.value + "/" + tokens[tokens.length-1];
       var dockerPull = new DockerPull(target, name, remoteName);
       target.outs.push(dockerPull.logFile);
     } else if (dockerRepository) {
@@ -254,8 +254,8 @@ DockerDeploy.prototype.getOutputsFor = function(target, kind) {
     var dockerRepository = target.getProperty("docker_repository");
     if (convoyBucket) {
       var tokens = name.value.split("/");
-      var remoteName = convoyServer.value +
-          "/_b_" + convoyBucket.value + "/" + tokens[tokens.length-1];
+      var remoteName = convoyServer.value + "/" +
+          convoyBucket.value + "/" + tokens[tokens.length-1];
       var dockerPush = new DockerPush(target, name, remoteName);
       dockerPush.addParent(dockerBuild.done);
       target.outs.push(dockerPush.logFile);
