@@ -134,9 +134,9 @@ exports.commands = {
   'package': new Command(function(engine, args) {
     engine.ninjaCommand(rule.kinds.PACKAGE, args, true);
   }, 'Creates docker packages for provided targets'),
-  extract: new Command(function(engine, args) {
-    engine.ninjaCommand(rule.kinds.EXTRACT, args, true);
-  }, 'Extract kindex compilations'),
+  'deploy': new Command(function(engine, args) {
+    engine.ninjaCommand(rule.kinds.DEPLOY, args, true);
+  }, 'Deploys docker images for provided targets'),
   query: new Command(function(engine, args) {
     engine.query(args[0]);
   }, 'Queries build rule information from CAMPFIRE files'),

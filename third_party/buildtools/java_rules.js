@@ -4,7 +4,6 @@ var fs = require('fs');
 var path = require('path');
 
 var entity = require('./entity.js');
-var kythe_rules = require('./kythe_rules.js');
 var rule = require('./rule.js');
 
 function JavaTool(engine) {
@@ -36,9 +35,7 @@ JavaLibrary.prototype.getNinjaBuilds = function(target) {
   var kindex =
       target.getFileNode(target.getRoot('gen') + '.java.kindex', 'kindex');
   return {
-    BUILD: [javacBuild],
-    EXTRACT: [
-      kythe_rules.javaNinjaExtractor(target, javacBuild, kindex)]
+    BUILD: [javacBuild]
   };
 };
 JavaLibrary.prototype.getClasspath = function(target) {

@@ -9,9 +9,18 @@
       "go_pkgs": [
         "//third_party/protobuf:protobuf_go"
       ]
-    },
-    "go_tests": [
-      "delimited_test.go"
-    ]
+    }
+  },
+  {
+    "name": "delimited_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
+        "delimited_test.go"
+      ],
+      "go_lib": [
+        ":delimited"
+      ]
+    }
   }
 ]

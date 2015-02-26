@@ -7,20 +7,32 @@
         "analyzer.go",
         "dispatcher.go"
       ],
-      "go_tests": [
-        "dispatcher_test.go"
-      ],
       "go_pkgs": [
-        "//shipshape/util/rpc/client",
-        "//shipshape/util/rpc/server",
         "//shipshape/proto:note_proto",
-        "//shipshape/proto:shipshape_config_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
-        "//shipshape/util/test",
         "//shipshape/util/file",
         "//shipshape/util/strings",
+        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "api_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
+        "dispatcher_test.go"
+      ],
+      "go_lib": [
+        ":api"
+      ],
+      "go_pkgs": [
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//shipshape/util/strings"
       ]
     }
   }

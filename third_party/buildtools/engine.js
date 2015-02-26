@@ -562,7 +562,7 @@ function ninjaBuildHeader(engine) {
   for (var k in vars) {
     lines.push(k + ' = ' + vars[k]);
   }
-  lines.push('subninja buildtools/rules.ninja');
+  lines.push('subninja third_party/buildtools/rules.ninja');
   return lines;
 }
 

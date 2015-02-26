@@ -3,7 +3,6 @@
 var path = require('path');
 
 var entity = require('./entity.js');
-var kythe_rules = require('./kythe_rules.js');
 var rule = require('./rule.js');
 
 // A property that, when specified on a cc_external_lib, requires
@@ -93,7 +92,6 @@ CcLibrary.prototype.getNinjaBuilds = function(target) {
     builds.push(compile);
     var kindex = target.getFileNode(target.getRoot('gen') +
         path.basename(srcs[i].getPath()) + '.c++.kindex', 'kindex');
-    extractions.push(kythe_rules.cxxNinjaExtractor(target, compile, kindex));
     objects.push(obj);
   }
   var archiveRoot = target.getRoot('bin');

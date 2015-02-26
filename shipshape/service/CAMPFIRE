@@ -7,7 +7,6 @@
         "go_dispatcher.go"
       ],
       "go_pkgs": [
-        "//shipshape/util/rpc/server",
         "//shipshape/analyzers/codealert",
         "//shipshape/analyzers/govet",
         "//shipshape/analyzers/jshint",
@@ -16,6 +15,7 @@
         "//shipshape/analyzers/wordcount",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
+        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
@@ -28,8 +28,8 @@
         "shipshape.go"
       ],
       "go_pkgs": [
-        "//shipshape/util/rpc/server",
         "//shipshape/service",
+        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
@@ -42,19 +42,39 @@
         "config.go",
         "driver.go"
       ],
-      "go_tests": [
+      "go_pkgs": [
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_config_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//shipshape/util/file",
+        "//shipshape/util/strings",
+        "//third_party/go-yaml",
+        "//third_party/kythe/go/platform/indexinfo",
+        "//third_party/kythe/go/rpc/client",
+        "//third_party/kythe/go/rpc/server",
+        "//third_party/kythe/proto:analysis_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "service_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
         "config_test.go",
         "driver_test.go"
       ],
+      "go_lib": [
+        ":service"
+      ],
       "go_pkgs": [
-	"//third_party/kythe/go/platform/indexinfo",
-        "//shipshape/util/rpc/client",
-        "//shipshape/util/rpc/server",
-        "//shipshape/api",
         "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
         "//shipshape/util/test",
-        "//third_party/go-yaml",
+        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }

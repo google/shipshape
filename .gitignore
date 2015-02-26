@@ -21,4 +21,7 @@ MANIFEST-*
 /.campfire_state
 /campfire-out
 /doxygen-out
-/bazel-*
+*.ninja*
+
+# Misc
+node_modules

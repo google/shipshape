@@ -7,9 +7,9 @@
         "test_shipshape_client.go"
       ],
       "go_pkgs": [
-        "//shipshape/util/rpc/client",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/util/file",
+        "//third_party/kythe/go/rpc/client",
         "//third_party/protobuf:protobuf_go"
       ]
     }
