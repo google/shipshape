@@ -26,6 +26,7 @@
       "jar_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/jar",
       "java_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/java",
       "javac_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/javac",
+      "ninja_path": "third_party/ninja/ninja",
       "protoc_gen_go_path": "third_party/protobuf/bin/protoc-gen-go",
       "protoc_path": "third_party/protobuf/bin/protoc",
       "+copts": ["-DCAMPFIRE_CONFIGURATION=amd64"]
