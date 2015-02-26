@@ -12,8 +12,8 @@
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
         "//shipshape/util/file",
+        "//shipshape/util/rpc/server",
         "//shipshape/util/strings",
-        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }

@@ -15,7 +15,7 @@
         "//shipshape/analyzers/wordcount",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
-        "//third_party/kythe/go/rpc/server",
+        "//shipshape/util/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
@@ -29,7 +29,7 @@
       ],
       "go_pkgs": [
         "//shipshape/service",
-        "//third_party/kythe/go/rpc/server",
+        "//shipshape/util/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
@@ -48,11 +48,11 @@
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
         "//shipshape/util/file",
+        "//shipshape/util/rpc/client",
+        "//shipshape/util/rpc/server",
         "//shipshape/util/strings",
         "//third_party/go-yaml",
         "//third_party/kythe/go/platform/indexinfo",
-        "//third_party/kythe/go/rpc/client",
-        "//third_party/kythe/go/rpc/server",
         "//third_party/kythe/proto:analysis_proto",
         "//third_party/protobuf:protobuf_go"
       ]
@@ -73,8 +73,8 @@
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
+        "//shipshape/util/rpc/server",
         "//shipshape/util/test",
-        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }

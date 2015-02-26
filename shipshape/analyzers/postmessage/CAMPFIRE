@@ -10,7 +10,7 @@
         "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
-        "//third_party/kythe/go/rpc/client",
+        "//shipshape/util/rpc/client",
         "//third_party/protobuf:protobuf_go"
       ]
     }

@@ -9,8 +9,8 @@
       "go_pkgs": [
         "//shipshape/service",
         "//shipshape/util/docker",
+        "//shipshape/util/rpc/server",
         "//third_party/go-glog",
-        "//third_party/kythe/go/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
