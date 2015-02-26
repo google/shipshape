@@ -1,31 +1,34 @@
 {
-  "rules": [
-    "./java_rules.js",
-    "./proto_rules.js",
-    "./cc_rules.js",
-    "./go_rules.js",
-    "./docker_rules.js",
-    "./sh_rules.js"
-  ],
   "configuration": "amd64-release",
   "configurations": {
     "base": {
-      "ansi": "progress",
-      "jdk_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/",
-      "protoc_path": "third_party/protobuf/bin",
-      "junit_path": "third_party/junit/junit-4.11.jar",
-      "go_testmain_generator": "//third_party/buildtools:go_testmain_generator",
       "out_label": "",
-      "copts": ["-std=c++11", "-pthread", "-fno-rtti", "-Wall", "-Werror", "-Wno-unused-variable", "-Wno-unused-but-set-variable"],
-      "docker_gcs_bucket": "kythe-docker",
-      "docker_registry_port": 5000,
-      "gcloud_config_volume": "gcloud-config"
+
+      "asciidoc_path": "asciidoc",
+      "bison_path": "bison",
+      "cc_path": "clang",
+      "cxx_path": "clang++",
+      "flex_path": "flex",
+      "go_path": "go",
+      "go_testmain_generator": "//third_party/buildtools:go_testmain_generator",
+      "jar_path": "jar",
+      "java_path": "java",
+      "javac_path": "javac",
+      "junit_path": "third_party/junit/junit-4.11.jar",
+      "ninja_path": "ninja",
+
+      "cc_opts": ["-std=c++11", "-pthread", "-fno-rtti", "-Wall", "-Werror", "-Wno-unused-variable", "-Wno-unused-but-set-variable"],
+      "javac_opts": ["-encoding", "utf-8"],
+      "docker_namespace": "gcr.io/_b_shipshape_releases"
     },
     "amd64": {
       "@inherit": "base",
-      "crosstool_cxx_path": "/google/src/files/62158027/depot/google3/third_party/crosstool/v17/stable/wrappers/bin/x86_64-grtev3-linux-gnu-g++",
-      "crosstool_cc_path": "/google/src/files/62158027/depot/google3/third_party/crosstool/v17/stable/wrappers/bin/x86_64-grtev3-linux-gnu-gcc",
-      "go_path": "/usr/lib/google-golang/pkg/tool/linux_amd64/",
+      "jar_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/jar",
+      "java_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/java",
+      "javac_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/javac",
+      "ninja_path": "third_party/ninja/ninja",
+      "protoc_gen_go_path": "third_party/protobuf/bin/protoc-gen-go",
+      "protoc_path": "third_party/protobuf/bin/protoc",
       "+copts": ["-DCAMPFIRE_CONFIGURATION=amd64"]
     },
     "amd64-debug": {
@@ -37,7 +40,17 @@
       "out_label": ""
     }
   },
+  "rules": [
+    "./cc_rules.js",
+    "./doc_rules.js",
+    "./docker_rules.js",
+    "./go_rules.js",
+    "./java_rules.js",
+    "./lexparse_rules.js",
+    "./proto_rules.js",
+    "./sh_rules.js"
+  ],
   "allowed_dependencies": {
-    "shipshape": { "third_party": true }
+    "shipshape": { "third_party" : true }
   }
 }

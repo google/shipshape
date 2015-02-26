@@ -9,11 +9,23 @@
       ],
       "go_pkgs": [
         ":test_proto",
-        "//shipshape/util/rpc/protocol",
-        "//shipshape/util/httpencoding"
-      ],
-      "go_tests": [
+        "//shipshape/util/httpencoding",
+        "//shipshape/util/rpc/protocol"
+      ]
+    }
+  },
+  {
+    "name": "server_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
         "krpc_test.go"
+      ],
+      "go_lib": [
+        ":server"
+      ],
+      "go_pkgs": [
+        ":test_proto"
       ]
     }
   },

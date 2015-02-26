@@ -1,5 +1,5 @@
-URL: https://kythe.googlesource.com/kythe-main/+/5dc47cf3c1cffb77d51ba1bce59eea47859aa62f
-Version: 5dc47cf3c1cffb77d51ba1bce59eea47859aa62f
+URL: https://github.com/google/kythe/tree/8c49de9a5408808a7c03e7728b7e2da1c83ec00c/buildtools
+Version: 8c49de9a5408808a7c03e7728b7e2da1c83ec00c
 License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0
 License File: LICENSE
 
@@ -8,4 +8,5 @@ Simple build system created at Google.
 
 Local Modifications:
 LICENSE file has been created for compliance purposes. Not included in original
-distribution.
+distribution.  Other modifications are automated with the upgrade_from_kythe.sh
+script.

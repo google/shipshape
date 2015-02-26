@@ -6,8 +6,22 @@
       "srcs": [
         "word_count_analyzer.go"
       ],
-      "go_tests": [
+      "go_pkgs": [
+        "//shipshape/proto:note_proto",
+        "//shipshape/proto:shipshape_context_proto",
+        "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "wordcount_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
         "word_count_analyzer_test.go"
+      ],
+      "go_lib": [
+        ":wordcount"
       ],
       "go_pkgs": [
         "//shipshape/proto:note_proto",

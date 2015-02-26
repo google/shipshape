@@ -8,9 +8,9 @@
       ],
       "go_pkgs": [
         ":androidlint",
-        "//shipshape/util/rpc/server",
-        "//shipshape/proto:note_proto",
+        "//shipshape/api",
         "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/util/rpc/server",
         "//third_party/protobuf:protobuf_go"
       ]
     }
@@ -23,14 +23,25 @@
         "analyzer.go"
       ],
       "go_pkgs": [
-        "//shipshape/util/rpc/client",
-        "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:textrange_proto",
         "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "androidlint_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
+        "analyzer_test.go"
       ],
-      "go_tests": [
-      	"analyzer_test.go"
+      "go_lib": [
+        ":androidlint"
+      ],
+      "go_pkgs": [
+        "//shipshape/util/test"
       ]
     }
   }

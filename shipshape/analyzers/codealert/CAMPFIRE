@@ -6,15 +6,22 @@
       "srcs": [
         "code_alert_analyzer.go"
       ],
-      "go_tests": [
-        "code_alert_analyzer_test.go"
-      ],
       "go_pkgs": [
-        "//shipshape/util/rpc/client",
-        "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//third_party/protobuf:protobuf_go"
+      ]
+    }
+  },
+  {
+    "name": "codealert_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
+        "code_alert_analyzer_test.go"
+      ],
+      "go_lib": [
+        ":codealert"
       ]
     }
   }

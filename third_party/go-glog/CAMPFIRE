@@ -4,13 +4,12 @@
     "kind": "go_library",
     "inputs": {
       "srcs": [
-        "glog_file.go",
-	"glog.go"
+        "glog.go",
+        "glog_file.go"
       ]
     },
-        "properties": {
-	      "go_include_path": "third_party/glog"
-	  }
-
+    "properties": {
+      "go_include_path": "third_party/glog"
+    }
   }
 ]

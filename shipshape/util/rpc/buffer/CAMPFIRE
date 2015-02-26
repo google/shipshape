@@ -6,9 +6,18 @@
       "srcs": [
         "buffer.go"
       ]
-    },
-    "go_tests": [
-      "buffer_test.go"
-    ]
+    }
+  },
+  {
+    "name": "buffer_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
+        "buffer_test.go"
+      ],
+      "go_lib": [
+        ":buffer"
+      ]
+    }
   }
 ]

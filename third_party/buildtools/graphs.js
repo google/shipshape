@@ -1,3 +1,5 @@
+'use strict';
+
 exports.Node = function() {
 };
 
@@ -19,7 +21,7 @@ exports.Graph = function() {
 
 exports.Graph.prototype.addNode = function(node) {
   if (this.ids[node.id]) {
-    console.trace("ERROR: graph already contains node: " + node.id);
+    console.trace('ERROR: graph already contains node: ' + node.id);
     process.exit(2);
   }
   this.nodes.push(node);
@@ -28,7 +30,7 @@ exports.Graph.prototype.addNode = function(node) {
 };
 
 exports.Graph.prototype.getNode = function(id) {
- return this.ids[id];
+  return this.ids[id];
 };
 
 exports.Graph.prototype.stronglyConnectedComponents = function() {
@@ -51,16 +53,16 @@ exports.Graph.prototype.stronglyConnectedComponents = function() {
       if (indexes[parent.id] === undefined) {
         strongconnect(parent);
         lowlinks[node.id] = Math.min(lowlinks[node.id],
-            lowlinks[parent.id]);
+                                     lowlinks[parent.id]);
       } else if (stackPresent[parent.id] === true) {
         lowlinks[node.id] = Math.min(lowlinks[node.id],
-            indexes[parent.id]);
+                                     indexes[parent.id]);
       }
     }
 
     if (lowlinks[node.id] === indexes[node.id]) {
       var component = [];
-      while(true) {
+      while (true) {
         var current = stack.pop();
         stackPresent[current] = undefined;
         component.push(current);

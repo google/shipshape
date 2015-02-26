@@ -7,14 +7,25 @@
         "govet_analyzer.go"
       ],
       "go_pkgs": [
-        "//shipshape/util/rpc/client",
-        "//shipshape/api",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:textrange_proto",
         "//third_party/protobuf:protobuf_go"
-      ],
-      "go_tests": [
+      ]
+    }
+  },
+  {
+    "name": "govet_test",
+    "kind": "go_test",
+    "inputs": {
+      "srcs": [
         "govet_analyzer_test.go"
+      ],
+      "go_lib": [
+        ":govet"
+      ],
+      "go_pkgs": [
+        "//shipshape/proto:shipshape_context_proto"
       ]
     }
   }
