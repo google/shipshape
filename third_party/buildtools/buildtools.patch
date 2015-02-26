@@ -1,0 +1,179 @@
+diff --git a/third_party/buildtools/cc_rules.js b/third_party/buildtools/cc_rules.js
+index 1cc273e..ea6e309 100644
+--- a/third_party/buildtools/cc_rules.js
++++ b/third_party/buildtools/cc_rules.js
+@@ -3,7 +3,6 @@
+ var path = require('path');
+ 
+ var entity = require('./entity.js');
+-var kythe_rules = require('./kythe_rules.js');
+ var rule = require('./rule.js');
+ 
+ // A property that, when specified on a cc_external_lib, requires
+@@ -93,7 +92,6 @@ CcLibrary.prototype.getNinjaBuilds = function(target) {
+     builds.push(compile);
+     var kindex = target.getFileNode(target.getRoot('gen') +
+         path.basename(srcs[i].getPath()) + '.c++.kindex', 'kindex');
+-    extractions.push(kythe_rules.cxxNinjaExtractor(target, compile, kindex));
+     objects.push(obj);
+   }
+   var archiveRoot = target.getRoot('bin');
+diff --git a/third_party/buildtools/commands.js b/third_party/buildtools/commands.js
+index fdcb5d6..3e2d649 100644
+--- a/third_party/buildtools/commands.js
++++ b/third_party/buildtools/commands.js
+@@ -134,9 +134,9 @@ exports.commands = {
+   'package': new Command(function(engine, args) {
+     engine.ninjaCommand(rule.kinds.PACKAGE, args, true);
+   }, 'Creates docker packages for provided targets'),
+-  extract: new Command(function(engine, args) {
+-    engine.ninjaCommand(rule.kinds.EXTRACT, args, true);
+-  }, 'Extract kindex compilations'),
++  'deploy': new Command(function(engine, args) {
++    engine.ninjaCommand(rule.kinds.DEPLOY, args, true);
++  }, 'Deploys docker images for provided targets'),
+   query: new Command(function(engine, args) {
+     engine.query(args[0]);
+   }, 'Queries build rule information from CAMPFIRE files'),
+diff --git a/third_party/buildtools/engine.js b/third_party/buildtools/engine.js
+index a95a871..adb663e 100644
+--- a/third_party/buildtools/engine.js
++++ b/third_party/buildtools/engine.js
+@@ -562,7 +562,7 @@ function ninjaBuildHeader(engine) {
+   for (var k in vars) {
+     lines.push(k + ' = ' + vars[k]);
+   }
+-  lines.push('subninja buildtools/rules.ninja');
++  lines.push('subninja third_party/buildtools/rules.ninja');
+   return lines;
+ }
+ 
+diff --git a/third_party/buildtools/go_rules.js b/third_party/buildtools/go_rules.js
+index b2b44fd..e1faea5 100644
+--- a/third_party/buildtools/go_rules.js
++++ b/third_party/buildtools/go_rules.js
+@@ -12,7 +12,7 @@ exports.PACKAGE_DIR = 'campfire-out/go/pkg/linux_amd64/';
+ function GoTool(engine) {
+   rule.Tool.call(this, engine, 'go',
+                  '$gotool', ['version'],
+-                 '(?<=go)1\\.[3-9](\\.\\d)', '1.3');
++                 '(?<=go)1\\.[3-9](\\.\\d)?', '1.3');
+ }
+ GoTool.prototype = Object.create(rule.Tool.prototype);
+ 
+@@ -261,66 +261,26 @@ function GoExternalLib(engine) {
+ }
+ 
+ GoExternalLib.prototype = new rule.Rule();
+-GoExternalLib.prototype.getNinjaBuilds = function(target) {
+-  // TODO(schroederc): unify external and kythe Go build rules
+-  var packageName = target.getPropertyValue('go_package');
+-  if (!packageName) {
+-    console.error('ERROR: ' + target.id + ' is missing go_package property');
+-    process.exit(1);
++GoExternalLib.prototype.getOutputsFor = function(target, kind) {
++  if (target.outs) {
++    return target.outs;
+   }
+-  var deps = rule.getAllOutputsFor(target.inputsByKind['go_pkgs'], 'build',
+-                                   rule.fileFilter('go_archive'));
+-  var root = path.dirname(target.asPath());
+-  var srcDir = path.join(root, 'src', packageName);
+-  var srcs = fs.readdirSync(srcDir)
+-      .filter(function(file) {
+-        return file.endsWith('.go') &&
+-            !file.endsWith('_test.go');
+-      }).map(function(file) {
+-        return target.getFileNode(path.join(srcDir, file), 'src_file');
+-      });
++  var inputs = rule.getAllOutputsFor(target.inputsByKind['srcs'],
++                                     kind, rule.fileFilter('src_file', '.a'));
+ 
+-  var outPath = exports.PACKAGE_DIR + packageName;
+-  var archive = target.getFileNode(outPath + '.a', 'go_archive');
++  var outputs = [];
++  for (var i = 0; i < inputs.length; i++) {
++    inputs[i].kind = 'go_archive';
++    outputs.push(inputs[i]);
++  }
+ 
+-  var includePaths =
+-      rule.getAllOutputsRecursiveFor(target.inputsByKind['cc_libs'], 'build',
+-                                     rule.propertyFilter(cc_rules.INCLUDE_PATH_PROPERTY));
+-  var ccLibs =
+-      rule.getAllOutputsRecursiveFor(target.inputsByKind['cc_libs'], 'build',
+-                                     rule.fileFilter('cc_archive'));
+-  var campfireRoot = target.engine.campfireRoot;
+-  var cflags = includePaths
+-      .map(function(p) {
+-        return '-I' + path.join(campfireRoot, p.value);
+-      });
+-  var ldflags = ccLibs
+-      .map(function(p) {
+-        return '-L' + path.join(campfireRoot, path.dirname(p.getPath()));
+-      });
+-  ldflags.append(target.getPropertyValue('cgo_ldflags') || []);
+-  ldflags.append(rule.getAllOutputsRecursiveFor(
+-      (target.inputsByKind['go_pkgs'] || [])
+-          .concat(target.inputsByKind['cc_libs'] || []),
+-      'build', rule.propertyFilter('cc_extra_link_flags'))
+-          .mapcat(function(p) { return p.value; }));
+-  return {
+-    BUILD: [{
+-      rule: 'go_build',
+-      inputs: [],
+-      implicits: [target.getVersionMarker('go')]
+-          .concat(ccLibs)
+-          .concat(deps)
+-          .concat(srcs),
+-      outs: [archive],
+-      vars: {
+-        root: root,
+-        'package': packageName,
+-        cflags: cflags.join(' '),
+-        ldflags: ldflags.join(' ')
+-      }
+-    }]
+-  };
++  var includePath = target.getProperty('go_include_path');
++  if (includePath) {
++    outputs.push(includePath);
++  }
++
++  target.outs = outputs;
++  return outputs;
+ };
+ 
+ exports.register = function(engine) {
+diff --git a/third_party/buildtools/java_rules.js b/third_party/buildtools/java_rules.js
+index 72cc8a2..542a63c 100644
+--- a/third_party/buildtools/java_rules.js
++++ b/third_party/buildtools/java_rules.js
+@@ -4,7 +4,6 @@ var fs = require('fs');
+ var path = require('path');
+ 
+ var entity = require('./entity.js');
+-var kythe_rules = require('./kythe_rules.js');
+ var rule = require('./rule.js');
+ 
+ function JavaTool(engine) {
+@@ -36,9 +35,7 @@ JavaLibrary.prototype.getNinjaBuilds = function(target) {
+   var kindex =
+       target.getFileNode(target.getRoot('gen') + '.java.kindex', 'kindex');
+   return {
+-    BUILD: [javacBuild],
+-    EXTRACT: [
+-      kythe_rules.javaNinjaExtractor(target, javacBuild, kindex)]
++    BUILD: [javacBuild]
+   };
+ };
+ JavaLibrary.prototype.getClasspath = function(target) {
+diff --git a/third_party/buildtools/test/test_sh.sh b/third_party/buildtools/test/test_sh.sh
+index 122acc8..9e4de30 100755
+--- a/third_party/buildtools/test/test_sh.sh
++++ b/third_party/buildtools/test/test_sh.sh
+@@ -1,3 +1,3 @@
+ #!/bin/bash
+-cat buildtools/test/test_sh.data
++cat third_party/buildtools/test/test_sh.data
+ exit 0

@@ -8,4 +8,5 @@ Simple build system created at Google.
 
 Local Modifications:
 LICENSE file has been created for compliance purposes. Not included in original
-distribution.
+distribution.  Other modifications are automated with the upgrade_from_kythe.sh
+script.
