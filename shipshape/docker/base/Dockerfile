@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-dev-java:prod
+FROM gcr.io/_b_dev_containers/cloud-dev-java:prod
 
 # The default apt source list does not provide nodejs so we need to add a new source that does.
 RUN echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list

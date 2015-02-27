@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-dev-nodejs:prod
+FROM gcr.io/_b_dev_containers/cloud-dev-nodejs:prod
 
 RUN apt-get update && apt-get upgrade -y
 
