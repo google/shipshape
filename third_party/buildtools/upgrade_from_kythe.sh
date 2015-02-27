@@ -14,7 +14,7 @@ case $# in
     usage ;;
 esac
 
-cd $(dirname "$0")/../..
+cd "$(dirname "$0")"/../..
 
 echo "Kythe repository: $KYTHE" >&2
 
@@ -31,4 +31,4 @@ patch -p1 < third_party/buildtools/buildtools.patch
 
 # Update README.google
 sed -ri "s/Version: .+/Version: $COMMIT/
-s#/tree/.+/buildtools#/tree/$COMMIT/buildtools/#" third_party/buildtools/README.google
+s#/tree/.+/buildtools/#/tree/$COMMIT/buildtools/#" third_party/buildtools/README.google

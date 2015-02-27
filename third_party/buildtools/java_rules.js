@@ -6,6 +6,12 @@ var path = require('path');
 var entity = require('./entity.js');
 var rule = require('./rule.js');
 
+try {
+  var kythe_rules = require('./kythe_rules.js');
+} catch (e) {
+  // No Kythe support available
+}
+
 function JavaTool(engine) {
   rule.Tool.call(this, engine, 'java',
                  '$javac', ['-version'],
@@ -35,7 +41,10 @@ JavaLibrary.prototype.getNinjaBuilds = function(target) {
   var kindex =
       target.getFileNode(target.getRoot('gen') + '.java.kindex', 'kindex');
   return {
-    BUILD: [javacBuild]
+    BUILD: [javacBuild],
+    EXTRACT: kythe_rules ?
+        [kythe_rules.javaNinjaExtractor(target, javacBuild, kindex)] :
+        []
   };
 };
 JavaLibrary.prototype.getClasspath = function(target) {
