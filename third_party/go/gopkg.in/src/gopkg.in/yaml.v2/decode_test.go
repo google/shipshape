@@ -267,6 +267,114 @@ var unmarshalTests = []struct {
 		map[string]uint64{},
 	},
 
+	// int
+	{
+		"int_max: 2147483647",
+		map[string]int{"int_max": math.MaxInt32},
+	},
+	{
+		"int_min: -2147483648",
+		map[string]int{"int_min": math.MinInt32},
+	},
+	{
+		"int_overflow: 9223372036854775808", // math.MaxInt64 + 1
+		map[string]int{},
+	},
+
+	// int64
+	{
+		"int64_max: 9223372036854775807",
+		map[string]int64{"int64_max": math.MaxInt64},
+	},
+	{
+		"int64_max_base2: 0b111111111111111111111111111111111111111111111111111111111111111",
+		map[string]int64{"int64_max_base2": math.MaxInt64},
+	},
+	{
+		"int64_min: -9223372036854775808",
+		map[string]int64{"int64_min": math.MinInt64},
+	},
+	{
+		"int64_neg_base2: -0b111111111111111111111111111111111111111111111111111111111111111",
+		map[string]int64{"int64_neg_base2": -math.MaxInt64},
+	},
+	{
+		"int64_overflow: 9223372036854775808", // math.MaxInt64 + 1
+		map[string]int64{},
+	},
+
+	// uint
+	{
+		"uint_min: 0",
+		map[string]uint{"uint_min": 0},
+	},
+	{
+		"uint_max: 4294967295",
+		map[string]uint{"uint_max": math.MaxUint32},
+	},
+	{
+		"uint_underflow: -1",
+		map[string]uint{},
+	},
+
+	// uint64
+	{
+		"uint64_min: 0",
+		map[string]uint{"uint64_min": 0},
+	},
+	{
+		"uint64_max: 18446744073709551615",
+		map[string]uint64{"uint64_max": math.MaxUint64},
+	},
+	{
+		"uint64_max_base2: 0b1111111111111111111111111111111111111111111111111111111111111111",
+		map[string]uint64{"uint64_max_base2": math.MaxUint64},
+	},
+	{
+		"uint64_maxint64: 9223372036854775807",
+		map[string]uint64{"uint64_maxint64": math.MaxInt64},
+	},
+	{
+		"uint64_underflow: -1",
+		map[string]uint64{},
+	},
+
+	// float32
+	{
+		"float32_max: 3.40282346638528859811704183484516925440e+38",
+		map[string]float32{"float32_max": math.MaxFloat32},
+	},
+	{
+		"float32_nonzero: 1.401298464324817070923729583289916131280e-45",
+		map[string]float32{"float32_nonzero": math.SmallestNonzeroFloat32},
+	},
+	{
+		"float32_maxuint64: 18446744073709551615",
+		map[string]float32{"float32_maxuint64": float32(math.MaxUint64)},
+	},
+	{
+		"float32_maxuint64+1: 18446744073709551616",
+		map[string]float32{"float32_maxuint64+1": float32(math.MaxUint64 + 1)},
+	},
+
+	// float64
+	{
+		"float64_max: 1.797693134862315708145274237317043567981e+308",
+		map[string]float64{"float64_max": math.MaxFloat64},
+	},
+	{
+		"float64_nonzero: 4.940656458412465441765687928682213723651e-324",
+		map[string]float64{"float64_nonzero": math.SmallestNonzeroFloat64},
+	},
+	{
+		"float64_maxuint64: 18446744073709551615",
+		map[string]float64{"float64_maxuint64": float64(math.MaxUint64)},
+	},
+	{
+		"float64_maxuint64+1: 18446744073709551616",
+		map[string]float64{"float64_maxuint64+1": float64(math.MaxUint64 + 1)},
+	},
+
 	// Overflow cases.
 	{
 		"v: 4294967297",
@@ -311,6 +419,13 @@ var unmarshalTests = []struct {
 	}, {
 		"a: &a [1, 2]\nb: *a",
 		&struct{ B []int }{[]int{1, 2}},
+	}, {
+		"b: *a\na: &a {c: 1}",
+		&struct {
+			A, B struct {
+				C int
+			}
+		}{struct{ C int }{1}, struct{ C int }{1}},
 	},
 
 	// Bug #1133337
@@ -356,6 +471,15 @@ var unmarshalTests = []struct {
 			A int
 			C inlineB `yaml:",inline"`
 		}{1, inlineB{2, inlineC{3}}},
+	},
+
+	// Map inlining
+	{
+		"a: 1\nb: 2\nc: 3\n",
+		&struct {
+			A int
+			C map[string]int `yaml:",inline"`
+		}{1, map[string]int{"b": 2, "c": 3}},
 	},
 
 	// bug 1243827
@@ -424,6 +548,16 @@ var unmarshalTests = []struct {
 	{
 		"a: 1.2.3.4\n",
 		map[string]net.IP{"a": net.IPv4(1, 2, 3, 4)},
+	},
+	{
+		"a: 2015-02-24T18:19:39Z\n",
+		map[string]time.Time{"a": time.Unix(1424801979, 0)},
+	},
+
+	// Encode empty lists as zero-length slices.
+	{
+		"a: []",
+		&struct{ A []int }{[]int{}},
 	},
 }
 
@@ -647,6 +781,37 @@ func (s *S) TestUnmarshalerError(c *C) {
 	c.Assert(err, Equals, failingErr)
 }
 
+type sliceUnmarshaler []int
+
+func (su *sliceUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var slice []int
+	err := unmarshal(&slice)
+	if err == nil {
+		*su = slice
+		return nil
+	}
+
+	var intVal int
+	err = unmarshal(&intVal)
+	if err == nil {
+		*su = []int{intVal}
+		return nil
+	}
+
+	return err
+}
+
+func (s *S) TestUnmarshalerRetry(c *C) {
+	var su sliceUnmarshaler
+	err := yaml.Unmarshal([]byte("[1, 2, 3]"), &su)
+	c.Assert(err, IsNil)
+	c.Assert(su, DeepEquals, sliceUnmarshaler([]int{1, 2, 3}))
+
+	err = yaml.Unmarshal([]byte("1"), &su)
+	c.Assert(err, IsNil)
+	c.Assert(su, DeepEquals, sliceUnmarshaler([]int{1}))
+}
+
 // From http://yaml.org/type/merge.html
 var mergeTests = `
 anchors:
@@ -762,6 +927,13 @@ func (s *S) TestUnmarshalNull(c *C) {
 			c.Assert(reflect.ValueOf(item).Elem().Interface(), DeepEquals, zero)
 		}
 	}
+}
+
+func (s *S) TestUnmarshalSliceOnPreset(c *C) {
+	// Issue #48.
+	v := struct{ A []int }{[]int{1}}
+	yaml.Unmarshal([]byte("a: [2]"), &v)
+	c.Assert(v.A, DeepEquals, []int{2})
 }
 
 //var data []byte
