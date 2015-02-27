@@ -21,18 +21,6 @@
     }
   },
   {
-    "name": "protobuf_go",
-    "kind": "go_external_lib",
-    "inputs": {
-      "srcs": [
-        "pkg/linux_amd64/github.com/golang/protobuf/proto.a"
-      ]
-    },
-    "properties": {
-      "go_include_path": "third_party/protobuf/pkg/linux_amd64/"
-    }
-  },
-  {
     "name": "descriptor_proto",
     "kind": "proto_library",
     "inputs": {
@@ -40,7 +28,7 @@
         "include/google/protobuf/descriptor.proto"
       ],
       "go_pkgs": [
-        ":protobuf_go"
+        "//third_party/go/github.com/:protobuf"
       ]
     },
     "properties": {

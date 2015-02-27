@@ -37,6 +37,7 @@
       "jars": [
         ":api",
         "//shipshape/java/com/google/shipshape/analyzers",
+        "//shipshape/java/com/google/shipshape/util/rpc:server",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
         "//third_party/guava",
@@ -45,7 +46,6 @@
         "//third_party/kythe/java/com/google/devtools/kythe/common",
         "//third_party/kythe/java/com/google/devtools/kythe/extractors/shared",
         "//third_party/kythe/java/com/google/devtools/kythe/platform/java",
-        "//shipshape/java/com/google/shipshape/util/rpc:server",
         "//third_party/kythe/java/com/google/devtools/kythe/platform/shared:file_data",
         "//third_party/kythe/proto:analysis_proto",
         "//third_party/kythe/proto:storage_proto",

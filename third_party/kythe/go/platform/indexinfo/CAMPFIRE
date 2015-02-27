@@ -10,7 +10,7 @@
         "//third_party/kythe/go/platform/analysis",
         "//third_party/kythe/go/platform/delimited",
         "//third_party/kythe/proto:analysis_proto",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   }

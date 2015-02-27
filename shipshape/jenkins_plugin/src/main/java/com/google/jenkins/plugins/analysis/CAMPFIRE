@@ -11,6 +11,7 @@
         "StreamBufferHandler.java"
       ],
       "jars": [
+        "//shipshape/java/com/google/shipshape/util/rpc:client",
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/proto:shipshape_rpc_proto",
@@ -25,7 +26,6 @@
         "//third_party/jenkins:remoting",
         "//third_party/jenkins:servlet-api",
         "//third_party/jenkins:stapler",
-        "//shipshape/java/com/google/shipshape/util/rpc:client",
         "//third_party/protobuf:protobuf_jar"
       ]
     }
