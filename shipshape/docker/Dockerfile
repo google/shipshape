@@ -16,7 +16,7 @@
 # If you are testing changes that need a different version of
 # base, you will need to (temporarily) modify this tag.
 # There is no way to say "whatever tag I am using, use the same one."
-FROM gcr.io/_b_shipshape_registry/base:prod
+FROM gcr.io/shipshape_releases/base:prod
 
 # Set up Shipshape
 ADD javac_dispatcher_deploy.jar javac_dispatcher.jar

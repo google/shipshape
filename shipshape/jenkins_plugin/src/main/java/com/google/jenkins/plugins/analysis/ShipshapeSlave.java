@@ -49,8 +49,7 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
 
   // Repo
   private static final String REPO_HOST = "gcr.io";
-  private static final String REPO_REGISTRY = "shipshape_registry";
-  private static final String REPO = REPO_HOST + "/_b_" + REPO_REGISTRY;
+  private static final String REPO = REPO_HOST + "shipshape_releases";
 
   // The name of the shipping_container image, as found in the GCS bucket.
   private static final String SHIPPING_CONTAINER_IMAGE = "service";

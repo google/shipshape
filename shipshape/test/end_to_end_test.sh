@@ -22,7 +22,7 @@ set -eu
 CONVOY_URL='gcr.io'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
-REPO=$CONVOY_URL/_b_shipshape_registry
+REPO=$CONVOY_URL/shipshape_releases
 CONTAINERS=(
   //shipshape/docker/base:base
   //shipshape/docker:service

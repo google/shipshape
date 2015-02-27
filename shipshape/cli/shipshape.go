@@ -51,8 +51,8 @@ var (
 	event          = flag.String("event", "manual", "The name of the event to use")
 	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
 	stayUp         = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
-	repo           = flag.String("repo", "gcr.io/_b_shipshape_registry", "The name of the docker repo to use")
-	kytheRepo      = flag.String("kytheRepo", "gcr.io/kythe_repo", "The name of the docker repo to use")
+	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
+	kytheImage     = flag.String("kytheImage", "gcr.io/kythe_repo/kythe:latest", "The full name of the kythe docker image to use")
 	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
 	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
 	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
@@ -229,13 +229,12 @@ func main() {
 	// If desired, generate compilation units with a kythe image
 	if *build != "" {
 		// TODO(ciera): handle campfire as an option
-		kytheImage := docker.FullImageName(*kytheRepo, "kythe", "latest")
-		pull(kytheImage)
+		pull(*kytheImage)
 
 		defer stop("kythe", 10*time.Second)
 		glog.Infof("Retrieving compilation units with %s", *build)
 
-		result := docker.RunKythe(kytheImage, "kythe", absRoot, *build)
+		result := docker.RunKythe(*kytheImage, "kythe", absRoot, *build)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			glog.Infoln(strings.TrimSpace(result.Stdout))

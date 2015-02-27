@@ -20,7 +20,7 @@
       "buildtools_root": "third_party/buildtools",
       "cc_opts": ["-std=c++11", "-pthread", "-fno-rtti", "-Wall", "-Werror", "-Wno-unused-variable", "-Wno-unused-but-set-variable"],
       "javac_opts": ["-encoding", "utf-8"],
-      "docker_namespace": "gcr.io/_b_shipshape_releases"
+      "docker_namespace": "gcr.io/shipshape_releases"
     },
     "amd64": {
       "@inherit": "base",
