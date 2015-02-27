@@ -26,10 +26,10 @@ import (
 	"time"
 
 	"shipshape/util/file"
-	strset "shipshape/util/strings"
-	"third_party/kythe/go/platform/indexinfo"
 	"shipshape/util/rpc/client"
 	"shipshape/util/rpc/server"
+	strset "shipshape/util/strings"
+	"third_party/kythe/go/platform/kindex"
 
 	"github.com/golang/protobuf/proto"
 
@@ -424,11 +424,11 @@ func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
 			return err
 		}
 		if strings.HasSuffix(file.Name(), ".kindex") {
-			info, err := indexinfo.Open(path)
+			info, err := kindex.Open(path)
 			if err != nil {
 				return fmt.Errorf("could not open kindex file %s: %v", path, err)
 			}
-			units[path] = info.Compilation
+			units[path] = info.Proto
 		}
 		return nil
 	}

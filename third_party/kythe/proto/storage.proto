@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-syntax = "proto2";
+syntax = "proto3";
 
 package kythe.proto;
 option java_package = "com.google.devtools.kythe.proto";
@@ -115,7 +115,7 @@ message ReadRequest {
   optional VName source = 1;
 
   // Return entries having this edge kind; if empty, only entries with an empty
-  // edge kind are returned.
+  // edge kind are returned; if "*", entries of any edge kind are returned.
   optional string edge_kind = 2;
 }
 
@@ -146,4 +146,40 @@ message ScanRequest {
   // Return entries having fact labels with this prefix; if empty, any fact
   // label is matched,
   optional string fact_prefix = 3;
+}
+
+// TODO(fromberger): add RPC service interfaces
+
+// Request for the size of the shard at the given index.
+message CountRequest {
+  optional int64 index = 1;
+  optional int64 shards = 2;
+}
+
+// Request for a stream of Entry objects in the given shard.
+message ShardRequest {
+  optional int64 index = 1;
+  optional int64 shards = 2;
+}
+
+// Request for the set of node tickets matching a partial VName and collection
+// of known facts.
+message SearchRequest {
+  // Optional partial VName to match against nodes.  Each non-empty field
+  // becomes a constraint (i.e. the signature/corpus/etc. must be exactly
+  // case-sensitively equal to the given string) on the set of returned nodes.
+  optional VName partial = 1;
+
+  message Fact {
+    optional string name = 1;
+    optional bytes value = 2;
+  }
+
+  // Facts that a node must have to be matched.
+  repeated Fact fact = 2;
+}
+
+message SearchReply {
+  // Set of node tickets matching a given SearchRequest.
+  repeated string ticket = 1;
 }

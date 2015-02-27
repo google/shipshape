@@ -12,13 +12,13 @@
     }
   },
   {
-    "name": "foreach",
-    "kind": "go_binary",
+    "name": "delimited_test",
+    "kind": "go_test",
     "inputs": {
       "srcs": [
-        "foreach.go"
+        "delimited_test.go"
       ],
-      "go_pkgs": [
+      "go_lib": [
         ":delimited"
       ]
     }

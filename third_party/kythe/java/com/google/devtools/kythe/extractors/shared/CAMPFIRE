@@ -11,25 +11,10 @@
         "IndexInfoUtils.java"
       ],
       "jars": [
+        "//third_party/guava",
         "//third_party/kythe/java/com/google/devtools/kythe/common",
         "//third_party/kythe/proto:analysis_proto",
         "//third_party/kythe/proto:storage_proto",
-        "//third_party/guava",
-        "//third_party/protobuf:protobuf_jar"
-      ]
-    }
-  },
-  {
-    "name": "file_vnames",
-    "kind": "java_library",
-    "inputs": {
-      "srcs": [
-        "FileVNames.java"
-      ],
-      "jars": [
-        "//third_party/kythe/proto:storage_proto",
-        "//third_party/gson",
-        "//third_party/guava",
         "//third_party/protobuf:protobuf_jar"
       ]
     }

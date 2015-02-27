@@ -32,6 +32,7 @@ import java.net.URI;
  * derived classes to analyze the instance and report results.
  */
 public abstract class JavacAnalyzer implements Serializable {
+  private static final long serialVersionUID = 8805455287690923133L;
 
   private final StatisticsCollector collector;
 

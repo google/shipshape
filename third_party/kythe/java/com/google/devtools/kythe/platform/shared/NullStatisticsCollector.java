@@ -21,8 +21,8 @@ import java.io.Serializable;
 /**
  * A statistics collector that ignores all statistics.
  */
-public class NullStatisticsCollector implements StatisticsCollector,
-    Serializable {
+public class NullStatisticsCollector implements StatisticsCollector, Serializable {
+  private static final long serialVersionUID = 7642617128987532613L;
 
   private static NullStatisticsCollector instance = new NullStatisticsCollector();
 

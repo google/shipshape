@@ -20,9 +20,9 @@
         "FileDataProvider.java"
       ],
       "jars": [
+        "//third_party/guava",
         "//third_party/kythe/java/com/google/devtools/kythe/common",
         "//third_party/kythe/proto:analysis_proto",
-        "//third_party/guava",
         "//third_party/protobuf:protobuf_jar"
       ]
     }

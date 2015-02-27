@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-syntax = "proto2";
+syntax = "proto3";
 
 package kythe.proto;
 option java_package = "com.google.devtools.kythe.proto";
 
+import "third_party/kythe/proto/any.proto";
 import "third_party/kythe/proto/storage.proto";
 
 // An AnalysisRequest instructs an analyzer to perform an analysis on a single
@@ -58,8 +59,8 @@ message CompilationUnit {
   // errors. This is used to check validity of the sharded analysis.
   optional bool has_compile_errors = 4;
 
-  // The arguments that would be passed to a compiler tool for this
-  // compilation unit, including the compiler executable and input files.
+  // The arguments to pass to a compiler tool for this compilation unit,
+  // including the compiler executable, flags, and input files.
   repeated string argument = 5;
 
   // Of those files in `required_input`, the ones that this CompilationUnit
@@ -75,6 +76,35 @@ message CompilationUnit {
   // How is this used in the pipeline?
   optional string output_key = 7;
 
+  // ContextDependentVersionColumn and ContextDependentVersionRow
+  // define a table that relates input contexts (keyed by a single
+  // source context per row) to tuples of (byte offset * linked context).
+  // When a FileInput F being processed in context C refers to another
+  // FileInput F' at offset O (perhaps because F has an #include directive at O)
+  // the context in which F' should be processed is the linked context derived
+  // from this table.
+  // TODO(zarko): Revisit the use of "column".
+  message ContextDependentVersionColumn {
+    // The byte offset into the file resource.
+    optional int32 offset = 1;
+    // The signature for the resulting context.
+    optional string linked_context = 2;
+  }
+
+  // See ContextDependentVersionColumn for details.
+  // It is valid for a ContextDependentVersionRow to have no columns. In this
+  // case, the associated FileInput was seen to exist in some context C, but
+  // did not refer to any other FileInputs while in that context.
+  message ContextDependentVersionRow {
+    // The context to be applied to all columns.
+    optional string source_context = 1;
+    // A map from byte offsets to linked contexts.
+    repeated ContextDependentVersionColumn column = 2;
+    // If true, this version should always be processed regardless of any
+    // claiming.
+    optional bool always_process = 3;
+  }
+
   message FileInput {
     // If set, overrides the `v_name` in the `CompilationUnit` for deriving
     // VNames during analysis.
@@ -83,14 +113,39 @@ message CompilationUnit {
     // The file's metadata. It is invalid to provide a FileInput without both
     // the file's path and digest.
     optional FileInfo info = 2;
+
+    // The file's context-dependent versions.
+    repeated ContextDependentVersionRow context = 3;
   }
 
-  // For certain languages (eg, c++), the current working directory is
-  // significant. This is an absolute path. During analysis, a FileInfo
-  // with a path that has working_directory plus a path separator as an
-  // exact prefix is considered to be accessible from the same path without
-  // that prefix.
+  // The absolute path of the current working directory where the build tool
+  // was invoked.  During analysis, a file whose path has working_directory
+  // plus a path separator as an exact prefix is considered accessible from
+  // that same path without said prefix.  It is only necessary to set this
+  // field if the build tool requires it.
   optional string working_directory = 8;
+
+  // For languages that make use of resource contexts (like C++), the context
+  // that should be initially entered.
+  // TODO(zarko): What is a "resource context"? Needs a clear definition and/or
+  // a link to one.
+  optional string entry_context = 9;
+
+  // An Env message represents the name and value of a single environment
+  // variable in the build environment.
+  message Env {
+    optional string name = 1;
+    optional string value = 2;
+  }
+
+  // A collection of environment variables that the build environment expects
+  // to be set.  As a rule, we only record variables here that must be set to
+  // specific values for the build to work.
+  // TODO(fromberger): When we move to NWP, use a map instead.
+  repeated Env environment = 10;
+
+  // Per-language or -tool details.
+  repeated Any details = 11;
 }
 
 // A FileInfo specifies metadata for a file under analysis.

@@ -51,9 +51,9 @@
         "//shipshape/util/rpc/client",
         "//shipshape/util/rpc/server",
         "//shipshape/util/strings",
-        "//third_party/go/gopkg.in:go-yaml",
         "//third_party/go/github.com:protobuf",
-        "//third_party/kythe/go/platform/indexinfo",
+        "//third_party/go/gopkg.in:go-yaml",
+        "//third_party/kythe/go/platform/kindex",
         "//third_party/kythe/proto:analysis_proto"
       ]
     }
