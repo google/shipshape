@@ -6,7 +6,6 @@ option java_outer_classname = "ShipshapeRpcProto";
 option java_package = "com.google.shipshape.proto";
 
 import "shipshape/proto/note.proto";
-import "shipshape/proto/source_context.proto";
 import "shipshape/proto/shipshape_context.proto";
 
 message GetCategoryRequest {

@@ -128,8 +128,7 @@
       ],
       "proto_libs": [
         ":note_proto",
-        ":shipshape_context_proto",
-        ":source_context_proto"
+        ":shipshape_context_proto"
       ],
       "jars": [
         "//third_party/protobuf:protobuf_jar"
