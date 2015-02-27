@@ -58,17 +58,18 @@ public class JavaCompilationDetails {
 
   private static final Charset DEFAULT_ENCODING = UTF_8;
 
-  private static final Predicate<Diagnostic> ERROR_DIAGNOSTIC =
-      new Predicate<Diagnostic>() {
+  private static final Predicate<Diagnostic<?>> ERROR_DIAGNOSTIC =
+      new Predicate<Diagnostic<?>>() {
         @Override
-        public boolean apply(Diagnostic diag) {
+        public boolean apply(Diagnostic<?> diag) {
           return diag.getKind() == Kind.ERROR;
         }
   };
 
   public static JavaCompilationDetails createDetails(CompilationUnit compilationUnit,
     FileDataProvider fileDataProvider, boolean useStdErr) {
-    return createDetails(compilationUnit, fileDataProvider, false, ImmutableList.of(), useStdErr);
+    return createDetails(
+        compilationUnit, fileDataProvider, false, ImmutableList.<Processor>of(), useStdErr);
   }
 
   public static JavaCompilationDetails createDetails(CompilationUnit compilationUnit,

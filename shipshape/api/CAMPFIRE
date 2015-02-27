@@ -14,7 +14,7 @@
         "//shipshape/util/file",
         "//shipshape/util/rpc/server",
         "//shipshape/util/strings",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },

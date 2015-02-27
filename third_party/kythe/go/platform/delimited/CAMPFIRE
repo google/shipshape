@@ -7,18 +7,18 @@
         "delimited.go"
       ],
       "go_pkgs": [
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },
   {
-    "name": "foreach",
-    "kind": "go_binary",
+    "name": "delimited_test",
+    "kind": "go_test",
     "inputs": {
       "srcs": [
-        "foreach.go"
+        "delimited_test.go"
       ],
-      "go_pkgs": [
+      "go_lib": [
         ":delimited"
       ]
     }

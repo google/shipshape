@@ -9,7 +9,7 @@
       "go_pkgs": [
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },

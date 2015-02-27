@@ -20,9 +20,9 @@ echo "Kythe repository: $KYTHE" >&2
 
 COMMIT=$(git --git-dir="$KYTHE/.git" rev-parse HEAD)
 echo "Upgrading third_party/buildtools to version $COMMIT" >&2
+rsync -r --delete "$KYTHE/buildtools/" third_party/buildtools
 
 # Restore Shipshape files
-rsync -r --delete "$KYTHE/buildtools/" third_party/buildtools
 git checkout third_party/buildtools/{LICENSE,README.google,upgrade_from_kythe.sh,buildtools.patch}
 
 # Add Shipshape modifications

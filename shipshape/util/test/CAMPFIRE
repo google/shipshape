@@ -12,7 +12,7 @@
         "//shipshape/proto:shipshape_rpc_proto",
         "//shipshape/util/rpc/client",
         "//shipshape/util/rpc/server",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   }

@@ -37,7 +37,7 @@
         "test.proto"
       ],
       "go_pkgs": [
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     },
     "properties": {

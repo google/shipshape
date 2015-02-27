@@ -5,10 +5,6 @@
     "inputs": {
       "srcs": [
         "analysis.go"
-      ],
-      "go_pkgs": [
-        "//third_party/kythe/proto:analysis_proto",
-        "//third_party/protobuf:protobuf_go"
       ]
     }
   }

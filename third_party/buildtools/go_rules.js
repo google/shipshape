@@ -261,26 +261,66 @@ function GoExternalLib(engine) {
 }
 
 GoExternalLib.prototype = new rule.Rule();
-GoExternalLib.prototype.getOutputsFor = function(target, kind) {
-  if (target.outs) {
-    return target.outs;
+GoExternalLib.prototype.getNinjaBuilds = function(target) {
+  // TODO(schroederc): unify external and kythe Go build rules
+  var packageName = target.getPropertyValue('go_package');
+  if (!packageName) {
+    console.error('ERROR: ' + target.id + ' is missing go_package property');
+    process.exit(1);
   }
-  var inputs = rule.getAllOutputsFor(target.inputsByKind['srcs'],
-                                     kind, rule.fileFilter('src_file', '.a'));
+  var deps = rule.getAllOutputsFor(target.inputsByKind['go_pkgs'], 'build',
+                                   rule.fileFilter('go_archive'));
+  var root = path.dirname(target.asPath());
+  var srcDir = path.join(root, 'src', packageName);
+  var srcs = fs.readdirSync(srcDir)
+      .filter(function(file) {
+        return file.endsWith('.go') &&
+            !file.endsWith('_test.go');
+      }).map(function(file) {
+        return target.getFileNode(path.join(srcDir, file), 'src_file');
+      });
 
-  var outputs = [];
-  for (var i = 0; i < inputs.length; i++) {
-    inputs[i].kind = 'go_archive';
-    outputs.push(inputs[i]);
-  }
+  var outPath = exports.PACKAGE_DIR + packageName;
+  var archive = target.getFileNode(outPath + '.a', 'go_archive');
 
-  var includePath = target.getProperty('go_include_path');
-  if (includePath) {
-    outputs.push(includePath);
-  }
-
-  target.outs = outputs;
-  return outputs;
+  var includePaths =
+      rule.getAllOutputsRecursiveFor(target.inputsByKind['cc_libs'], 'build',
+                                     rule.propertyFilter(cc_rules.INCLUDE_PATH_PROPERTY));
+  var ccLibs =
+      rule.getAllOutputsRecursiveFor(target.inputsByKind['cc_libs'], 'build',
+                                     rule.fileFilter('cc_archive'));
+  var campfireRoot = target.engine.campfireRoot;
+  var cflags = includePaths
+      .map(function(p) {
+        return '-I' + path.join(campfireRoot, p.value);
+      });
+  var ldflags = ccLibs
+      .map(function(p) {
+        return '-L' + path.join(campfireRoot, path.dirname(p.getPath()));
+      });
+  ldflags.append(target.getPropertyValue('cgo_ldflags') || []);
+  ldflags.append(rule.getAllOutputsRecursiveFor(
+      (target.inputsByKind['go_pkgs'] || [])
+          .concat(target.inputsByKind['cc_libs'] || []),
+      'build', rule.propertyFilter('cc_extra_link_flags'))
+          .mapcat(function(p) { return p.value; }));
+  return {
+    BUILD: [{
+      rule: 'go_build',
+      inputs: [],
+      implicits: [target.getVersionMarker('go')]
+          .concat(ccLibs)
+          .concat(deps)
+          .concat(srcs),
+      outs: [archive],
+      vars: {
+        root: root,
+        'package': packageName,
+        cflags: cflags.join(' '),
+        ldflags: ldflags.join(' ')
+      }
+    }]
+  };
 };
 
 exports.register = function(engine) {

@@ -16,7 +16,7 @@
         "//shipshape/proto:note_proto",
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/util/rpc/server",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },
@@ -30,7 +30,7 @@
       "go_pkgs": [
         "//shipshape/service",
         "//shipshape/util/rpc/server",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },
@@ -51,10 +51,10 @@
         "//shipshape/util/rpc/client",
         "//shipshape/util/rpc/server",
         "//shipshape/util/strings",
-        "//third_party/go-yaml",
-        "//third_party/kythe/go/platform/indexinfo",
-        "//third_party/kythe/proto:analysis_proto",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf",
+        "//third_party/go/gopkg.in:go-yaml",
+        "//third_party/kythe/go/platform/kindex",
+        "//third_party/kythe/proto:analysis_proto"
       ]
     }
   },
@@ -75,7 +75,7 @@
         "//shipshape/proto:shipshape_rpc_proto",
         "//shipshape/util/rpc/server",
         "//shipshape/util/test",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   }

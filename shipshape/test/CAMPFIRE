@@ -10,7 +10,7 @@
         "//shipshape/proto:shipshape_context_proto",
         "//shipshape/util/file",
         "//shipshape/util/rpc/client",
-        "//third_party/protobuf:protobuf_go"
+        "//third_party/go/github.com:protobuf"
       ]
     }
   },

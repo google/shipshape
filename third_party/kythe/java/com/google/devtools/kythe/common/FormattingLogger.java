@@ -16,7 +16,9 @@
 
 package com.google.devtools.kythe.common;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class FormattingLogger {
@@ -26,7 +28,7 @@ public class FormattingLogger {
     this(Logger.getAnonymousLogger());
   }
 
-  public FormattingLogger(Class cls) {
+  public FormattingLogger(Class<?> cls) {
     String suffix = "";
     while (cls.isAnonymousClass()) {
       suffix = ".<anonymous_class>" + suffix;
@@ -36,13 +38,14 @@ public class FormattingLogger {
       cls = cls.getEnclosingClass();
     }
     this.logger = Logger.getLogger(cls.getCanonicalName() + suffix);
+    this.logger.addHandler(new SetSourceClassHandler(cls.getCanonicalName()));
   }
 
   public FormattingLogger(Logger logger) {
     this.logger = logger;
   }
 
-  public static FormattingLogger getLogger(Class cls) {
+  public static FormattingLogger getLogger(Class<?> cls) {
     return new FormattingLogger(cls);
   }
 
@@ -156,5 +159,22 @@ public class FormattingLogger {
 
   public void severe(String message) {
     logger.severe(message);
+  }
+
+  /** Simple handler that sets the sourceClassName of each {@link LogRecord}. */
+  private static class SetSourceClassHandler extends Handler {
+    private final String sourceClass;
+
+    public SetSourceClassHandler(String sourceClass) {
+      this.sourceClass = sourceClass;
+    }
+
+    @Override
+    public void publish(LogRecord record) {
+      record.setSourceClassName(sourceClass);
+    }
+
+    @Override public void flush() {}
+    @Override public void close() {}
   }
 }
