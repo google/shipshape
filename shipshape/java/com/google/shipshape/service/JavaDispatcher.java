@@ -16,10 +16,10 @@
 
 package com.google.shipshape.service;
 
-import com.google.devtools.kythe.platform.rpc.Context;
-import com.google.devtools.kythe.platform.rpc.Method;
-import com.google.devtools.kythe.platform.rpc.Server;
-import com.google.devtools.kythe.platform.rpc.Service;
+import com.google.shipshape.util.rpc.Context;
+import com.google.shipshape.util.rpc.Method;
+import com.google.shipshape.util.rpc.Server;
+import com.google.shipshape.util.rpc.Service;
 import com.google.shipshape.proto.NotesProto.Note;
 import com.google.shipshape.proto.ShipshapeContextProto.ShipshapeContext;
 import com.google.shipshape.proto.ShipshapeContextProto.Stage;

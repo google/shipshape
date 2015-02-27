@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.google.devtools.kythe.platform.rpc;
+package com.google.shipshape.util.rpc;
 
-import static com.google.devtools.kythe.platform.rpc.HttpServerFrontend.DEFAULT_CHARSET;
+import static com.google.shipshape.util.rpc.HttpServerFrontend.DEFAULT_CHARSET;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;

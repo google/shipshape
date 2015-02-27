@@ -25,7 +25,7 @@
         "//third_party/jenkins:remoting",
         "//third_party/jenkins:servlet-api",
         "//third_party/jenkins:stapler",
-        "//third_party/kythe/java/com/google/devtools/kythe/platform/rpc:client",
+        "//shipshape/java/com/google/shipshape/util/rpc:client",
         "//third_party/protobuf:protobuf_jar"
       ]
     }
