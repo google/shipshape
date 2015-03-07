@@ -46,8 +46,8 @@ grep -lR '"third_party/kythe/' third_party/kythe | xargs sed -i 's#"third_party/
 grep -lR //kythe third_party/kythe | grep CAMPFIRE | xargs sed -i 's#//kythe/#//third_party/kythe/#g'
 
 # Update README.google
-sed -ri "s/Version: .+/Version: $COMMIT/
-s#/tree/.+/kythe/#/tree/$COMMIT/kythe/#" third_party/kythe/README.google
+sed -ri "s/Version: .+/Version: $COMMIT/" third_party/kythe/README.google
+sed -ri "s#/kythe/tree/.+#/kythe/tree/$COMMIT#" third_party/kythe/README.google
 
 # Clean up CAMPFIRE files
 ./campfire camper third_party/kythe
