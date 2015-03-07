@@ -1,0 +1,9 @@
+proto
+go/platform/analysis
+go/platform/delimited
+go/platform/kindex
+java/com/google/devtools/kythe/common
+java/com/google/devtools/kythe/extractors/shared
+java/com/google/devtools/kythe/platform/shared
+java/com/google/devtools/kythe/platform/java
+java/com/google/devtools/kythe/platform/java/filemanager
