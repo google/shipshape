@@ -18,5 +18,21 @@
         "//third_party/protobuf:protobuf_jar"
       ]
     }
+  },
+  {
+    "name": "file_vnames",
+    "kind": "java_library",
+    "inputs": {
+      "srcs": [
+        "FileVNames.java"
+      ],
+      "jars": [
+        "//third_party/gson",
+        "//third_party/guava",
+        "//third_party/kythe/proto:storage_proto",
+        "//third_party/protobuf:protobuf_jar",
+        "//third_party/re2j"
+      ]
+    }
   }
 ]

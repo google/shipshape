@@ -1,5 +1,5 @@
-URL: https://github.com/google/kythe/tree/2e5c382f47575392cd06b5bbfcd69f782bd42ad8
-Version: 2e5c382f47575392cd06b5bbfcd69f782bd42ad8
+URL: https://github.com/google/kythe/tree/250bb910b0edb5ccf99971692f8068a66ba87eac
+Version: 250bb910b0edb5ccf99971692f8068a66ba87eac
 License: Apache 2.0 http://www.apache.org/licenses/LICENSE-2.0
 License File: LICENSE
 
@@ -7,4 +7,5 @@ Description:
 Open source version of grok.
 
 Local Modifications:
-No Modifications. (Some directories not imported, however).
+No Modifications. Some directories not imported; specific imports are automated 
+with the upgrade_from_kythe.sh script.
