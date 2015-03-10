@@ -24,7 +24,6 @@ LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
 REPO=$CONVOY_URL/shipshape_releases
 CONTAINERS=(
-  //shipshape/docker/base:base
   //shipshape/docker:service
   //shipshape/androidlint_analyzer/docker:android_lint
 )
