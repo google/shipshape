@@ -15,7 +15,7 @@ try {
 function JavaTool(engine) {
   rule.Tool.call(this, engine, 'java',
                  '$javac', ['-version'],
-                 '(?<=javac )1\\.[7-9]', '1.7');
+                 '(?<=javac )1\\.[8-9]', '1.8');
 }
 JavaTool.prototype = Object.create(rule.Tool.prototype);
 
