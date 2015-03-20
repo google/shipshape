@@ -138,13 +138,6 @@ func main() {
 		return
 	}
 
-	res := docker.Authenticate()
-	if res.Err != nil {
-		glog.Infoln(strings.TrimSpace(res.Stderr))
-		glog.Fatalf("Could not authenticate: %v", res.Err)
-	}
-	glog.Infoln(strings.TrimSpace(res.Stdout))
-
 	image := docker.FullImageName(*repo, image, *tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 

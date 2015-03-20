@@ -56,10 +56,6 @@ touch $LOG_FILE
 rm $LOG_FILE
 echo ">>> Detailed output will appear in $LOG_FILE"
 
-# Get access token for the docker registry
-# TODO(ciera): Do we even need this step anymore?
-gcloud preview docker --authorize_only
-
 # Create a test repository to run analysis on
 rm -r $LOCAL_WORKSPACE || true
 mkdir -p $LOCAL_WORKSPACE

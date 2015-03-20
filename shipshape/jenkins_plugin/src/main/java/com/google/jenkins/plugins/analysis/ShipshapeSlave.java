@@ -151,8 +151,6 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
       logger.log(String.format("Using socket: %s", socket));
     }
 
-    getDockerAccessToken(logger);
-
     ShipshapeRequest req = constructShipshapeRequest(logger, workspace, categoryList, jobName, stage);
     logger.log(String.format("ShipshapeRequest: %s", req));
     ShipshapeResponse res = makeShippingContainerRequest(logger, socket, req, workspacePath,
@@ -163,23 +161,6 @@ public class ShipshapeSlave implements Callable<Integer, Exception>, Serializabl
     int numRes = reportShipshapeResults(logger, res, outputPath);
     logger.closeStreams();
     return numRes;
-  }
-  
-  /**
-   * Get access token to the docker registry.
-   *
-   * This token lasts for about an hour.
-   *
-   * @param logger The logger to use.
-   * @throws ShipshapeException If getting the access token fails.
-   */
-  private void getDockerAccessToken(ShipshapeStreamLogger logger) throws ShipshapeException {
-    // Get the access token
-    String[] accessCmd = {
-      "gcloud", "preview", "docker",
-      String.format("--server=%s", REPO_HOST), "--authorize_only"
-    };
-    runCommand(logger, accessCmd);
   }
 
   /**
