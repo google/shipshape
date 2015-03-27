@@ -25,8 +25,6 @@ DEV_IMAGES=(
   google/cloud-dev-nodejs:prod
 )
 
-gcloud preview docker --server=$CONVOY_SERVER --authorize_only
-
 ensure_tag() {
   local image="$1"
   if [[ "$image" != *:* ]]; then
@@ -48,12 +46,12 @@ function pull_image() {
   echo Pulling $image
   local repo="$(convoy_url "$image")"
 
-  if ! gcloud preview docker pull "$repo"; then
+  if ! docker pull "$repo"; then
     echo "Failed pulling: $repo" >&2
     exit 1
   fi
 
-  if ! gcloud preview docker tag "$repo" "$image"; then
+  if ! docker tag "$repo" "$image"; then
     echo "Failed tagging: $image" >&2
     exit 1
   fi

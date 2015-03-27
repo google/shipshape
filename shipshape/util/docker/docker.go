@@ -62,17 +62,6 @@ func FullImageName(repo, image, tag string) string {
 	return fullImage
 }
 
-// Authenticate runs gcloud docker authentication
-func Authenticate() CommandResult {
-	cmd := exec.Command("gcloud", "preview", "docker", "--authorize_only")
-	stdout := bytes.NewBuffer(nil)
-	stderr := bytes.NewBuffer(nil)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	err := cmd.Run()
-	return CommandResult{stdout.String(), stderr.String(), err}
-}
-
 // Pull makes a command line call to docker to pull the specified container.
 // docker pull repository/name:tag.
 // It returns stdout, stderr, and any errors from running.
