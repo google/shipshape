@@ -259,11 +259,7 @@ func main() {
 func startShipshapeService(image, absRoot string, analyzers []string) (*client.Client, error) {
 	// If this doesn't match the image, stop and restart the service.
 	// Otherwise, use the existing one.
-	match, err := docker.ImageMatches(image, "shipping_container")
-	if err != nil {
-		return nil, err
-	}
-	if !match {
+	if !docker.ImageMatches(image, "shipping_container") {
 		glog.Infof("Restarting container with %s", image)
 		stop("shipping_container", 0)
 		result := docker.RunService(image, "shipping_container", absRoot, localLogs, analyzers)

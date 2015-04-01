@@ -249,20 +249,28 @@ func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
 
+// OutOfDate returns true if the image specified
+// has not been pulled recently.
 func OutOfDate(image string) bool {
+	// TODO(ciera): Rather than always return true,
+	// check a file that contains the last time this
+	// image was updated, and only return true if it
+	// is at least N days old.
 	return true
 }
 
-func ImageMatches(image, container string) (bool, error) {
+// ImageMatches returns whether the container is running
+// the current version of image.
+func ImageMatches(image, container string) bool {
 	imageHash, err := inspect(image, "{{.Id}}")
 	if err != nil {
-		return false, err
+		return false
 	}
-	containerHash, err := inspect(container, "{{.Id}}")
+	containerHash, err := inspect(container, "{{.Image}}")
 	if err != nil {
-		return false, err
+		return false
 	}
-	return bytes.Equal(imageHash, containerHash), nil
+	return bytes.Equal(imageHash, containerHash)
 }
 
 func inspect(name, format string) ([]byte, error) {
