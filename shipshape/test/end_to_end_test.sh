@@ -19,6 +19,11 @@
 
 set -eu
 
+TEST_DIR=$(realpath $(dirname "$0"))
+BASE_DIR=$(realpath "${TEST_DIR}/../..")
+CAMPFIRE="${BASE_DIR}/campfire"
+CAMPFIRE_OUT="${BASE_DIR}/campfire-out"
+
 CONVOY_URL='gcr.io'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
@@ -38,11 +43,11 @@ echo $IS_LOCAL_RUN
 # Build repo in local mode
 if [[ "$IS_LOCAL_RUN" == true ]]; then
   echo "Running with locally built containers"
-  ../../campfire clean
-  ../../campfire build //shipshape/cli/...
+  $CAMPFIRE clean
+  $CAMPFIRE build //shipshape/cli/...
   for container in ${CONTAINERS[@]}; do
     echo 'Building and deploying '$container' ...'
-    ../../campfire package --start_registry=false --docker_tag=$TAG $container
+    $CAMPFIRE package --start_registry=false --docker_tag=$TAG $container
     IFS=':' # Set global string separator so we can split the image name
     names=(${container[@]})
     name=${names[1]}
@@ -92,14 +97,14 @@ EOF
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
-../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 # Run a second time for AndroidLint. We have to do this separately because
 # otherwise kythe will try to build all the java files, even the ones that maven
 # doesn't build.
-cp -r ../androidlint_analyzer/test_data/TicTacToeLib $LOCAL_WORKSPACE/
+cp -r $BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib $LOCAL_WORKSPACE/
 echo "---- Running CLI over test repo, android test" &>> $LOG_FILE
-../../campfire-out/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 
 # Quick sanity checks of output.
