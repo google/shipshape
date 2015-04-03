@@ -113,12 +113,14 @@ POSTMESSAGE_COUNT=$(grep PostMessage $LOG_FILE | wc -l)
 ERRORPRONE_COUNT=$(grep ErrorProne $LOG_FILE | wc -l)
 ANDROIDLINT_COUNT=$(grep AndroidLint $LOG_FILE | wc -l)
 FAILURE_COUNT=$(grep Failure $LOG_FILE | wc -l)
-[[ $JSHINT_COUNT == 8 ]] || { echo "Wrong number of JSHint results, expected 8, found $JSHINT_COUNT" 1>&2 ; exit 1; }
-[[ $POSTMESSAGE_COUNT == 1 ]] || { echo "Wrong number of PostMessage results, expected 1, found $POSTMESSAGE_COUNT" 1>&2 ; exit 1; }
-[[ $ERRORPRONE_COUNT == 2 ]] || { echo "Wrong number of ErrorProne results, expected 2, found $ERRORPRONE_COUNT" 1>&2 ; exit 1; }
-[[ $ANDROIDLINT_COUNT == 8 ]] || { echo "Wrong number of AndroidLint results, expected 9, found $ANDROIDLINT_COUNT" 1>&2 ; exit 1; }
-[[ $FAILURE_COUNT == 0 ]] || { echo "Some analyses failed; please check $LOG_FILE" 1>&2 ; exit 1; }
+TEST_STATUS=0
+[[ $JSHINT_COUNT == 8 ]] || { echo "Wrong number of JSHint results, expected 8, found $JSHINT_COUNT" 1>&2 ; TEST_STATUS=1; }
+[[ $POSTMESSAGE_COUNT == 1 ]] || { echo "Wrong number of PostMessage results, expected 1, found $POSTMESSAGE_COUNT" 1>&2 ; TEST_STATUS=1; }
+[[ $ERRORPRONE_COUNT == 2 ]] || { echo "Wrong number of ErrorProne results, expected 2, found $ERRORPRONE_COUNT" 1>&2 ; TEST_STATUS=1; }
+[[ $ANDROIDLINT_COUNT == 8 ]] || { echo "Wrong number of AndroidLint results, expected 9, found $ANDROIDLINT_COUNT" 1>&2 ; TEST_STATUS=1; }
+[[ $FAILURE_COUNT == 0 ]] || { echo "Some analyses failed; please check $LOG_FILE" 1>&2 ; TEST_STATUS=1; }
 
-echo "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
-
-exit 0
+if [[ $TEST_STATUS -eq 0 ]]; then
+  echo "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
+fi
+exit $(($TEST_STATUS))
