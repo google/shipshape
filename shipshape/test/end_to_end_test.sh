@@ -28,17 +28,21 @@ CONVOY_URL='gcr.io'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
 REPO=$CONVOY_URL/shipshape_releases
+KYTHE_TEST='false'
 CONTAINERS=(
   //shipshape/docker:service
   //shipshape/androidlint_analyzer/docker:android_lint
 )
 
 # Check tag argument.
-[[ "$#" == 1 ]] || { echo "Usage: ./end-to-end-test.sh <TAG>" 1>&2 ; exit 1; }
+[[ "$#" == 1 ]] || [[ "$#" == 2 ]] || { echo "Usage: ./end-to-end-test.sh <TAG> [IS_KYTHE_TEST]" 1>&2 ; exit 1; }
 
 TAG=${1,,} # make lower case
 IS_LOCAL_RUN=false; [[ "$TAG" == "local" ]] && IS_LOCAL_RUN=true
 echo $IS_LOCAL_RUN
+
+[[ "$#" == 2 ]] && KYTHE_TEST=${2,,}
+echo $KYTHE_TEST
 
 # Build repo in local mode
 if [[ "$IS_LOCAL_RUN" == true ]]; then
@@ -97,14 +101,14 @@ EOF
 
 # Run CLI over the new repo
 echo "---- Running CLI over test repo" &>> $LOG_FILE
-$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 # Run a second time for AndroidLint. We have to do this separately because
 # otherwise kythe will try to build all the java files, even the ones that maven
 # doesn't build.
 cp -r $BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib $LOCAL_WORKSPACE/
 echo "---- Running CLI over test repo, android test" &>> $LOG_FILE
-$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO $LOCAL_WORKSPACE >> $LOG_FILE
+$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST $LOCAL_WORKSPACE >> $LOG_FILE
 echo "Analysis complete, checking results..."
 
 # Quick sanity checks of output.
