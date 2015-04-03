@@ -1,0 +1,14 @@
+[
+  {
+    "name": "kindex_printer",
+    "kind": "go_binary",
+    "inputs": {
+      "srcs": [
+        "kindex.go"
+      ],
+      "go_pkgs": [
+        "//third_party/kythe/go/platform/kindex"
+      ]
+    }
+  }
+]
