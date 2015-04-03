@@ -53,7 +53,15 @@ public abstract class JavacAnalyzer implements Analyzer<JavaCompilationDetails> 
           getCategory(), shipshapeContext, "Exception from javac", details.getAnalysisCrash());
     }
 
-    for (CompilationUnitTree file : details.getAsts()) {
+    ImmutableList<CompilationUnitTree> asts = ImmutableList.copyOf(details.getAsts());
+
+    if (asts.isEmpty()) {
+      logger.info("No ASTs found to process for compilation unit "
+          + details.getCompilationUnit().getVName().getSignature(),
+          shipshapeContext, getCategory());
+    }
+
+    for (CompilationUnitTree file : asts) {
       URI uri = file.getSourceFile().toUri();
       String path = getPathRelativeToRoot(shipshapeContext, uri);
       logger.info("Investigating file " + path, shipshapeContext, getCategory());
