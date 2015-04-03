@@ -50,7 +50,7 @@ var (
 
 	event          = flag.String("event", "manual", "The name of the event to use")
 	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
-	stayUp         = flag.Bool("stay_up", false, "True if we should keep the container running for debugging purposes, false if we should stop and remove it.")
+	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
 	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
 	kytheImage     = flag.String("kytheImage", "gcr.io/kythe_repo/kythe:latest", "The full name of the kythe docker image to use")
 	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
@@ -230,8 +230,7 @@ func main() {
 		result := docker.RunKythe(*kytheImage, "kythe", absRoot, *build)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
-			glog.Infoln(strings.TrimSpace(result.Stdout))
-			glog.Infoln(strings.TrimSpace(result.Stderr))
+			printStreams(result)
 			glog.Errorf("Error from run: %v", result.Err)
 			return
 		}
@@ -257,13 +256,18 @@ func main() {
 }
 
 func startShipshapeService(image, absRoot string, analyzers []string) (*client.Client, error) {
-	glog.Infof("Running image %s in service mode", image)
-	result := docker.RunService(image, "shipping_container", absRoot, localLogs, analyzers)
-	glog.Infoln(strings.TrimSpace(result.Stdout))
-	glog.Infoln(strings.TrimSpace(result.Stderr))
-	if result.Err != nil {
-		return nil, result.Err
+	// If this doesn't match the image, stop and restart the service.
+	// Otherwise, use the existing one.
+	if !docker.ImageMatches(image, "shipping_container") {
+		glog.Infof("Restarting container with %s", image)
+		stop("shipping_container", 0)
+		result := docker.RunService(image, "shipping_container", absRoot, localLogs, analyzers)
+		printStreams(result)
+		if result.Err != nil {
+			return nil, result.Err
+		}
 	}
+	glog.Infof("Image %s running in service mode", image)
 	c := client.NewHTTPClient("localhost:10007")
 	return c, c.WaitUntilReady(10 * time.Second)
 }
@@ -294,6 +298,7 @@ func streamsAnalyze(image, absRoot string, analyzerContainers []string, req *rpc
 		return fmt.Errorf("error marshalling %v: %v", req, err)
 	}
 
+	stop("shipping_container", 0)
 	result := docker.RunStreams(image, "shipping_container", absRoot, localLogs, analyzerContainers, reqBytes)
 	glog.Infoln(strings.TrimSpace(result.Stderr))
 
@@ -308,10 +313,12 @@ func streamsAnalyze(image, absRoot string, analyzerContainers []string, req *rpc
 }
 
 func pull(image string) {
+	if !docker.OutOfDate(image) {
+		return
+	}
 	glog.Infof("Pulling image %s", image)
 	result := docker.Pull(image)
-	glog.Infoln(strings.TrimSpace(result.Stdout))
-	glog.Infoln(strings.TrimSpace(result.Stderr))
+	printStreams(result)
 	if result.Err != nil {
 		glog.Errorf("Error from pull: %v", result.Err)
 		return
@@ -322,8 +329,7 @@ func pull(image string) {
 func stop(container string, timeWait time.Duration) {
 	glog.Infof("Stopping and removing %s", container)
 	result := docker.Stop(container, timeWait, true)
-	glog.Infoln(strings.TrimSpace(result.Stdout))
-	glog.Infoln(strings.TrimSpace(result.Stderr))
+	printStreams(result)
 	if result.Err != nil {
 		glog.Infof("Could not stop %s: %v", container, result.Err)
 	} else {
@@ -366,6 +372,17 @@ func startAnalyzers(sourceDir string, images []string) (containers []string, err
 	wg.Wait()
 	glog.Info("Analyzers up")
 	return containers, errs
+}
+
+func printStreams(result docker.CommandResult) {
+	out := strings.TrimSpace(result.Stdout)
+	err := strings.TrimSpace(result.Stderr)
+	if len(out) > 0 {
+		glog.Infof("stdout:\n%s\n", strings.TrimSpace(result.Stdout))
+	}
+	if len(err) > 0 {
+		glog.Infof("stderr:\n%s\n", strings.TrimSpace(result.Stderr))
+	}
 }
 
 func getContainerAndAddress(fullImage string, id int) (analyzerContainer string, port int) {

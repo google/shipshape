@@ -248,3 +248,36 @@ func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
+
+// OutOfDate returns true if the image specified
+// has not been pulled recently.
+func OutOfDate(image string) bool {
+	// TODO(ciera): Rather than always return true,
+	// check a file that contains the last time this
+	// image was updated, and only return true if it
+	// is at least N days old.
+	return true
+}
+
+// ImageMatches returns whether the container is running
+// the current version of image.
+func ImageMatches(image, container string) bool {
+	imageHash, err := inspect(image, "{{.Id}}")
+	if err != nil {
+		return false
+	}
+	containerHash, err := inspect(container, "{{.Image}}")
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(imageHash, containerHash)
+}
+
+func inspect(name, format string) ([]byte, error) {
+	var formatter string
+	if len(format) != 0 {
+		formatter = fmt.Sprintf("--format='%s'", format)
+	}
+	cmd := exec.Command("docker", "inspect", formatter, name)
+	return cmd.CombinedOutput()
+}

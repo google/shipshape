@@ -51,7 +51,7 @@ if [[ "$IS_LOCAL_RUN" == true ]]; then
     IFS=':' # Set global string separator so we can split the image name
     names=(${container[@]})
     name=${names[1]}
-    docker tag $name:$TAG $REPO/$name:$TAG
+    docker tag -f $name:$TAG $REPO/$name:$TAG
     IFS=' ' # reset it back to a space
   done
 fi
