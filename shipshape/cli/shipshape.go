@@ -52,17 +52,18 @@ var (
 	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
 	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
 	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
-	kytheImage     = flag.String("kytheImage", "gcr.io/kythe_repo/kythe:latest", "The full name of the kythe docker image to use")
 	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
 	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
 	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
+	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
 )
 
 const (
-	workspace = "/shipshape-workspace"
-	logsDir   = "/shipshape-output"
-	localLogs = "/tmp"
-	image     = "service"
+	workspace  = "/shipshape-workspace"
+	logsDir    = "/shipshape-output"
+	localLogs  = "/tmp"
+	image      = "service"
+	kytheImage = "kythe"
 )
 
 func logMessage(msg *rpcpb.ShipshapeResponse) error {
@@ -221,13 +222,16 @@ func main() {
 
 	// If desired, generate compilation units with a kythe image
 	if *build != "" {
-		// TODO(ciera): handle campfire as an option
-		pull(*kytheImage)
+		// TODO(ciera): Handle other build systems
+		fullKytheImage := docker.FullImageName(*repo, kytheImage, *tag)
+		if !*useLocalKythe {
+			pull(fullKytheImage)
+		}
 
 		defer stop("kythe", 10*time.Second)
 		glog.Infof("Retrieving compilation units with %s", *build)
 
-		result := docker.RunKythe(*kytheImage, "kythe", absRoot, *build)
+		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, *build)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
