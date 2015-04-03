@@ -230,8 +230,7 @@ func main() {
 		result := docker.RunKythe(*kytheImage, "kythe", absRoot, *build)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
-			glog.Infoln(strings.TrimSpace(result.Stdout))
-			glog.Infoln(strings.TrimSpace(result.Stderr))
+			printStreams(result)
 			glog.Errorf("Error from run: %v", result.Err)
 			return
 		}
@@ -263,8 +262,7 @@ func startShipshapeService(image, absRoot string, analyzers []string) (*client.C
 		glog.Infof("Restarting container with %s", image)
 		stop("shipping_container", 0)
 		result := docker.RunService(image, "shipping_container", absRoot, localLogs, analyzers)
-		glog.Infoln(strings.TrimSpace(result.Stdout))
-		glog.Infoln(strings.TrimSpace(result.Stderr))
+		printStreams(result)
 		if result.Err != nil {
 			return nil, result.Err
 		}
@@ -320,8 +318,7 @@ func pull(image string) {
 	}
 	glog.Infof("Pulling image %s", image)
 	result := docker.Pull(image)
-	glog.Infoln(strings.TrimSpace(result.Stdout))
-	glog.Infoln(strings.TrimSpace(result.Stderr))
+	printStreams(result)
 	if result.Err != nil {
 		glog.Errorf("Error from pull: %v", result.Err)
 		return
@@ -332,8 +329,7 @@ func pull(image string) {
 func stop(container string, timeWait time.Duration) {
 	glog.Infof("Stopping and removing %s", container)
 	result := docker.Stop(container, timeWait, true)
-	glog.Infoln(strings.TrimSpace(result.Stdout))
-	glog.Infoln(strings.TrimSpace(result.Stderr))
+	printStreams(result)
 	if result.Err != nil {
 		glog.Infof("Could not stop %s: %v", container, result.Err)
 	} else {
@@ -376,6 +372,17 @@ func startAnalyzers(sourceDir string, images []string) (containers []string, err
 	wg.Wait()
 	glog.Info("Analyzers up")
 	return containers, errs
+}
+
+func printStreams(result docker.CommandResult) {
+	out := strings.TrimSpace(result.Stdout)
+	err := strings.TrimSpace(result.Stderr)
+	if len(out) > 0 {
+		glog.Infof("stdout:\n%s\n", strings.TrimSpace(result.Stdout))
+	}
+	if len(err) > 0 {
+		glog.Infof("stderr:\n%s\n", strings.TrimSpace(result.Stderr))
+	}
 }
 
 func getContainerAndAddress(fullImage string, id int) (analyzerContainer string, port int) {
