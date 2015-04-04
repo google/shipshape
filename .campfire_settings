@@ -24,9 +24,9 @@
     },
     "amd64": {
       "@inherit": "base",
-      "jar_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/jar",
-      "java_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/java",
-      "javac_path": "/google/data/ro/projects/java-platform/linux-amd64/jdk8-google-trunk-latest/bin/javac",
+      "jar_path": "jar",
+      "java_path": "java",
+      "javac_path": "javac",
       "ninja_path": "third_party/ninja/ninja",
       "protoc_gen_go_path": "third_party/go/github.com/bin/protoc-gen-go",
       "protoc_path": "third_party/protobuf/bin/protoc",
