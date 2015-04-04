@@ -1,0 +1,12 @@
+os:
+  - linux
+language: cpp
+compiler:
+  - clang
+jdk:
+  - oraclejdk8
+go:
+  - 1.4
+script:
+  - jdk_switcher use oraclejdk8
+  - ./campfire test shipshape/...
