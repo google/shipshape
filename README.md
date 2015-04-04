@@ -1,5 +1,7 @@
 # Overview of Shipshape #
 
+[![Build Status](https://travis-ci.org/google/shipshape.svg?branch=master)](https://travis-ci.org/google/shipshape)
+
 Shipshape is a static program analysis platform that allows custom analyzers to
 plug in through a common interface. Shipshape is packaged in a docker image.
 When that image is run, a Shipshape analyzer service starts up and processes
