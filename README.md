@@ -26,6 +26,18 @@ If you don't have docker installed:
 
 `$ apt-get install docker.io`
 
+You'll also need the following developer tools:
+
+* [Clang](http://llvm.org/releases/download.html) (C++ compiler)
+* [Flex](http://flex.sourceforge.net/) and [Bison](https://www.gnu.org/software/bison/)
+* [Go](http://golang.org/doc/install)
+* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
+
+To install all of them:
+
+`$ apt-get install bison clang flex golang openjdk-8-jdk`
+
+Update `.campfire_settings` in the root directory to point to the correct tools paths, if necessary.
 
 # Building/running CLI entirely locally #
 
