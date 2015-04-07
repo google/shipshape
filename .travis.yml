@@ -19,4 +19,4 @@ install:
 script:
   - jdk_switcher use oraclejdk8
   - ./campfire test shipshape/...
-  - ./campfire-out/bin/shipshape/cli/shipshape .
+  - ./campfire-out/bin/shipshape/cli/shipshape --stderrthreshold=INFO .
