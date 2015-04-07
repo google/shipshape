@@ -40,6 +40,9 @@ var (
 func main() {
 	flag.Parse()
 
+	// The shipshape service will expect to see connect to an AnalyzerService
+	// at port 10005 in the container. (The service will map this to a different external
+	// port at startup so that it doesn't clash with other analyzers.)
 	s := server.Service{Name: "AnalyzerService"}
 	as := api.CreateAnalyzerService([]api.Analyzer{new(androidlint.Analyzer)}, ctxpb.Stage_PRE_BUILD)
 	if err := s.Register(as); err != nil {

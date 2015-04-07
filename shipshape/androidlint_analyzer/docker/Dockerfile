@@ -19,7 +19,7 @@ RUN apt-get update && apt-get upgrade -y &&  apt-get install -y \
    -q  --no-install-recommends sudo openjdk-6-jre \
    openjdk-6-jdk wget && apt-get clean
 
-# Set up AndroidLint
+# Install all the dependencies that the AndroidLint analyzer will need.
 # Get the jdk, then android.
 # Update the necessary packages one at a time so we can accept each license as needed
 RUN wget http://dl.google.com/android/android-sdk_r23-linux.tgz
@@ -30,7 +30,12 @@ RUN echo "y" | android update sdk --no-ui --filter tools
 ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # Set up AndroidLintAnalzer
+# Add the binary that we'll run in the endpoint script.
 ADD android_lint_service /android_lint_service
+# Add the enpoint script.
 ADD endpoint.sh /endpoint.sh
+# Make sure to expose 10005. This is the port that the shipshape
+# service will expect to see a Shipshape Analyzer at.
 EXPOSE 10005
+# Start the endpoint script.
 ENTRYPOINT ["/endpoint.sh"]
