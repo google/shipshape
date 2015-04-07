@@ -7,6 +7,16 @@ jdk:
   - oraclejdk8
 go:
   - 1.4
+install:
+  - sudo sh -c "wget -qO- https://get.docker.io/gpg | apt-key add -"
+  - sudo sh -c "echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+  - sudo apt-get update
+  - sudo mkdir -p /var/lib/docker
+  - echo exit 101 | sudo tee /usr/sbin/policy-rc.d
+  - sudo chmod +x /usr/sbin/policy-rc.d
+  - sudo apt-get install -y slirp lxc lxc-docker aufs-tools cgroup-lite
+
 script:
   - jdk_switcher use oraclejdk8
   - ./campfire test shipshape/...
+  - sudo ./campfire-out/bin/shipshape/cli/shipshape --stderrthreshold=INFO .
