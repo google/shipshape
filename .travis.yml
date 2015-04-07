@@ -7,6 +7,12 @@ jdk:
   - oraclejdk8
 go:
   - 1.4
+before_install:
+  - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
+  - tar xvf android-sdk_r23-linux.tgz
+  - export PATH=${PATH}:${PWD}/android-sdk-linux/tools:${PWD}/android-sdk-linux/platform-tools
+  - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
+  - echo "y" | android update sdk --no-ui --filter platform-tools,tools
 script:
   - jdk_switcher use oraclejdk8
   - ./campfire test shipshape/...
