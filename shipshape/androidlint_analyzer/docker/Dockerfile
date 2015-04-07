@@ -15,9 +15,10 @@
 FROM debian:wheezy
 
 # Make sure all package lists are up-to-date
-RUN apt-get update && apt-get upgrade -y &&  apt-get install -y \
-   -q  --no-install-recommends sudo openjdk-6-jre \
-   openjdk-6-jdk wget && apt-get clean
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y -q  --no-install-recommends \
+        sudo openjdk-6-jre openjdk-6-jdk unzip wget && \
+    apt-get clean
 
 # Set up AndroidLint
 # Get the jdk, then android.
@@ -27,6 +28,12 @@ RUN tar xvf android-sdk_r23-linux.tgz
 ENV PATH /android-sdk-linux/tools:$PATH
 RUN echo "y" | android update sdk --no-ui --filter platform-tools
 RUN echo "y" | android update sdk --no-ui --filter tools
+# This is a workaround for a failure in the "android update" command:
+# https://github.com/google/shipshape/issues/27
+# The update fails to clobber the /tools directory for some reason, so
+# we have to do the clobbering for it.
+RUN rm -rf /android-sdk-linux/tools
+RUN unzip /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux/tools
 ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # Set up AndroidLintAnalzer
