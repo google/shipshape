@@ -65,6 +65,8 @@ func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error)
 		defer os.Remove(tempReport.Name())
 
 		// TODO(ciera): Add project options (--classpath) when we have build information.
+		// TODO(clconway): The path to the binary should be configurable, especially since
+		// the "lint" command name is overloaded.
 		cmd := exec.Command("lint",
 			"--showall",
 			"--quiet",

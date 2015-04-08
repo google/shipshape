@@ -39,6 +39,10 @@ To install all of them:
 
 Update `.campfire_settings` in the root directory to point to the correct tools paths, if necessary.
 
+To run the unit tests, you'll need Android `lint` (part of the
+[Android SDK](https://developer.android.com/sdk/index.html)) installed in your
+system `PATH`.
+
 # Building/running CLI entirely locally #
 
 `$ ./test/end_to_end_test.sh local`
