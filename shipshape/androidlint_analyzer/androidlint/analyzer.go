@@ -97,6 +97,7 @@ func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error)
 				return notes, fmt.Errorf("could not unmarshal XML from %s: %v", tempReport.Name(), xmlErr)
 			}
 
+			// Create a bunch of notes to return, one per line from the output.
 			for _, issue := range issues.Issues {
 				notes = append(notes, &notepb.Note{
 					Category:    proto.String(ala.Category()),
