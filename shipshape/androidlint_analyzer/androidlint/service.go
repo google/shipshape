@@ -40,7 +40,7 @@ var (
 func main() {
 	flag.Parse()
 
-	// The shipshape service will expect to see connect to an AnalyzerService
+	// The shipshape service will connect to an AnalyzerService
 	// at port 10005 in the container. (The service will map this to a different external
 	// port at startup so that it doesn't clash with other analyzers.)
 	s := server.Service{Name: "AnalyzerService"}

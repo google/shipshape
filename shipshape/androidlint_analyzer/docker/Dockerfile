@@ -39,9 +39,8 @@ ENV PATH /android-sdk-linux/platform-tools:$PATH
 # Set up AndroidLintAnalzer
 # Add the binary that we'll run in the endpoint script.
 ADD android_lint_service /android_lint_service
-# Add the enpoint script.
 ADD endpoint.sh /endpoint.sh
-# Make sure to expose 10005. This is the port that the shipshape
+# 10005 is the port that the shipshape
 # service will expect to see a Shipshape Analyzer at.
 EXPOSE 10005
 # Start the endpoint script.
