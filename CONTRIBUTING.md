@@ -52,7 +52,7 @@ of your first [pull request][].
      messages are able to be formatted properly by various git tools.
 
   4. If not already done, setup a user in the [Phabricator instance][] for the
-     project, by visiting the instance and waiting for approval.
+     project.
 
   5. From your branch, create a patch for review using [arc][]:
 
