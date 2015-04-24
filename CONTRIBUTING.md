@@ -42,17 +42,31 @@ of your first [pull request][].
      issue that you are planning to work on that bug or feature so that it can
      be assigned to you.
 
-  1. Follow the normal process of [forking][] the project, and setup a new
+  2. Follow the normal process of [forking][] the project, and setup a new
      branch to work in.  It's important that each group of changes be done in
      separate branches in order to ensure that a pull request only includes the
      commits related to that bug or feature.
 
-  1. Do your best to have [well-formed commit messages][] for each change.
+  3. Do your best to have [well-formed commit messages][] for each change.
      This provides consistency throughout the project, and ensures that commit
      messages are able to be formatted properly by various git tools.
 
-  1. Finally, push the commits to your fork and submit a [pull request][].
+  4. If not already done, setup a user in the [Phabricator instance][] for the
+     project, by visiting the instance and waiting for approval.
+
+  5. From your branch, create a patch for review using [arc][]:
+
+         $ arc diff master
+
+     Pick reviewers from the list of users in the [Phabricator instance][].
+
+  6. To upload change in response to review comments, if any, use the same command.
+
+  7. Finally, after the change is approved, push to master using [arc][]:
+
+         $ arc land
 
 [forking]: https://help.github.com/articles/fork-a-repo
 [well-formed commit messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-[pull request]: https://help.github.com/articles/creating-a-pull-request
+[arc]: https://secure.phabricator.com/book/phabricator/article/arcanist_quick_start
+[Phabricator instance]: https://phabricator-dot-shipshapecode.appspot.com/
