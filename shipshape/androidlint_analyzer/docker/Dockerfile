@@ -33,7 +33,7 @@ RUN echo "y" | android update sdk --no-ui --filter tools
 # The update fails to clobber the /tools directory for some reason, so
 # we have to do the clobbering for it.
 RUN rm -rf /android-sdk-linux/tools
-RUN unzip /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux/tools
+RUN unzip /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux
 ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # Set up AndroidLintAnalzer
