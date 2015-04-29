@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-/usr/sbin/sshd
 ./go_dispatcher &> /shipshape-output/go_dispatcher.log &
 java -jar javac_dispatcher.jar &> /shipshape-output/javac_dispatcher.log &
 if [ -z "$START_SERVICE" ]
