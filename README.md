@@ -15,9 +15,9 @@ party libraries used by Shipshape are all in the "third_party" directory.
 Shipshape uses a build tool called "campfire"; the source code for this build
 tool is located in third_party/buildtools.
 
+# Download, install, and run Shipshape #
 
-# Setup: Install Docker #
-
+## Install Docker ##
 See if you have docker installed:
 
 `$ which docker`
@@ -26,24 +26,8 @@ If you don't have docker installed:
 
 `$ apt-get install docker.io`
 
-You'll also need the following developer tools:
 
-* [Clang](http://llvm.org/releases/download.html) (C++ compiler)
-* [Flex](http://flex.sourceforge.net/) and [Bison](https://www.gnu.org/software/bison/)
-* [Go](http://golang.org/doc/install)
-* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
-
-To install all of them:
-
-`$ apt-get install bison clang flex golang openjdk-8-jdk`
-
-Update `.campfire_settings` in the root directory to point to the correct tools paths, if necessary.
-
-To run the unit tests, you'll need Android `lint` (part of the
-[Android SDK](https://developer.android.com/sdk/index.html)) installed in your
-system `PATH`.
-
-# Downloading and running the CLI #
+## Downloading and running the CLI ##
 
 Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
 
@@ -55,32 +39,50 @@ Get help!
 
 `./shipshape --help`
 
+
 # Building/running CLI entirely locally #
+
+## Install dependencies ##
+
+You'll need the following developer tools:
+
+* [Docker](https://docs.docker.com/installation/#installation)
+* [Clang](http://llvm.org/releases/download.html)
+* [Flex](http://flex.sourceforge.net/)
+* [Bison](https://www.gnu.org/software/bison/)
+* [Go](http://golang.org/doc/install)
+* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
+
+To install all of them (JDK 8 only available this way for ubuntu 14.10 or greater)
+
+`$ apt-get install bison clang flex golang docker.io openjdk8-jdk`
+
+To run the unit tests, you'll need Android `lint` (part of the
+[Android SDK](https://developer.android.com/sdk/index.html)) installed in your
+system `PATH`.
+
+Update `.campfire_settings` in the root directory to point to the correct tools paths, if necessary.
+
+## Building/running the CLI from source with local docker images ##
 
 `$ ./test/end_to_end_test.sh local`
 
 This will build the shipshape CLI and all docker containers used locally, and
 also run them once on test input. To rerun the CLI on your code with the locally
-build docker images:
+built docker images:
 
 ```
 $ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
       --tag=local <Directory>
 ```
 
-
-# Building/running CLI with prod docker images #
-
-If you want to pull the latest (released) version of shipshape, you need
-"gcloud preview docker". You can get this by running:
-
-`$ gcloud components update preview`
+## Building/running CLI with prod docker images ##
 
 To build shipshape:
 
 `$ ./campfire build shipshape/...`
 
-To run the shipshape CLI (requires access to a GCS bucket, email shipshape@google.com first):
+To run the shipshape CLI:
 
 `$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>`
 
