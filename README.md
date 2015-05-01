@@ -45,7 +45,7 @@ system `PATH`.
 
 # Downloading and running the CLI #
 
-Download the CLI from https://pantheon.corp.google.com/m/cloudstorage/b/shipshape-cli/o/shipshape
+Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
 
 Run it!
 
