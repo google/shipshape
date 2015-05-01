@@ -16,7 +16,7 @@ Shipshape uses a build tool called "campfire"; the source code for this build
 tool is located in third_party/buildtools.
 
 
-# Setup #
+# Setup: Install Docker #
 
 See if you have docker installed:
 
@@ -42,6 +42,18 @@ Update `.campfire_settings` in the root directory to point to the correct tools 
 To run the unit tests, you'll need Android `lint` (part of the
 [Android SDK](https://developer.android.com/sdk/index.html)) installed in your
 system `PATH`.
+
+# Downloading and running the CLI #
+
+Download the CLI from https://pantheon.corp.google.com/m/cloudstorage/b/shipshape-cli/o/shipshape
+
+Run it!
+
+`./shipshape --categories="go vet,JSHint,PyLint" <Directory>`
+
+Get help!
+
+`./shipshape --help`
 
 # Building/running CLI entirely locally #
 
