@@ -273,6 +273,15 @@ func ImageMatches(image, container string) bool {
 	return bytes.Equal(imageHash, containerHash)
 }
 
+func RelativePath(path, container string) (bool, string) {
+	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
+	if err != nil {
+		return false, ""
+	}
+	volume := strings.TrimSpace(string(v))
+	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
+}
+
 func inspect(name, format string) ([]byte, error) {
 	var formatter string
 	if len(format) != 0 {
