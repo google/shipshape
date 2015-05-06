@@ -42,6 +42,9 @@ Get help!
 
 # Building/running CLI entirely locally #
 
+## OS Requiremenents ##
+Requires Ubuntu >=14.04 or Debian unstable.
+
 ## Install dependencies ##
 
 You'll need the following developer tools:
@@ -53,9 +56,9 @@ You'll need the following developer tools:
 * [Go](http://golang.org/doc/install)
 * [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
 
-To install all of them (JDK 8 only available this way for ubuntu 14.10 or greater)
+To install all of them (JDK 8 only available this way for Ubuntu 14.10 or greater)
 
-`$ apt-get install bison clang flex golang docker.io openjdk8-jdk`
+`$ apt-get install bison clang flex golang lxc-docker openjdk-8-jdk`
 
 To run the unit tests, you'll need Android `lint` (part of the
 [Android SDK](https://developer.android.com/sdk/index.html)) installed in your
