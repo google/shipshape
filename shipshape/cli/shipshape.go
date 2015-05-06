@@ -196,22 +196,15 @@ func main() {
 	}
 
 	var c *client.Client
-
-	req := &rpcpb.ShipshapeRequest{
-		TriggeredCategory: trigger,
-		ShipshapeContext: &ctxpb.ShipshapeContext{
-			RepoRoot: proto.String(workspace),
-		},
-		Event: proto.String(*event),
-		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
-	}
-
-	if !fs.IsDir() {
-		req.ShipshapeContext.FilePath = []string{file}
-	}
+	var req *rpcpb.ShipshapeRequest
 
 	// Run it on files
 	if *streams {
+		var files []string
+		if !fs.IsDir() {
+			files = []string{file}
+		}
+		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
 		err = streamsAnalyze(image, absRoot, containers, req)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
@@ -224,16 +217,11 @@ func main() {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
 			return
 		}
-		req.ShipshapeContext.RepoRoot = proto.String(filepath.Join(workspace, relativeRoot))
+		var files []string
 		if !fs.IsDir() {
-			relativeFile := filepath.Join(relativeRoot, filepath.Base(file))
-			glog.Infof("relRoot %s, file %s, relFile %s", relativeRoot, file, relativeFile)
-			if err != nil {
-				glog.Errorf("Could not get relative path of %s: %v", file, err)
-				return
-			}
-			req.ShipshapeContext.FilePath = []string{relativeFile}
+			files = []string{filepath.Join(relativeRoot, filepath.Base(file))}
 		}
+		req = createRequest(trigger, files, *event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
 		err = serviceAnalyze(c, req)
 		if err != nil {
 			glog.Errorf("Error making service call: %v", err)
@@ -433,4 +421,16 @@ func getContainerAndAddress(fullImage string, id int) (analyzerContainer string,
 	port = 10010 + id
 	analyzerContainer = fmt.Sprintf("%s_%d", image, id)
 	return analyzerContainer, port
+}
+
+func createRequest(triggerCats, files []string, event, repoRoot string, stage *ctxpb.Stage) *rpcpb.ShipshapeRequest {
+	return &rpcpb.ShipshapeRequest{
+		TriggeredCategory: triggerCats,
+		ShipshapeContext: &ctxpb.ShipshapeContext{
+			RepoRoot: proto.String(repoRoot),
+			FilePath: files,
+		},
+		Event: proto.String(event),
+		Stage: stage,
+	}
 }
