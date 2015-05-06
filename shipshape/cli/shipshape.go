@@ -127,10 +127,16 @@ func main() {
 		return
 	}
 
-	dir := flag.Arg(0)
-	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
-		fmt.Printf("%s is not a valid directory\n", dir)
+	file := flag.Arg(0)
+	fs, err := os.Stat(file)
+	if err != nil {
+		fmt.Printf("%s is not a valid file or directory\n", file)
 		return
+	}
+
+	dir := file
+	if !fs.IsDir() {
+		dir = filepath.Dir(file)
 	}
 
 	absRoot, err := filepath.Abs(dir)
@@ -199,6 +205,11 @@ func main() {
 		Event: proto.String(*event),
 		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
 	}
+
+	if !fs.IsDir() {
+		req.ShipshapeContext.FilePath = []string{file}
+	}
+
 	// Run it on files
 	if *streams {
 		err = streamsAnalyze(image, absRoot, containers, req)
@@ -214,6 +225,15 @@ func main() {
 			return
 		}
 		req.ShipshapeContext.RepoRoot = proto.String(filepath.Join(workspace, relativeRoot))
+		if !fs.IsDir() {
+			relativeFile := filepath.Join(relativeRoot, filepath.Base(file))
+			glog.Infof("relRoot %s, file %s, relFile %s", relativeRoot, file, relativeFile)
+			if err != nil {
+				glog.Errorf("Could not get relative path of %s: %v", file, err)
+				return
+			}
+			req.ShipshapeContext.FilePath = []string{relativeFile}
+		}
 		err = serviceAnalyze(c, req)
 		if err != nil {
 			glog.Errorf("Error making service call: %v", err)
