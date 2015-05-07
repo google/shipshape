@@ -264,10 +264,14 @@ func main() {
 // attached analyzers that can analyze the directory at absRoot (an absolute path). If a
 // service is not started up that can do this, it will shut down the existing one and start
 // a new one.
+// The methods returns the (ready) client, the relative path from the docker container's mapped
+// volume to the absRoot that we are analyzing, and any errors from attempting to run the service.
 // TODO(ciera): This *should* check the analyzers that are connected, but does not yet
 // do so.
 func startShipshapeService(image, absRoot string, analyzers []string) (*client.Client, string, error) {
-	isMapped, subPath := docker.RelativePath(absRoot, "shipping_container")
+	// subPath is the relatve path from the mapped volume on shipping container
+	// to the directory we are analyzing (absRoot)
+	isMapped, subPath := docker.MappedVolume(absRoot, "shipping_container")
 	// Stop and restart the container if:
 	// 1: The container is not using the latest image OR
 	// 2. The container is not mapped to the right directory

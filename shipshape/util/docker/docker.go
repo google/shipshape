@@ -273,7 +273,13 @@ func ImageMatches(image, container string) bool {
 	return bytes.Equal(imageHash, containerHash)
 }
 
-func RelativePath(path, container string) (bool, string) {
+// MappedVolume returns whether path is already mapped into the workspace
+// of the shipshape service running at container. If it is, it returns the relative path
+// of path within the mapped volume.
+func MappedVolume(path, container string) (bool, string) {
+	// Why this big ugly mess you ask? Because we can't us a go tempate to index
+	// like this: .Volumes./shipshape-workspace because go templates only allow
+	// alphanumeric identifiers. So instead, we so this.
 	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
 	if err != nil {
 		return false, ""
@@ -282,6 +288,9 @@ func RelativePath(path, container string) (bool, string) {
 	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
 }
 
+// inspect runs docker inspect on name, which must be either an image or a container.
+// If non-empty, it uses the specified format string.
+// Returns the combined stdout/stderr from running docker inspect
 func inspect(name, format string) ([]byte, error) {
 	var formatter string
 	if len(format) != 0 {
