@@ -66,7 +66,7 @@ const (
 	kytheImage = "kythe"
 )
 
-func logMessage(msg *rpcpb.ShipshapeResponse) error {
+func logMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
 	if *jsonOutput == "" {
 		fileNotes := make(map[string][]*notepb.Note)
 		for _, analysis := range msg.AnalyzeResponse {
@@ -76,7 +76,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse) error {
 			for _, note := range analysis.Note {
 				path := ""
 				if note.Location != nil {
-					path = note.Location.GetPath()
+					path = filepath.Join(directory, note.Location.GetPath())
 				}
 				fileNotes[path] = append(fileNotes[path], note)
 			}
@@ -127,15 +127,21 @@ func main() {
 		return
 	}
 
-	dir := flag.Arg(0)
-	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
-		fmt.Printf("%s is not a valid directory\n", dir)
+	file := flag.Arg(0)
+	fs, err := os.Stat(file)
+	if err != nil {
+		fmt.Printf("%s is not a valid file or directory\n", file)
 		return
 	}
 
-	absRoot, err := filepath.Abs(dir)
+	origDir := file
+	if !fs.IsDir() {
+		origDir = filepath.Dir(file)
+	}
+
+	absRoot, err := filepath.Abs(origDir)
 	if err != nil {
-		fmt.Printf("Could not get absolute path for %s: %v\n", dir, err)
+		fmt.Printf("Could not get absolute path for %s: %v\n", origDir, err)
 		return
 	}
 
@@ -190,18 +196,16 @@ func main() {
 	}
 
 	var c *client.Client
+	var req *rpcpb.ShipshapeRequest
 
-	req := &rpcpb.ShipshapeRequest{
-		TriggeredCategory: trigger,
-		ShipshapeContext: &ctxpb.ShipshapeContext{
-			RepoRoot: proto.String(workspace),
-		},
-		Event: proto.String(*event),
-		Stage: ctxpb.Stage_PRE_BUILD.Enum(),
-	}
 	// Run it on files
 	if *streams {
-		err = streamsAnalyze(image, absRoot, containers, req)
+		var files []string
+		if !fs.IsDir() {
+			files = []string{file}
+		}
+		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
+		err = streamsAnalyze(image, absRoot, origDir, containers, req)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
 			return
@@ -213,8 +217,12 @@ func main() {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
 			return
 		}
-		req.ShipshapeContext.RepoRoot = proto.String(filepath.Join(workspace, relativeRoot))
-		err = serviceAnalyze(c, req)
+		var files []string
+		if !fs.IsDir() {
+			files = []string{filepath.Base(file)}
+		}
+		req = createRequest(trigger, files, *event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
+		err = serviceAnalyze(c, req, origDir)
 		if err != nil {
 			glog.Errorf("Error making service call: %v", err)
 			return
@@ -243,13 +251,13 @@ func main() {
 
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		if !*streams {
-			err = serviceAnalyze(c, req)
+			err = serviceAnalyze(c, req, origDir)
 			if err != nil {
 				glog.Errorf("Error making service call: %v", err)
 				return
 			}
 		} else {
-			err = streamsAnalyze(image, absRoot, containers, req)
+			err = streamsAnalyze(image, absRoot, origDir, containers, req)
 			if err != nil {
 				glog.Errorf("Error making stream call: %v", err)
 				return
@@ -291,7 +299,7 @@ func startShipshapeService(image, absRoot string, analyzers []string) (*client.C
 	return c, subPath, c.WaitUntilReady(10 * time.Second)
 }
 
-func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest) error {
+func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string) error {
 	glog.Infof("Calling to the shipshape service with %v", req)
 	rd := c.Stream("/ShipshapeService/Run", req)
 	defer rd.Close()
@@ -303,14 +311,14 @@ func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest) error {
 			return fmt.Errorf("received an error from calling run: %v", err.Error())
 		}
 
-		if err := logMessage(&msg); err != nil {
+		if err := logMessage(&msg, originalDir); err != nil {
 			return fmt.Errorf("could not parse results: %v", err.Error())
 		}
 	}
 	return nil
 }
 
-func streamsAnalyze(image, absRoot string, analyzerContainers []string, req *rpcpb.ShipshapeRequest) error {
+func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest) error {
 	glog.Infof("Running image %s in stream mode", image)
 	reqBytes, err := proto.Marshal(req)
 	if err != nil {
@@ -328,7 +336,7 @@ func streamsAnalyze(image, absRoot string, analyzerContainers []string, req *rpc
 	if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
 		return fmt.Errorf("unexpected ShipshapeResponse %v", err)
 	}
-	return logMessage(&msg)
+	return logMessage(&msg, originalDir)
 }
 
 func pull(image string) {
@@ -413,4 +421,16 @@ func getContainerAndAddress(fullImage string, id int) (analyzerContainer string,
 	port = 10010 + id
 	analyzerContainer = fmt.Sprintf("%s_%d", image, id)
 	return analyzerContainer, port
+}
+
+func createRequest(triggerCats, files []string, event, repoRoot string, stage *ctxpb.Stage) *rpcpb.ShipshapeRequest {
+	return &rpcpb.ShipshapeRequest{
+		TriggeredCategory: triggerCats,
+		ShipshapeContext: &ctxpb.ShipshapeContext{
+			RepoRoot: proto.String(repoRoot),
+			FilePath: files,
+		},
+		Event: proto.String(event),
+		Stage: stage,
+	}
 }
