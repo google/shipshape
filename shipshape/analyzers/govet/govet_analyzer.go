@@ -19,7 +19,6 @@
 package govet
 
 import (
-	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -72,7 +71,7 @@ func (gva *GoVetAnalyzer) analyzeOneFile(ctx *ctxpb.ShipshapeContext, path strin
 			// TODO(ciera): We should be able to keep going here
 			// and try the next file. However, our API doesn't allow for
 			// returning multiple errors. We need to reconsider the API.
-			return notes, errors.New("did not get correct output from `go vet`")
+			return notes, fmt.Errorf("did not get correct output from `go vet`, output was: %v", string(buf))
 		}
 		for _, issue := range issues[:len(issues)-2] {
 			parts := issueRE.FindStringSubmatch(issue)
