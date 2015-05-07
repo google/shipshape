@@ -3,6 +3,11 @@
      "jshint": {
        "type": "jshint",
        "include": "(\\.js$)"
+     },
+     "golint": {
+       "type": "golint",
+       "include": "(\\.go$)"
      }
+
    }
  }
