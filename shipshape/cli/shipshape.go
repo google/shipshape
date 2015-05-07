@@ -134,14 +134,14 @@ func main() {
 		return
 	}
 
-	dir := file
+	origDir := file
 	if !fs.IsDir() {
-		dir = filepath.Dir(file)
+		origDir = filepath.Dir(file)
 	}
 
-	absRoot, err := filepath.Abs(dir)
+	absRoot, err := filepath.Abs(origDir)
 	if err != nil {
-		fmt.Printf("Could not get absolute path for %s: %v\n", dir, err)
+		fmt.Printf("Could not get absolute path for %s: %v\n", origDir, err)
 		return
 	}
 
@@ -205,7 +205,7 @@ func main() {
 			files = []string{file}
 		}
 		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
-		err = streamsAnalyze(image, absRoot, dir, containers, req)
+		err = streamsAnalyze(image, absRoot, origDir, containers, req)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
 			return
@@ -222,7 +222,7 @@ func main() {
 			files = []string{filepath.Base(file)}
 		}
 		req = createRequest(trigger, files, *event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
-		err = serviceAnalyze(c, req, dir)
+		err = serviceAnalyze(c, req, origDir)
 		if err != nil {
 			glog.Errorf("Error making service call: %v", err)
 			return
@@ -251,13 +251,13 @@ func main() {
 
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		if !*streams {
-			err = serviceAnalyze(c, req, dir)
+			err = serviceAnalyze(c, req, origDir)
 			if err != nil {
 				glog.Errorf("Error making service call: %v", err)
 				return
 			}
 		} else {
-			err = streamsAnalyze(image, absRoot, dir, containers, req)
+			err = streamsAnalyze(image, absRoot, origDir, containers, req)
 			if err != nil {
 				glog.Errorf("Error making stream call: %v", err)
 				return
