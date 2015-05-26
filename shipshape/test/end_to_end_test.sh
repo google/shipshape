@@ -39,10 +39,10 @@ CONTAINERS=(
 
 TAG=${1,,} # make lower case
 IS_LOCAL_RUN=false; [[ "$TAG" == "local" ]] && IS_LOCAL_RUN=true
-echo $IS_LOCAL_RUN
+echo 'This is a local run:['$IS_LOCAL_RUN']'
 
 [[ "$#" == 2 ]] && KYTHE_TEST=${2,,}
-echo $KYTHE_TEST
+echo 'This is a kythe test:['$KYTHE_TEST']'
 
 # Build repo in local mode
 if [[ "$IS_LOCAL_RUN" == true ]]; then
