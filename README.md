@@ -26,6 +26,15 @@ If you don't have docker installed:
 
 `$ apt-get install docker.io`
 
+Make sure you can run docker without sudo by adding your user to the docker
+group (the group may need to be created):
+
+`$ sudo usermod -G docker $USER`
+
+Restart the docker daemon:
+
+`$ sudo service docker.io restart`
+
 
 ## Downloading and running the CLI ##
 
