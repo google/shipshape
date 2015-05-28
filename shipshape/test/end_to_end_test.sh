@@ -28,21 +28,74 @@ CONVOY_URL='gcr.io'
 LOCAL_WORKSPACE='/tmp/shipshape-tests'
 LOG_FILE='end_to_end_test.log'
 REPO=$CONVOY_URL/shipshape_releases
-KYTHE_TEST='false'
 CONTAINERS=(
   //shipshape/docker:service
   //shipshape/androidlint_analyzer/docker:android_lint
 )
 
-# Check tag argument.
-[[ "$#" == 1 ]] || [[ "$#" == 2 ]] || { echo "Usage: ./end-to-end-test.sh <TAG> [IS_KYTHE_TEST]" 1>&2 ; exit 1; }
+KYTHE_TEST=false
+IS_LOCAL_RUN=false
+TAG=''
 
-TAG=${1,,} # make lower case
-IS_LOCAL_RUN=false; [[ "$TAG" == "local" ]] && IS_LOCAL_RUN=true
-echo $IS_LOCAL_RUN
+##############################
+# Prints help instructions
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+##############################
+print_help() {
+  echo "usage: ./end-to-end-test.sh --tag TAG [--with-kythe]" 1>&2
+}
 
-[[ "$#" == 2 ]] && KYTHE_TEST=${2,,}
-echo $KYTHE_TEST
+##############################
+# Processes script arguments
+# Globals:
+#   KYTHE_TEST
+#   TAG
+#   IS_LOCAL_RUN
+# Arguments:
+#   None
+# Return:
+#   None
+##############################
+process_arguments() {
+  while test $# -gt 0; do
+    case "$1" in
+      -h|--help)
+        print_help
+        exit 0
+        ;;
+      --kythe-test)
+        echo "info: Including kythe in test"
+        KYTHE_TEST=true
+        ;;
+      --tag)
+        shift
+        TAG=${1,,} # make lower case
+        if [[ "$TAG" == "local" ]]; then
+          IS_LOCAL_RUN=true
+        fi
+        ;;
+      *)
+        echo "error: unknown argument"
+        print_help
+        exit 1
+        ;;
+    esac
+  done
+
+  # Make sure we have a tag value
+  if [[ -z ${TAG+x} ]]; then
+    echo "error: --tag value is missing, TAG=["$TAG"]"
+    exit 2
+  fi
+}
+
+process_arguments
+
 
 # Build repo in local mode
 if [[ "$IS_LOCAL_RUN" == true ]]; then
