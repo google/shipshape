@@ -18,5 +18,4 @@
 # instruction. It starts the android_lint_service and stores the output to a log
 # file. We also start sshd so that we can easily debug our running container.
 
-/usr/sbin/sshd
 ./android_lint_service &> /tmp/android_lint.log

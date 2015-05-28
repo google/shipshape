@@ -26,7 +26,7 @@ RUN apt-get update && apt-get upgrade -y && \
 RUN wget http://dl.google.com/android/android-sdk_r23-linux.tgz
 RUN tar xvf android-sdk_r23-linux.tgz
 ENV PATH /android-sdk-linux/tools:$PATH
-RUN echo "y" | android update sdk --no-ui --filter platform-tools
+RUN echo "y" | android update sdk --no-ui --filter platform-tool
 RUN echo "y" | android update sdk --no-ui --filter tools
 # This is a workaround for a failure in the "android update" command:
 # https://github.com/google/shipshape/issues/27
