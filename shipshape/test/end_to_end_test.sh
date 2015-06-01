@@ -87,7 +87,7 @@ run() {
 #   None
 ##############################
 setup_logging() {
-  [ -e $LOG_FILE ] && rm $LOG_FILE;
+  rm -f $LOG_FILE;
   info "Detailed output will appear in $LOG_FILE"
 }
 
@@ -166,11 +166,11 @@ process_arguments() {
 ########################################
 build_local() {
   info 'Building shipshape ...'
-  run $CAMPFIRE clean
-  run $CAMPFIRE build //shipshape/cli/...
+  run "$CAMPFIRE" clean
+  run "$CAMPFIRE" build //shipshape/cli/...
   for container in ${CONTAINERS[@]}; do
     info "Building and deploying $container locally ..."
-    run $CAMPFIRE package --start_registry=false --docker_tag=$TAG $container
+    run "$CAMPFIRE" package --start_registry=false --docker_tag=$TAG $container
     IFS=':' # Temporarily set global string separator to split image names
     names=(${container[@]})
     name=${names[1]}
@@ -238,13 +238,13 @@ EOF
 analyze_test_repo() {
   # Run CLI over the new repo
   info "Analyzing test repo using PostMessage,JSHint,ErrorProne ..."
-  $CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" &>> $LOG_FILE
+  "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
   # Run a second time for AndroidLint. We have to do this separately because
   # otherwise kythe will try to build all the java files, even the ones that maven
   # doesn't build.
   cp -r "$BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib" "$LOCAL_WORKSPACE/"
   info "Analyzing test repo using AndroidLint ..."
-  $CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" &>> $LOG_FILE
+  "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
 }
 
 ##############################################
