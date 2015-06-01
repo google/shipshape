@@ -19,23 +19,77 @@
 
 set -eu
 
-TEST_DIR=$(realpath $(dirname "$0"))
-BASE_DIR=$(realpath "${TEST_DIR}/../..")
-CAMPFIRE="${BASE_DIR}/campfire"
-CAMPFIRE_OUT="${BASE_DIR}/campfire-out"
+declare -xr TEST_DIR=$(realpath $(dirname "$0"))
+declare -xr BASE_DIR=$(realpath "${TEST_DIR}/../..")
+declare -xr CAMPFIRE="${BASE_DIR}/campfire"
+declare -xr CAMPFIRE_OUT="${BASE_DIR}/campfire-out"
 
-CONVOY_URL='gcr.io'
-LOCAL_WORKSPACE='/tmp/shipshape-tests'
-LOG_FILE='end_to_end_test.log'
-REPO=$CONVOY_URL/shipshape_releases
-CONTAINERS=(
+declare -xr CONVOY_URL='gcr.io'
+declare -xr LOCAL_WORKSPACE='/tmp/shipshape-tests'
+declare -xr LOG_FILE='end_to_end_test.log'
+declare -xr REPO=$CONVOY_URL/shipshape_releases
+declare -xr CONTAINERS=(
   //shipshape/docker:service
   //shipshape/androidlint_analyzer/docker:android_lint
 )
 
-KYTHE_TEST=false
-IS_LOCAL_RUN=false
-TAG=''
+declare -x KYTHE_TEST=false
+declare -x IS_LOCAL_RUN=false
+declare -x TAG=''
+
+##############################
+# Logs info string
+# Globals:
+#   None
+# Argument:
+#   The message to log
+# Return:
+#   None
+##############################
+info() {
+  echo "INFO: $@" | tee -a $LOG_FILE
+}
+
+##############################
+# Logs error string
+# Globals:
+#   None
+# Argument:
+#   The message to log
+# Return:
+#   None
+##############################
+error() {
+  echo "ERROR: $@" | tee -a $LOG_FILE
+}
+
+##############################
+# Runs and logs a command
+# Globals:
+#   LOG_FILE
+# Arguments:
+#   Command to run
+# Return:
+#   None
+##############################
+run() {
+  info "Running command [$@]"
+  (`$@`) >> $LOG_FILE 2>&1
+}
+
+##############################
+# Setup logging
+# Globals:
+#   LOG_FILE
+# Arguments:
+#   None
+# Return:
+#   None
+##############################
+setup_logging() {
+  rm -f $LOG_FILE;
+  info "Detailed output will appear in $LOG_FILE"
+}
 
 ##############################
 # Prints help instructions
@@ -47,7 +101,7 @@ TAG=''
 #   None
 ##############################
 print_help() {
-  echo "usage: ./end-to-end-test.sh --tag TAG [--with-kythe]" 1>&2
+  echo "USAGE: ./end-to-end-test.sh --tag TAG [--with-kythe]" 1>&2
 }
 
 ##############################
@@ -57,7 +111,7 @@ print_help() {
 #   TAG
 #   IS_LOCAL_RUN
 # Arguments:
-#   None
+#   Script arguments
 # Return:
 #   None
 ##############################
@@ -69,60 +123,77 @@ process_arguments() {
         exit 0
         ;;
       --kythe-test)
-        echo "info: Including kythe in test"
+        info "Including kythe in test"
         KYTHE_TEST=true
+        readonly KYTHE_TEST
+        shift
         ;;
       --tag)
         shift
         TAG=${1,,} # make lower case
+        readonly TAG
         if [[ "$TAG" == "local" ]]; then
           IS_LOCAL_RUN=true
+          readonly IS_LOCAL_RUN
         fi
+        shift
         ;;
       *)
-        echo "error: unknown argument"
+        error "Unknown argument"
         print_help
         exit 1
         ;;
     esac
   done
-
-  # Make sure we have a tag value
+  # Make sure we got a tag value
   if [[ -z ${TAG+x} ]]; then
-    echo "error: --tag value is missing, TAG=["$TAG"]"
+    error "--tag value is missing, TAG=["$TAG"]"
     exit 2
   fi
 }
 
-process_arguments
-
-
-# Build repo in local mode
-if [[ "$IS_LOCAL_RUN" == true ]]; then
-  echo "Running with locally built containers"
-  $CAMPFIRE clean
-  $CAMPFIRE build //shipshape/cli/...
+########################################
+# Builds and deploys containers locally
+# Globals:
+#   CAMPFIRE
+#   CONTAINERS
+#   TAG
+#   REPO
+# Arguments:
+#   None
+# Return:
+#   None
+########################################
+build_local() {
+  info 'Building shipshape ...'
+  run "$CAMPFIRE" clean
+  run "$CAMPFIRE" build //shipshape/cli/...
   for container in ${CONTAINERS[@]}; do
-    echo 'Building and deploying '$container' ...'
-    $CAMPFIRE package --start_registry=false --docker_tag=$TAG $container
-    IFS=':' # Set global string separator so we can split the image name
+    info "Building and deploying $container locally ..."
+    run "$CAMPFIRE" package --start_registry=false --docker_tag=$TAG $container
+    IFS=':' # Temporarily set global string separator to split image names
     names=(${container[@]})
     name=${names[1]}
-    docker tag -f $name:$TAG $REPO/$name:$TAG
-    IFS=' ' # reset it back to a space
+    IFS=' ' # reset global string separator
+    run "docker tag -f $name:$TAG $REPO/$name:$TAG"
   done
-fi
+}
 
-# Set up log file
-touch $LOG_FILE
-rm $LOG_FILE
-echo ">>> Detailed output will appear in $LOG_FILE"
-
-# Create a test repository to run analysis on
-rm -r $LOCAL_WORKSPACE || true
-mkdir -p $LOCAL_WORKSPACE
-echo "this is not javascript" > $LOCAL_WORKSPACE/test.js
-mkdir -p $LOCAL_WORKSPACE/src/main/java/com/google/shipshape/
+#######################################
+# Creates a test repository to analyze
+# Globals:
+#   LOCAL_WORKSPACE
+# Arguments:
+#   None
+# Return:
+#   None
+#######################################
+create_test_repo() {
+  info "Creating test repo at $LOCAL_WORKSPACE"
+  rm -r "$LOCAL_WORKSPACE" || true
+  mkdir -p "$LOCAL_WORKSPACE"
+  echo "this is not javascript" > "$LOCAL_WORKSPACE/test.js"
+  mkdir -p "$LOCAL_WORKSPACE/src/main/java/com/google/shipshape/"
 cat <<'EOF' >> $LOCAL_WORKSPACE/src/main/java/com/google/shipshape/App.java
 package com.google.shipshape;
 
@@ -151,33 +222,70 @@ cat <<'EOF' >> $LOCAL_WORKSPACE/pom.xml
   <version>1.0-SNAPSHOT</version>
 </project>
 EOF
+}
 
-# Run CLI over the new repo
-echo "---- Running CLI over test repo" &>> $LOG_FILE
-$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST $LOCAL_WORKSPACE >> $LOG_FILE
-echo "Analysis complete, checking results..."
-# Run a second time for AndroidLint. We have to do this separately because
-# otherwise kythe will try to build all the java files, even the ones that maven
-# doesn't build.
-cp -r $BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib $LOCAL_WORKSPACE/
-echo "---- Running CLI over test repo, android test" &>> $LOG_FILE
-$CAMPFIRE_OUT/bin/shipshape/cli/shipshape --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST $LOCAL_WORKSPACE >> $LOG_FILE
-echo "Analysis complete, checking results..."
+#############################################
+# Analyzes the test repo
+# Globals:
+#   LOG_FILE
+#   CAMPFIRE_OUT
+#   TAG
+#   KYTHE_TEST
+#   LOCAL_WORKSPACE
+# Arguments:
+# Return:
+#############################################
+analyze_test_repo() {
+  # Run CLI over the new repo
+  info "Analyzing test repo using PostMessage,JSHint,ErrorProne ..."
+  "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+  # Run a second time for AndroidLint. We have to do this separately because
+  # otherwise kythe will try to build all the java files, even the ones that maven
+  # doesn't build.
+  cp -r "$BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib" "$LOCAL_WORKSPACE/"
+  info "Analyzing test repo using AndroidLint ..."
+  "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+}
 
-# Quick sanity checks of output.
-JSHINT_COUNT=$(grep JSHint $LOG_FILE | wc -l)
-POSTMESSAGE_COUNT=$(grep PostMessage $LOG_FILE | wc -l)
-ERRORPRONE_COUNT=$(grep ErrorProne $LOG_FILE | wc -l)
-ANDROIDLINT_COUNT=$(grep AndroidLint $LOG_FILE | wc -l)
-FAILURE_COUNT=$(grep Failure $LOG_FILE | wc -l)
-TEST_STATUS=0
-[[ $JSHINT_COUNT == 8 ]] || { echo "Wrong number of JSHint results, expected 8, found $JSHINT_COUNT" 1>&2 ; TEST_STATUS=1; }
-[[ $POSTMESSAGE_COUNT == 1 ]] || { echo "Wrong number of PostMessage results, expected 1, found $POSTMESSAGE_COUNT" 1>&2 ; TEST_STATUS=1; }
-[[ $ERRORPRONE_COUNT == 2 ]] || { echo "Wrong number of ErrorProne results, expected 2, found $ERRORPRONE_COUNT" 1>&2 ; TEST_STATUS=1; }
-[[ $ANDROIDLINT_COUNT == 8 ]] || { echo "Wrong number of AndroidLint results, expected 9, found $ANDROIDLINT_COUNT" 1>&2 ; TEST_STATUS=1; }
-[[ $FAILURE_COUNT == 0 ]] || { echo "Some analyses failed; please check $LOG_FILE" 1>&2 ; TEST_STATUS=1; }
+##############################################
+# Checks findings
+# Globals:
+#   LOG_FILE
+# Arguments:
+#   None
+# Return:
+#   status of tests
+##############################################
+check_findings() {
+  info "Checking analyzer results ..."
+  local jshint=$(grep "\[JSHint\]" $LOG_FILE | wc -l)
+  local postmessage=$(grep "\[PostMessage\]" $LOG_FILE | wc -l)
+  local errorprone=$(grep "\[ErrorProne\]" $LOG_FILE | wc -l)
+  local androidlint=$(grep "\[AndroidLint:" $LOG_FILE | wc -l)
+  local failure=$(grep "Failure" $LOG_FILE | wc -l)
+  local status=0
+  [[ $jshint == 8 ]] || error "Wrong number of JSHint results, expected 8, found $jshint"; status=1;
+  [[ $postmessage == 1 ]] || error "Wrong number of PostMessage results, expected 1, found $postmessage"; status=1;
+  [[ $errorprone == 2 ]] || error "Wrong number of ErrorProne results, expected 2, found $errorprone"; status=1;
+  [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 9, found $androidlint"; status=1;
+  [[ $failure == 0 ]] || error "Some analyses failed; please check $LOG_FILE" ; status=1;
+  if [[ $status -eq 0 ]]; then
+    info "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
+  fi
+  return $(($status))
+}
 
-if [[ $TEST_STATUS -eq 0 ]]; then
-  echo "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
+
+process_arguments "$@"
+setup_logging
+
+# Build repo in local mode
+if [[ "$IS_LOCAL_RUN" == true ]]; then
+  info "Running with locally built containers"
+  build_local
 fi
-exit $(($TEST_STATUS))
+
+create_test_repo
+analyze_test_repo
+check_findings
+
