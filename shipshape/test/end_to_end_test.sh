@@ -180,7 +180,7 @@ build_local() {
 #######################################
 # Creates a test repository to analyze
 # Globals:
-#   None
+#   LOCAL_WORKSPACE
 # Arguments:
 #   None
 # Return:
@@ -252,7 +252,7 @@ analyze_test_repo() {
 # Arguments:
 #   None
 # Return:
-#   TEST_STATUS
+#   status of tests
 ##############################################
 check_findings() {
   info "Checking analyzer results ..."
@@ -280,7 +280,7 @@ setup_logging
 # Build repo in local mode
 if [[ "$IS_LOCAL_RUN" == true ]]; then
   info "Running with locally built containers"
-#  build_local
+  build_local
 fi
 
 create_test_repo
