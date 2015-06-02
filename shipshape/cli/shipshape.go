@@ -277,17 +277,19 @@ func main() {
 // TODO(ciera): This *should* check the analyzers that are connected, but does not yet
 // do so.
 func startShipshapeService(image, absRoot string, analyzers []string) (*client.Client, string, error) {
+	container := "shipping_container"
 	// subPath is the relatve path from the mapped volume on shipping container
 	// to the directory we are analyzing (absRoot)
-	isMapped, subPath := docker.MappedVolume(absRoot, "shipping_container")
+	isMapped, subPath := docker.MappedVolume(absRoot, container)
 	// Stop and restart the container if:
 	// 1: The container is not using the latest image OR
-	// 2. The container is not mapped to the right directory
+	// 2: The container is not mapped to the right directory OR
+	// 3: The container is not linked to the right analyzer containers
 	// Otherwise, use the existing container
-	if !docker.ImageMatches(image, "shipping_container") || !isMapped {
+	if !docker.ImageMatches(image, container) || !isMapped || !docker.ContainsLinks(container, analyzers) {
 		glog.Infof("Restarting container with %s", image)
-		stop("shipping_container", 0)
-		result := docker.RunService(image, "shipping_container", absRoot, localLogs, analyzers)
+		stop(container, 0)
+		result := docker.RunService(image, container, absRoot, localLogs, analyzers)
 		subPath = ""
 		printStreams(result)
 		if result.Err != nil {
@@ -384,13 +386,24 @@ func startAnalyzers(sourceDir string, images []string) (containers []string, err
 		wg.Add(1)
 		go func() {
 			analyzerContainer, port := getContainerAndAddress(fullImage, id)
-			result := docker.RunAnalyzer(fullImage, analyzerContainer, sourceDir, localLogs, port)
-			if result.Err != nil {
-				glog.Infof("Could not start %v at localhost:%d: %v", fullImage, port, result.Err.Error())
-				errs = append(errs, result.Err)
+			if docker.ImageMatches(fullImage, analyzerContainer) {
+				glog.Infof("Reusing analyzer %v started at localhost:%d", fullImage, port)
 			} else {
-				glog.Infof("Analyzer %v started at localhost:%d", fullImage, port)
-				containers = append(containers, analyzerContainer)
+				glog.Infof("Found no analyzer container (%v) to reuse for %v", analyzerContainer, fullImage)
+				// Analyzer is either running with the wrong image version, or not running
+				// Stopping in case it's the first case
+				result := docker.Stop(analyzerContainer, 0, true)
+				if result.Err != nil {
+					glog.Infof("Failed to stop %v (may not be running)", analyzerContainer)
+				}
+				result = docker.RunAnalyzer(fullImage, analyzerContainer, sourceDir, localLogs, port)
+				if result.Err != nil {
+					glog.Infof("Could not start %v at localhost:%d: %v, stderr: %v", fullImage, port, result.Err.Error(), result.Stderr)
+					errs = append(errs, result.Err)
+				} else {
+					glog.Infof("Analyzer %v started at localhost:%d", fullImage, port)
+					containers = append(containers, analyzerContainer)
+				}
 			}
 			wg.Done()
 		}()

@@ -29,6 +29,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	glog "third_party/go-glog"
 )
 
 const (
@@ -122,6 +124,8 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
 
+	glog.Infof("Running 'docker %v'\n", args)
+
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
@@ -150,7 +154,8 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	args := []string{"run"}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
 	args = append(args, "-d", image)
-	fmt.Printf("%v", args)
+
+	glog.Infof("Running 'docker %v'\n", args)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
@@ -286,6 +291,22 @@ func MappedVolume(path, container string) (bool, string) {
 	}
 	volume := strings.TrimSpace(string(v))
 	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
+}
+
+// ContainsLinks returns whether the given container has links to the given
+// list of containers.
+func ContainsLinks(container string, linkedContainers []string) bool {
+	l, err := inspect(container, `{{.HostConfig.Links}}`)
+	if err != nil {
+		return false
+	}
+	links := strings.TrimSpace(string(l))
+	for _, linkedContainer := range linkedContainers {
+		if !strings.Contains(links, linkedContainer) {
+			return false
+		}
+	}
+	return true
 }
 
 // inspect runs docker inspect on name, which must be either an image or a container.
