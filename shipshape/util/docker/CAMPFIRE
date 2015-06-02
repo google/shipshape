@@ -5,6 +5,9 @@
     "inputs": {
       "srcs": [
         "docker.go"
+      ],
+      "go_pkgs": [
+        "//third_party/go-glog"
       ]
     }
   }

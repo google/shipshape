@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-./go_dispatcher &> /shipshape-output/go_dispatcher.log &
-java -jar javac_dispatcher.jar &> /shipshape-output/javac_dispatcher.log &
+./go_dispatcher &> /shipshape-output/shipshape.go_dispatcher.log &
+java -jar javac_dispatcher.jar &> /shipshape-output/shipshape.javac_dispatcher.log &
 if [ -z "$START_SERVICE" ]
 then
-  echo 'Running shipping container in streaming mode' > /shipshape-output/shipping_container.log
+  echo 'Running shipping container in streaming mode' > /shipshape-output/shipshape.shipping_container.log
   ./shipshape --analyzer_services="$(eval echo $ANALYZERS)"
 else
-  ./shipshape --start_service --analyzer_services="$(eval echo $ANALYZERS)" &> /shipshape-output/shipping_container.log
+  ./shipshape --start_service --analyzer_services="$(eval echo $ANALYZERS)" &> /shipshape-output/shipshape.shipping_container.log
 fi
 
