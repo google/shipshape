@@ -293,21 +293,18 @@ func MappedVolume(path, container string) (bool, string) {
 	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
 }
 
-// CheckContainerLinks returns whether the given list of containers are linked
-// to the given container.
-func CheckContainerLinks(container string, linkedContainers []string) bool {
+// ContainsLinks returns whether the given container has links to the given
+// list of containers.
+func ContainsLinks(container string, linkedContainers []string) bool {
 	l, err := inspect(container, `{{.HostConfig.Links}}`)
 	if err != nil {
-		fmt.Printf("Failed to inspect if containers are linked to %v: %v\n", container, err)
 		return false
 	}
 	links := strings.TrimSpace(string(l))
 	for _, linkedContainer := range linkedContainers {
 		if !strings.Contains(links, linkedContainer) {
-			fmt.Printf("Found no link to %v among links in container\n", linkedContainer, container)
 			return false
 		}
-		fmt.Printf("Found link to container %v from %v\n", linkedContainer, container)
 	}
 	return true
 }

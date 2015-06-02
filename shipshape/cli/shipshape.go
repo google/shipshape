@@ -286,7 +286,7 @@ func startShipshapeService(image, absRoot string, analyzers []string) (*client.C
 	// 2: The container is not mapped to the right directory OR
 	// 3: The container is not linked to the right analyzer containers
 	// Otherwise, use the existing container
-	if !docker.ImageMatches(image, container) || !isMapped || !docker.CheckContainerLinks(container, analyzers) {
+	if !docker.ImageMatches(image, container) || !isMapped || !docker.ContainsLinks(container, analyzers) {
 		glog.Infof("Restarting container with %s", image)
 		stop(container, 0)
 		result := docker.RunService(image, container, absRoot, localLogs, analyzers)
@@ -392,7 +392,7 @@ func startAnalyzers(sourceDir string, images []string) (containers []string, err
 				glog.Infof("Found no analyzer container (%v) to reuse for %v", analyzerContainer, fullImage)
 				// Analyzer is either running with the wrong image version, or not running
 				// Stopping in case it's the first case
-				result := docker.Stop(analyzerContainer, 10, true)
+				result := docker.Stop(analyzerContainer, 0, true)
 				if result.Err != nil {
 					glog.Infof("Failed to stop %v (may not be running)", analyzerContainer)
 				}
