@@ -562,7 +562,7 @@ function ninjaBuildHeader(engine) {
   for (var k in vars) {
     lines.push(k + ' = ' + vars[k]);
   }
-  lines.push('subninja ' +
+  lines.push('include ' +
       path.join(engine.settings.properties['buildtools_root'], 'rules.ninja'));
   return lines;
 }
