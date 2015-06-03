@@ -149,7 +149,7 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	for _, container := range analyzerContainers {
 		locations = append(locations, fmt.Sprintf(`$%s_PORT_10005_TCP_ADDR:$%s_PORT_10005_TCP_PORT`, strings.ToUpper(container), strings.ToUpper(container)))
 	}
-	locations = append(locations, "localhost:10005", "localhost:10006")
+	locations = append(locations, "localhost:10005", "localhost:10006", "localhost:10008")
 
 	args := []string{"run"}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)

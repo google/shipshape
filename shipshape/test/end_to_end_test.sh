@@ -265,7 +265,7 @@ check_findings() {
   local failure=$(grep "Failure" $LOG_FILE | wc -l)
   local status=0
   [[ $jshint == 8 ]] || error "Wrong number of JSHint results, expected 8, found $jshint"; status=1;
-  [[ $postmessage == 1 ]] || error "Wrong number of PostMessage results, expected 1, found $postmessage"; status=1;
+  [[ $postmessage == 2 ]] || error "Wrong number of PostMessage results, expected 1, found $postmessage"; status=1;
   [[ $errorprone == 2 ]] || error "Wrong number of ErrorProne results, expected 2, found $errorprone"; status=1;
   [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 9, found $androidlint"; status=1;
   [[ $failure == 0 ]] || error "Some analyses failed; please check $LOG_FILE" ; status=1;

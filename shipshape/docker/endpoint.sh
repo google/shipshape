@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Start dispatchers
 ./go_dispatcher &> /shipshape-output/shipshape.go_dispatcher.log &
+java -jar java_dispatcher.jar &> /shipshape-output/shipshape.java_dispatcher.log &
 java -jar javac_dispatcher.jar &> /shipshape-output/shipshape.javac_dispatcher.log &
+
+# Start main shipshape service
 if [ -z "$START_SERVICE" ]
 then
   echo 'Running shipping container in streaming mode' > /shipshape-output/shipshape.shipping_container.log

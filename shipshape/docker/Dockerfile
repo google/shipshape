@@ -37,10 +37,19 @@ ENV GOPATH /go
 ENV GOROOT /usr/local/go
 
 # Set up Shipshape
+ADD java_dispatcher_deploy.jar java_dispatcher.jar
 ADD javac_dispatcher_deploy.jar javac_dispatcher.jar
 ADD go_dispatcher /go_dispatcher
 ADD shipshape /shipshape
 ADD endpoint.sh /endpoint.sh
-EXPOSE 10005 10006 10007
+
+# Expose ports for dispatchers/analyzers
+# 10007 - shipshape service
+# Dispatcher ports exposed for testing
+# 10005 - go dispatcher
+# 10006 - javac dispatcher
+# 10008 - java dispatcher
+EXPOSE 10005 10006 10007 10008
+
 ENTRYPOINT ["/endpoint.sh"]
 

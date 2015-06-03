@@ -29,8 +29,9 @@ import com.google.shipshape.service.StatelessAnalyzer;
  */
 public class PostMessageAnalyzer extends StatelessAnalyzer {
 
-  public static final String CATEGORY = "Shipshape";
-  public static String POST_MESSAGE = "Hello World";
+  public static final String CATEGORY = "PostMessage";
+  public static String POST_MESSAGE =
+      "Shipshape analysis results are being produced from java analyzer at stage PRE_BUILD";
 
   @Override
   public String getCategory() {
