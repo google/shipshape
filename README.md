@@ -17,14 +17,17 @@ tool is located in third_party/buildtools.
 
 # Download, install, and run Shipshape #
 
+## OS Requiremenents ##
+The instructions below assume a recent APT-based Linux distribution, like
+Ubuntu (>=14.04) or Debian unstable. Shipshape should be usable on any Linux
+distro (though it hasn't been tested).
+
 ## Install Docker ##
-See if you have docker installed:
+To install Docker:
 
-`$ which docker`
+`$ wget -qO- https://get.docker.com/ | sh`
 
-If you don't have docker installed:
-
-`$ apt-get install docker.io`
+See [the Docker site](https://docs.docker.com/installation/) for more information.
 
 Make sure you can run docker without sudo by adding your user to the docker
 group (the group may need to be created):
@@ -51,23 +54,22 @@ Get help!
 
 # Building/running CLI entirely locally #
 
-## OS Requiremenents ##
-Requires Ubuntu >=14.04 or Debian unstable.
-
 ## Install dependencies ##
 
 You'll need the following developer tools:
 
-* [Docker](https://docs.docker.com/installation/#installation)
-* [Clang](http://llvm.org/releases/download.html)
-* [Flex](http://flex.sourceforge.net/)
 * [Bison](https://www.gnu.org/software/bison/)
+* [Clang](http://llvm.org/releases/download.html)
+* [Docker](https://docs.docker.com/installation/)
+* [Flex](http://flex.sourceforge.net/)
 * [Go](http://golang.org/doc/install)
 * [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
 
-To install all of them (JDK 8 only available this way for Ubuntu 14.10 or greater)
+See above for Docker installation. To install the others (on Ubuntu 14.10 or greater):
 
-`$ apt-get install bison clang flex golang lxc-docker openjdk-8-jdk`
+`$ apt-get install bison clang flex golang openjdk-8-jdk`
+
+On earlier versions of Ubuntu and Debian, you will need to install JDK 8 manually (the other packages should be available).
 
 To run the unit tests, you'll need Android `lint` (part of the
 [Android SDK](https://developer.android.com/sdk/index.html)) installed in your
