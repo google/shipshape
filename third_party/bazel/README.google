@@ -1,0 +1,12 @@
+URL: https://github.com/google/bazel
+Version: c4fe4ff1df7e13a5fa330fe5a6aac5aaba11ebb9
+License: Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
+License File: LICENSE
+
+Description: Correct, reproducible, and fast builds for everyone.
+
+Modifications:
+Only the needed subset of bazel tools directory has been imported.
+Added necessary license declarations to BUILD files.
+
+Remove tools/jdk/ijar binary and use a filegroup instead.
