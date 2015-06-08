@@ -225,10 +225,10 @@ create_second_test_repo() {
 analyze_test_repo() {
   if [[ "$USE_RELEASED_CLI" == true ]]; then
     info "Analyzing test repo using JSHint (with the released CLI) ..."
-    gsutil cp gs://shipshape-cli/shipshape /tmp/shipshape-cli
-    chmod a+x /tmp/shipshape-cli
-    /tmp/shipshape-cli --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
-    #/google/data/ro/teams/tricorder/shipshape --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
+    #gsutil cp gs://shipshape-cli/shipshape /tmp/shipshape-cli
+    #chmod a+x /tmp/shipshape-cli
+    #/tmp/shipshape-cli --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
+    /google/data/ro/teams/tricorder/shipshape --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   else
     info "Analyzing test repo using JSHint (with the locally built CLI) ..."
     "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
