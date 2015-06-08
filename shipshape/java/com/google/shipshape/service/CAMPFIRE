@@ -27,6 +27,43 @@
     }
   },
   {
+    "name": "java_dispatcher",
+    "kind": "java_binary",
+    "inputs": {
+      "srcs": [
+        "JavaService.java"
+      ],
+      "jars": [
+        ":api",
+        "//shipshape/java/com/google/shipshape/analyzers",
+        "//shipshape/java/com/google/shipshape/util/rpc:server",
+        "//shipshape/proto:shipshape_context_proto",
+        "//shipshape/proto:shipshape_rpc_proto",
+        "//third_party/guava",
+        "//third_party/jcommander",
+        "//third_party/jsr305_annotations:jsr305",
+        "//third_party/kythe/java/com/google/devtools/kythe/common",
+        "//third_party/openjdk/lib:tools_jar",
+        "//third_party/protobuf:protobuf_jar"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.shipshape.service.JavaService"
+    }
+  },
+  {
+    "name": "java_dispatcher_deploy",
+    "kind": "java_deploy_jar",
+    "inputs": {
+      "jars": [
+        ":java_dispatcher"
+      ]
+    },
+    "properties": {
+      "main_class": "com.google.shipshape.service.JavaService"
+    }
+  },
+  {
     "name": "javac_dispatcher",
     "kind": "java_binary",
     "inputs": {

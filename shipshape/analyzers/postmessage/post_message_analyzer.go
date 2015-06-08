@@ -33,7 +33,7 @@ func (p PostMessageAnalyzer) Category() string {
 func (p PostMessageAnalyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
 	note := &notepb.Note{
 		Category:    proto.String(p.Category()),
-		Description: proto.String("Shipshape analysis results are being produced"),
+		Description: proto.String("Shipshape analysis results are being produced from go dispatcher at stage PRE_BUILD"),
 		Location:    &notepb.Location{SourceContext: ctx.SourceContext},
 		Severity:    notepb.Note_OTHER.Enum(),
 	}

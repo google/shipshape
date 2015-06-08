@@ -36,7 +36,7 @@ import (
 var (
 	servicePort = flag.Int("port", 10007, "Service port")
 	// TODO(supertri): add a stringList flag option
-	analyzers    = flag.String("analyzer_services", "localhost:10005,localhost:10006", "Addresses of analyzer services (comma-separated)")
+	analyzers    = flag.String("analyzer_services", "localhost:10005,localhost:10006,localhost:10008", "Addresses of analyzer services (comma-separated)")
 	startService = flag.Bool("start_service", false, "Start a shipshape service, if false we use streams to handle requests (stdin/stdout)")
 )
 

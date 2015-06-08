@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc. All rights reserved.
+ * Copyright 2015 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import com.google.common.base.Throwables;
 import com.google.devtools.kythe.common.FormattingLogger;
 import com.google.shipshape.util.rpc.HttpServerFrontend;
 import com.google.shipshape.util.rpc.Server;
-import com.google.devtools.kythe.platform.java.JavaCompilationDetails;
-import com.google.shipshape.analyzers.ErrorProneAnalyzer;
+import com.google.shipshape.analyzers.PostMessageAnalyzer;
 import com.google.shipshape.proto.ShipshapeContextProto.Stage;
 
 import com.beust.jcommander.JCommander;
@@ -30,34 +29,27 @@ import com.beust.jcommander.Parameter;
 import java.util.ArrayList;
 
 /**
- * An analyzer service for analyzers that use javac.
- * This service uses a DetailsBuilder that creates a JavaCompilationDetails
- * for each compilation unit.
+ * An analyzer service for java analyzers not needing compilation details.
  */
-public class JavacService {
+class JavaService {
 
   @Parameter(names = "--port", description = "port for RPC server")
-  private int port = 10006;
+  private int port = 10008;
 
-  @Parameter(names = "--javac_out",
-      description = "whether to log the output from running javac. False will silence the compiler.")
-  private boolean javacOut = false;
-
-  private static FormattingLogger logger = FormattingLogger.getLogger(JavacService.class);
+  private static FormattingLogger logger = FormattingLogger.getLogger(JavaService.class);
 
   public static void main(String[] args) {
     try {
-      JavacService service = new JavacService();
+      JavaService service = new JavaService();
       new JCommander(service, args);
 
       ArrayList<Analyzer> analyzers = new ArrayList<>();
-      analyzers.add(new ErrorProneAnalyzer());
+      analyzers.add(new PostMessageAnalyzer());
 
       final Server server = new Server();
-      JavaDispatcher<JavaCompilationDetails> dispatcher =
-          new JavaDispatcher<>(analyzers, Stage.POST_BUILD, new JavacStateBuilder(service.javacOut));
+      JavaDispatcher<Object> dispatcher = new JavaDispatcher<>(analyzers, Stage.PRE_BUILD, null);
       dispatcher.register(server);
-      logger.infofmt("Starting javac service at %d", service.port);
+      logger.infofmt("Starting java service at %d", service.port);
       new HttpServerFrontend(server, service.port).run();
     } catch (Throwable t) {
       logger.severefmt(t, "Error starting service");
