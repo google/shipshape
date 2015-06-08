@@ -102,7 +102,7 @@ setup_logging() {
 #   None
 ##############################
 print_help() {
-  echo "USAGE: ./directory_test.sh --tag TAG" 1>&2
+  echo "USAGE: ./change_dir_test.sh [--tag TAG] [--released-cli]" 1>&2
 }
 
 ##############################
@@ -167,7 +167,7 @@ process_arguments() {
 build_local() {
   info 'Building shipshape ...'
   run "$CAMPFIRE" clean
-  run "$CAMPFIRE" build //shipshape/cli/...
+  run "$CAMPFIRE" build //shipshape/...
   for container in ${CONTAINERS[@]}; do
     info "Building and deploying $container locally ..."
     run "$CAMPFIRE" package --start_registry=false --docker_tag=$TAG $container
@@ -177,6 +177,35 @@ build_local() {
     IFS=' ' # reset global string separator
     run "docker tag -f $name:$TAG $REPO/$name:$TAG"
   done
+}
+
+#############################################
+# Copies Shipshape logs into test log
+# Globals:
+#   LOG_FILE
+# Arguments:
+#   Message header for included logs
+# Return:
+#   None
+#############################################
+copy_shipshape_logs() {
+  log_files=(
+    /tmp/shipshape.shipping_container.log
+    /tmp/shipshape.go_dispatcher.log
+  )
+  info "Copying Shipshape logs into test log ..."
+  echo "START[$1]:" >> $LOG_FILE
+  for log_file in ${log_files[@]}; do
+    echo "" >> $LOG_FILE
+    echo "LOG_FILE[$log_file]:" >> $LOG_FILE
+    if [ -e $log_file ]; then
+      cat $log_file >> $LOG_FILE
+    else
+      echo "log file does not exist" >> $LOG_FILE
+    fi
+  done
+  echo "" >> $LOG_FILE
+  echo "END[$1]" >> $LOG_FILE
 }
 
 #######################################
@@ -233,6 +262,8 @@ analyze_test_repo() {
     info "Analyzing test repo using JSHint (with the locally built CLI) ..."
     "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   fi
+  # Copying logs into LOG_FILE to not have them overwritten by the next CLI run
+  copy_shipshape_logs 'Logs from CLI run for JSHint'
 }
 
 ##############################################
