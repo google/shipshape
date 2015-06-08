@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2014 Google Inc. All rights reserved.
+# Copyright 2015 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ declare -xr CAMPFIRE_OUT="${BASE_DIR}/campfire-out"
 
 declare -xr FIRST_REPO='/tmp/shipshape-first-test-repo'
 declare -xr SECOND_REPO='/tmp/shipshape-second-test-repo'
-declare -xr LOG_FILE='directory_test.log'
+declare -xr LOG_FILE='change_dir_test.log'
 
 declare -xr CONVOY_URL='gcr.io'
 declare -xr REPO=$CONVOY_URL/shipshape_releases
