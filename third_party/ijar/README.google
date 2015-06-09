@@ -1,0 +1,11 @@
+URL: https://github.com/google/bazel/tree/5fe79331f9160ae8b37f907ddbaa5f080dfc8185/third_party/ijar
+Version: 5fe79331f9160ae8b37f907ddbaa5f080dfc8185
+License: Apache 2.0
+License File: LICENSE
+
+Description:
+ijar is a utility developed by Alan Donovan (adonovan@) which extracts interface
+classes from a jar file.
+
+Local Modifications:
+Removed test directory.
