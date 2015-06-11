@@ -50,7 +50,6 @@ exports.Target.prototype.asPath = function() {
     path = path.substring(2);
   }
   return path.replace(':', '/');
- };
 };
 
 exports.Target.prototype.getRoot = function(kind) {
