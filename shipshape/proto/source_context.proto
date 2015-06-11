@@ -5,7 +5,7 @@
 // NOTE: This should be kept in sync with the source API.
 // DO NOT MODIFY THIS FILE DIRECTLY, instead modify the source API first.
 //
-// TODO(supertri): How can we externalize and share this proto between projects?
+// TODO(supertri): How can we share this proto between projects?
 
 
 syntax = "proto2";
@@ -15,25 +15,36 @@ package source.v1;
 option java_outer_classname = "SourceContextProto";
 option java_package = "com.google.devtools.source.v1";
 
+
+// A SourceContext is a reference to a tree of files. A SourceContext together
+// with a path point to a unique revision of a single file or directory.
+// A SourceContext can refer to any one of the types of repositories below.
 message SourceContext {
+  // A SourceContext referring to a revision in a cloud repo.
   optional CloudRepoSourceContext cloud_repo = 1;
+  // A SourceContext referring to a snapshot in a cloud workspace.
   optional CloudWorkspaceSourceContext cloud_workspace = 2;
+  // A SourceContext referring to a Gerrit project.
   optional GerritSourceContext gerrit = 3;
 }
 
 // Selects a repo using a Google Cloud Platform project ID
 // (e.g. winged-cargo-31) and a repo name within that project.
 message ProjectRepoId {
+  // The ID of the project.
   optional string project_id = 1;
+  // The name of the repo. Leave empty for the default repo.
   optional string repo_name = 2;
 }
 
 // A unique identifier for a cloud repo.
+// A cloud repository can be identified by either its project ID and
+// repository name combination, or its globally unique identifier.
 message RepoId {
+  // A combination of a project ID and a repo name.
   optional ProjectRepoId project_repo_id = 1;
-
-  // A raw repo ID.
-  optional string repo_id = 2;
+  // A server-assigned, globally unique identifier.
+  optional string uid = 2;
 }
 
 // A CloudRepoSourceContext denotes a particular revision in a cloud
@@ -47,6 +58,8 @@ message CloudRepoSourceContext {
 }
 
 // A CloudWorkspaceId is a unique identifier for a cloud workspace.
+// A cloud workspace is a place associated with a repo where modified files
+// can be stored before they are committed.
 message CloudWorkspaceId {
   // The ID of the repo containing the workspace.
   optional RepoId repo_id = 1;
@@ -57,14 +70,30 @@ message CloudWorkspaceId {
 }
 
 // A CloudWorkspaceSourceContext denotes a workspace at a particular snapshot.
-// An empty snapshot_id refers to the most recent snapshot.
 message CloudWorkspaceSourceContext {
+  // The ID of the workspace.
   optional CloudWorkspaceId workspace_id = 1;
+  // The ID of the snapshot.
+  // An empty snapshot_id refers to the most recent snapshot.
   optional string snapshot_id = 2;
 }
 
+// A SourceContext referring to a Gerrit project.
 message GerritSourceContext {
-  optional string host = 1;
-  optional string project = 2;
-  optional string revision_id = 3;
+  // The URI of a running Gerrit instance.
+  string host_uri = 1;
+
+  // The full project name within the host. Projects may be nested, so
+  // "project/subproject" is a valid project name.
+  // The "repo name" is hostURI/project.
+  string gerrit_project = 2;
+
+  // A revision in a Gerrit project can be identified by either its revision ID
+  // or its alias name.
+  // A revision (commit) ID.
+  string revision_id = 3;
+
+  // The name of an alias (branch, tag, etc.).
+  string alias_name = 4;
 }
+
