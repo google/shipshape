@@ -1,6 +1,6 @@
-load("//tools/build_rules/go", "go_binary", "go_library")
+package(default_visibility = ["//visibility:public"])
 
-package(default_visibility = ["//shipshape:default_visibility"])
+load("//tools/build_rules/go", "go_binary", "go_library")
 
 # TODO split libraries into separate BUILD files once https://github.com/google/bazel/issues/118 is fixed
 licenses(["notice"])
@@ -82,4 +82,24 @@ go_library(
         "github.com/src/github.com/golang/protobuf/proto/text_parser.go",
     ],
     package = "github.com/golang/protobuf/proto",
+)
+
+go_library(
+    name = "go-yaml",
+    srcs = [
+        "gopkg.in/src/gopkg.in/yaml.v2/apic.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/decode.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/emitterc.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/encode.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/parserc.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/readerc.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/resolve.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/scannerc.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/sorter.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/writerc.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/yaml.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/yamlh.go",
+        "gopkg.in/src/gopkg.in/yaml.v2/yamlprivateh.go",
+    ],
+    package = "gopkg.in/yaml.v2",
 )

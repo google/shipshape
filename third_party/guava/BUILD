@@ -1,11 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["unencumbered"])  # Authored by Google, Apache 2.0
-
-filegroup(
-    name = "license",
-    srcs = ["LICENSE"],
-)
+licenses(["unencumbered"])  # Authored by Google, Apache 2.0/
 
 java_import(
     name = "guava",

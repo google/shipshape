@@ -153,7 +153,7 @@ def proto_library(name, src=None, deps=[], visibility=None,
     for dep in deps:
       go_deps += [dep+"_go"]
     if not go_package:
-      go_package = "kythe.io/" + PACKAGE_NAME + "/" + name
+      go_package = PACKAGE_NAME + "/" + name
     go_library(
         name  = name+"_go",
         srcs = [name+"_go_src"],

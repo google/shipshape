@@ -3,11 +3,11 @@ package(default_visibility = ["//shipshape:default_visibility"])
 load("//tools/build_rules/go", "go_library")
 
 go_library(
-    name = "stream",
+    name = "docker",
     srcs = [
-        "stream.go",
+        "docker.go",
     ],
     deps = [
-        "//shipshape/util/delimited:delimited",
+        "//third_party/go-glog:go-glog",
     ],
 )
