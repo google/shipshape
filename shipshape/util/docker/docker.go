@@ -109,7 +109,7 @@ func setupArgs(container string, portMap map[int]int, volumeMap map[string]strin
 
 // RunAnalyzer runs the analyzer image with container analyzerContainer. It runs it at port (mapped
 // to internal port 10005), and binds the volumes for the workspacePath and logsPath
-func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int) CommandResult {
+func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(analyzerContainer) == 0 {
@@ -123,6 +123,9 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 	args := []string{"run"}
 	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
+	if dind {
+		args = append(args, "--privileged")
+	}
 
 	glog.Infof("Running 'docker %v'\n", args)
 
@@ -136,7 +139,7 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 // RunService runs the shipshape service at image, as the container named container. It binds the
 // shipshape workspace and logs appropriately and starts with the third party analyzers already
 // running at analyzerContainers
-func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string) CommandResult {
+func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -154,6 +157,9 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	args := []string{"run"}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
 	args = append(args, "-d", image)
+	if dind {
+		args = append(args, "--privileged")
+	}
 
 	glog.Infof("Running 'docker %v'\n", args)
 
@@ -167,7 +173,7 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 // RunStreams runs the specified shipshape image in streams mode, as the container named container.
 // It binds the shipshape workspace and logs appropriately and starts with the third party analyzers
 // already running at analyzerContainers. It uses input as the stdin.
-func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte) CommandResult {
+func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -185,6 +191,9 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 	args := []string{"run"}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
+	if dind {
+		args = append(args, "--privileged")
+	}
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
@@ -198,7 +207,7 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 // source root and extractor specified.
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func RunKythe(image, container, sourcePath, extractor string) CommandResult {
+func RunKythe(image, container, sourcePath, extractor string, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -220,6 +229,9 @@ func RunKythe(image, container, sourcePath, extractor string) CommandResult {
 	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
 	args = append(args, "--extract", extractor)
+	if dind {
+		args = append(args, "--privileged")
+	}
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
