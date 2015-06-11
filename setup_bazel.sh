@@ -37,8 +37,8 @@ fi
 
 if [[ -z "$GO" ]]; then
   if [[ -z "$(which go)" ]]; then
-    echo 'You need to have go installed to build Kythe.'
-    echo 'Please see http://kythe.io/contributing for more information.'
+    echo 'You need to have go installed to build Shipshape.'
+    echo 'Please see CONTRIBUTING.md for more information.'
     exit 1
   fi
   if ! GO="$(realpath -s "$(which go)")"; then
@@ -53,11 +53,11 @@ ln ${LNOPTS} "$GO" tools/go/go
 # This must be the same C++ compiler used to build the LLVM source.
 if [[ -z "$CLANG" ]]; then
   if [[ -z "$(which clang)" ]]; then
-    echo 'You need to have clang installed to build Kythe.'
+    echo 'You need to have clang installed to build Shipshape.'
     echo 'Note: Some vendors install clang with a versioned name'
     echo '(like /usr/bin/clang-3.5). You can set the CLANG environment'
     echo 'variable to specify the full path to yours.'
-    echo 'Please see http://kythe.io/contributing for more information.'
+    echo 'Please see CONTRIBUTING.md for more information.'
     exit 1
   fi
   CLANG="$(realpath -s $(which clang))"

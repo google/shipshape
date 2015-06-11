@@ -1,7 +1,13 @@
-load("//tools/build_rules/go", "go_package")
-
 package(default_visibility = ["//shipshape:default_visibility"])
 
-go_package(
-    deps = ["//shipshape/util/rpc/client"],
+load("//tools/build_rules/go", "go_binary")
+
+go_binary(
+    name = "unwrap_results",
+    srcs = [
+        "unwrap_results.go",
+    ],
+    deps = [
+        "//shipshape/util/rpc/client:client",
+    ],
 )

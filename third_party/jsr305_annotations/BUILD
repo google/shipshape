@@ -3,8 +3,8 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 java_import(
-    name = "guava",
+    name = "jsr305",
     jars = [
-        "guava-16.0.1.jar",
+        "jsr305-2.0.3.jar",
     ],
 )

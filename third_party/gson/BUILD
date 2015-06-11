@@ -1,11 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["unencumbered"])  # Authored by Google, Apache 2.0
-
-filegroup(
-    name = "license",
-    srcs = ["LICENSE"],
-)
+licenses(["notice"])  # Apache 2.0
 
 java_import(
     name = "gson",
@@ -13,7 +8,6 @@ java_import(
         "gson-2.3-SNAPSHOT.jar",
     ],
 )
-
 java_import(
     name = "proto",
     jars = [
