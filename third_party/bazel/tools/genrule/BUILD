@@ -1,4 +1,4 @@
-licenses(["unencumbered"])  # Authored by Google, Apache 2.0
+licenses(["notice"])  # Apache 2.0
 
 exports_files(["genrule-setup.sh"])
 
