@@ -14,15 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script that sets up a test repo and then runs the Shipshape CLI
-# on that test repo.
+# Script that sets two test repos and then runs the Shipshape CLI
+# on those test repo.
 
 set -eu
 
 declare -xr TEST_DIR=$(realpath $(dirname "$0"))
 declare -xr BASE_DIR=$(realpath "${TEST_DIR}/../..")
-declare -xr CAMPFIRE="${BASE_DIR}/campfire"
-declare -xr CAMPFIRE_OUT="${BASE_DIR}/campfire-out"
+declare -xr SHIPSHAPE="${BASE_DIR}/bazel-bin/shipshape/cli/shipshape"
 
 declare -xr FIRST_REPO='/tmp/shipshape-first-test-repo'
 declare -xr SECOND_REPO='/tmp/shipshape-second-test-repo'
@@ -155,7 +154,6 @@ process_arguments() {
 ########################################
 # Builds and deploys containers locally
 # Globals:
-#   CAMPFIRE
 #   CONTAINERS
 #   TAG
 #   REPO
@@ -165,12 +163,9 @@ process_arguments() {
 #   None
 ########################################
 build_local() {
-  info 'Building shipshape ...'
-  run "$CAMPFIRE" clean
-  run "$CAMPFIRE" build //shipshape/...
   for container in ${CONTAINERS[@]}; do
     info "Building and deploying $container locally ..."
-    run "$CAMPFIRE" package --start_registry=false --docker_tag=$TAG $container
+    run bazel build $container
     IFS=':' # Temporarily set global string separator to split image names
     names=(${container[@]})
     name=${names[1]}
@@ -244,7 +239,7 @@ create_second_test_repo() {
 # Analyzes the test repo
 # Globals:
 #   LOG_FILE
-#   CAMPFIRE_OUT
+#   SHIPSHAPE
 #   TAG
 #   USE_RELEASED_CLI
 # Arguments:
@@ -260,7 +255,7 @@ analyze_test_repo() {
     /google/data/ro/teams/tricorder/shipshape --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   else
     info "Analyzing test repo using JSHint (with the locally built CLI) ..."
-    "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
+    "$SHIPSHAPE" --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   fi
   # Copying logs into LOG_FILE to not have them overwritten by the next CLI run
   copy_shipshape_logs 'Logs from CLI run for JSHint'

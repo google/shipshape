@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Runs the shipshape service along with a set of analyzer services in 
+# Runs the shipshape service along with a set of analyzer services in
 # different TMUX windows for easier local debugging.
 
 set -u # do not set -e; need to catch failures in each window
 
 TMUX_SESSION=shipshape
-SHIPSHAPE_BIN=../../campfire-out/bin/shipshape/service/shipshape
-GO_DISPATCHER_BIN=../../campfire-out/bin/shipshape/service/go_dispatcher
-JAVAC_DISPATCHER_BIN=../../campfire-out/bin/shipshape/java/com/google/shipshape/service/javac_dispatcher
+SHIPSHAPE_BIN=../../bazel-bin/shipshape/service/shipshape
+GO_DISPATCHER_BIN=../../bazel-bin/shipshape/service/go_dispatcher
+JAVAC_DISPATCHER_BIN=../../bazel-bin/shipshape/java/com/google/shipshape/service/javac_dispatcher
 
 function run_about () {
   cat <<-EOM

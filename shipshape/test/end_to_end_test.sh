@@ -171,7 +171,7 @@ build_local() {
     names=(${container[@]})
     name=${names[1]}
     IFS=' ' # reset global string separator
-    run "docker tag -f $name:$TAG $REPO/$name:$TAG"
+    docker tag -f $name:$TAG $REPO/$name:$TAG
   done
 }
 
@@ -240,7 +240,7 @@ copy_shipshape_logs() {
   info "Copying Shipshape logs into test log ..."
   echo "START[$1]:" >> $LOG_FILE
   for log_file in ${log_files[@]}; do
-    echo ""
+    echo "" >> $LOG_FILE
     echo "LOG_FILE[$log_file]:" >> $LOG_FILE
     if [ -e $log_file ]; then
       cat $log_file >> $LOG_FILE
@@ -248,7 +248,7 @@ copy_shipshape_logs() {
       echo "log file does not exist" >> $LOG_FILE
     fi
   done
-  echo ""
+  echo "" >> $LOG_FILE
   echo "END[$1]" >> $LOG_FILE
 }
 
@@ -256,7 +256,7 @@ copy_shipshape_logs() {
 # Analyzes the test repo
 # Globals:
 #   LOG_FILE
-#   BAZEL_OUT
+#   SHIPSHAPE
 #   TAG
 #   KYTHE_TEST
 #   LOCAL_WORKSPACE
@@ -295,13 +295,13 @@ check_findings() {
   local jshint=$(grep "\[JSHint\]" $LOG_FILE | wc -l)
   local postmessage=$(grep "\[PostMessage\]" $LOG_FILE | wc -l)
   local errorprone=$(grep "\[ErrorProne\]" $LOG_FILE | wc -l)
-  local androidlint=$(grep "\[AndroidLint:" $LOG_FILE | wc -l)
+  local androidlint=$(grep " \[AndroidLint:" $LOG_FILE | wc -l)
   local failure=$(grep "Failure" $LOG_FILE | wc -l)
   local status=0
   [[ $jshint == 8 ]] || error "Wrong number of JSHint results, expected 8, found $jshint"; status=1;
   [[ $postmessage == 2 ]] || error "Wrong number of PostMessage results, expected 2, found $postmessage"; status=1;
   [[ $errorprone == 2 ]] || error "Wrong number of ErrorProne results, expected 2, found $errorprone"; status=1;
-  [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 9, found $androidlint"; status=1;
+  [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 8, found $androidlint"; status=1;
   [[ $failure == 0 ]] || error "Some analyses failed; please check $LOG_FILE" ; status=1;
   if [[ $status -eq 0 ]]; then
     info "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
