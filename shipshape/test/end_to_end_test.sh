@@ -167,7 +167,7 @@ process_arguments() {
 build_local() {
   info 'Building shipshape ...'
   run "$CAMPFIRE" clean
-  run "$CAMPFIRE" build //shipshape/cli/...
+  run "$CAMPFIRE" build //shipshape/...
   for container in ${CONTAINERS[@]}; do
     info "Building and deploying $container locally ..."
     run "$CAMPFIRE" package --start_registry=false --docker_tag=$TAG $container
@@ -225,6 +225,38 @@ EOF
 }
 
 #############################################
+# Copies Shipshape logs into test log
+# Globals:
+#   LOG_FILE
+# Arguments:
+#   Message header for included logs
+# Return:
+#   None
+#############################################
+copy_shipshape_logs() {
+  log_files=(
+    /tmp/shipshape.shipping_container.log
+    /tmp/shipshape.go_dispatcher.log
+    /tmp/shipshape.java_dispatcher.log
+    /tmp/shipshape.javac_dispatcher.log
+    /tmp/shipshape.android_lint.log
+  )
+  info "Copying Shipshape logs into test log ..."
+  echo "START[$1]:" >> $LOG_FILE
+  for log_file in ${log_files[@]}; do
+    echo ""
+    echo "LOG_FILE[$log_file]:" >> $LOG_FILE
+    if [ -e $log_file ]; then
+      cat $log_file >> $LOG_FILE
+    else
+      echo "log file does not exist" >> $LOG_FILE
+    fi
+  done
+  echo ""
+  echo "END[$1]" >> $LOG_FILE
+}
+
+#############################################
 # Analyzes the test repo
 # Globals:
 #   LOG_FILE
@@ -239,12 +271,16 @@ analyze_test_repo() {
   # Run CLI over the new repo
   info "Analyzing test repo using PostMessage,JSHint,ErrorProne ..."
   "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+  # Copying logs into LOG_FILE to not have them overwritten by the next CLI run
+  copy_shipshape_logs 'Logs from first CLI run for PostMessage,JSHint,ErrorProne'
   # Run a second time for AndroidLint. We have to do this separately because
   # otherwise kythe will try to build all the java files, even the ones that maven
   # doesn't build.
   cp -r "$BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib" "$LOCAL_WORKSPACE/"
   info "Analyzing test repo using AndroidLint ..."
   "$CAMPFIRE_OUT/bin/shipshape/cli/shipshape" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+  # Copying logs again to LOG_FILE to have all logs in one place
+  copy_shipshape_logs 'Logs from second CLI run for AndroidLint'
 }
 
 ##############################################
