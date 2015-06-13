@@ -124,7 +124,7 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
 	if dind {
-		args = append(args, "--privileged")
+		args = append(args, "-privileged")
 	}
 
 	glog.Infof("Running 'docker %v'\n", args)
