@@ -38,5 +38,6 @@ go_test(
         "//shipshape/util/test:test",
         "//third_party/go:protobuf",
     ],
+    data = glob(["testdata/*.txt"]),
     library = ":wordcount",
 )
