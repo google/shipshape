@@ -61,7 +61,7 @@ func RunAnalyzer(ctx *ctxpb.ShipshapeContext, a Analyzer, t *testing.T) ([]*note
 	}
 
 	if err := os.Chdir(*ctx.RepoRoot); err != nil {
-		t.Fatalf("Could not change into test directory %s: %v", ctx.RepoRoot, err)
+		t.Fatalf("Could not change into test directory %s: %v", ctx.GetRepoRoot(), err)
 	}
 
 	defer os.Chdir(oDir)
