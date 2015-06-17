@@ -26,6 +26,8 @@ import (
 	notespb "shipshape/proto/note_proto"
 )
 
+const dataDir = "shipshape/analyzers/wordcount/testdata";
+
 func TestWordCount(t *testing.T) {
 	tests := []struct {
 		input string
@@ -57,7 +59,7 @@ func TestAnalyze(t *testing.T) {
 
 	var w WordCountAnalyzer
 	for _, pair := range tests {
-		ctx, err := test.CreateContext("shipshape/test_data/wordcount", []string{pair.file})
+		ctx, err := test.CreateContext(dataDir, []string{pair.file})
 		if err != nil {
 			t.Fatalf("error from CreateContext: %v", err)
 		}
@@ -86,7 +88,7 @@ func TestAnalyzeFailure(t *testing.T) {
 
 	var w WordCountAnalyzer
 	for _, input := range tests {
-		ctx, err := test.CreateContext("shipshape/test_data/wordcount", []string{input})
+		ctx, err := test.CreateContext(dataDir, []string{input})
 		if err != nil {
 			t.Errorf("error from CreateContext: %v", err)
 		}
