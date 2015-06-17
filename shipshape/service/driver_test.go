@@ -358,7 +358,7 @@ func TestFindCompilationUnitsGood(t *testing.T) {
 	}{
 		{
 			"valid_kindex",
-			[]string{"shipshape/test_data/driver/valid_kindex/#2b1a94f4695c38fd074cb80cb8a49c4951b8a12e773073e6dd180d3ffa3fbdfe.kindex"},
+			[]string{"shipshape/service/testdata/service_test/valid_kindex/2b1a94f4695c38fd074cb80cb8a49c4951b8a12e773073e6dd180d3ffa3fbdfe.kindex"},
 		},
 		{
 			"no_kindex",
@@ -367,7 +367,7 @@ func TestFindCompilationUnitsGood(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		out, err := findCompilationUnits(filepath.Join("shipshape/test_data/driver", test.dir))
+		out, err := findCompilationUnits(filepath.Join("shipshape/service/testdata/service_test", test.dir))
 
 		if err != nil {
 			t.Errorf("Received error from directory %s: %v", test.dir, err.Error())
@@ -393,7 +393,7 @@ func TestFindCompilationUnitsError(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		_, err := findCompilationUnits(filepath.Join("shipshape/test_data/driver", test))
+		_, err := findCompilationUnits(filepath.Join("shipshape/service/testdata/service_test", test))
 
 		if err == nil {
 			t.Errorf("Expected an error, but did not get one for directory %s", test)
