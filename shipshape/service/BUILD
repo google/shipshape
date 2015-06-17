@@ -85,5 +85,6 @@ go_test(
         "//shipshape/util/test:test",
         "//third_party/go:protobuf",
     ],
+    data = glob(["testdata/service_test/**/*"]),
     library = ":service",
 )
