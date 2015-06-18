@@ -215,7 +215,7 @@ func RunKythe(image, container, sourcePath, extractor string) CommandResult {
 	}
 
 	// TODO(ciera): Can we exclude files in the .shipshape ignore path?
-	// TODO(ciera): Can we use the same command for campfire extraction?
+	// TODO(ciera/emso): Can we use the same command for blaze extraction?
 	args := []string{"run"}
 	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)

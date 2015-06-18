@@ -22,19 +22,18 @@
 # ~/.m2/repository.
 
 # Build jars
-../../campfire clean
-../../campfire build //third_party/kythe/... //shipshape/...
+bazel build //...
 
 # The plugin needs protos from Shipshape:
-mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/shipshape_rpc_proto.jar -DgroupId=com.google.code -DartifactId=shipshape-rpc-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/shipshape_context_proto.jar -DgroupId=com.google.code -DartifactId=shipshape-context-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/source_context_proto.jar -DgroupId=com.google.code -DartifactId=shipshape-repo-context-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/note_proto.jar -DgroupId=com.google.code -DartifactId=shipshape-note-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/shipshape/proto/textrange_proto.jar -DgroupId=com.google.code -DartifactId=shipshape-textrange-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libshipshape_rpc_proto_java.jar -DgroupId=com.google.code -DartifactId=shipshape-rpc-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libshipshape_context_proto_java.jar -DgroupId=com.google.code -DartifactId=shipshape-context-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libsource_context_proto_java.jar -DgroupId=com.google.code -DartifactId=shipshape-repo-context-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libnote_proto_java.jar -DgroupId=com.google.code -DartifactId=shipshape-note-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libtextrange_proto_java.jar -DgroupId=com.google.code -DartifactId=shipshape-textrange-proto -Dversion=1.0 -Dpackaging=jar
 
 # And also some protos from kythe;
-mvn install:install-file -Dfile=../../campfire-out/bin/third_party/kythe/proto/analysis_proto.jar -DgroupId=com.google.code -DartifactId=kythe-analysis-proto -Dversion=1.0 -Dpackaging=jar
-mvn install:install-file -Dfile=../../campfire-out/bin/third_party/kythe/proto/storage_proto.jar -DgroupId=com.google.code -DartifactId=kythe-storage-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/third_party/kythe/proto/libanalysis_proto_java.jar -DgroupId=com.google.code -DartifactId=kythe-analysis-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/third_party/kythe/proto/libstorage_proto_java.jar -DgroupId=com.google.code -DartifactId=kythe-storage-proto -Dversion=1.0 -Dpackaging=jar
 
 # And also jars from third party:
 mvn install:install-file -Dfile=../../third_party/gson/gson-2.3-SNAPSHOT.jar -DgroupId=com.google.code -DartifactId=gson -Dversion=2.3 -Dpackaging=jar
