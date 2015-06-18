@@ -45,16 +45,16 @@ import (
 )
 
 var (
-	tag     = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
-	streams = flag.Bool("streams", false, "True if we should run in streams mode, false if we should run as a service.")
-
-	event          = flag.String("event", "manual", "The name of the event to use")
-	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
-	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
-	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
 	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
-	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
 	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
+	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
+	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
+	event          = flag.String("event", "manual", "The name of the event to use")
+	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
+	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
+	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
+	streams        = flag.Bool("streams", false, "True if we should run in streams mode, false if we should run as a service.")
+	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
 )
 
@@ -190,7 +190,7 @@ func main() {
 		}
 	}
 
-	containers, errs := startAnalyzers(absRoot, thirdPartyAnalyzers)
+	containers, errs := startAnalyzers(absRoot, thirdPartyAnalyzers, *dind)
 	for _, err := range errs {
 		glog.Errorf("Could not start up third party analyzer: %v", err)
 	}
@@ -205,14 +205,14 @@ func main() {
 			files = []string{file}
 		}
 		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
-		err = streamsAnalyze(image, absRoot, origDir, containers, req)
+		err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
 			return
 		}
 	} else {
 		relativeRoot := ""
-		c, relativeRoot, err = startShipshapeService(image, absRoot, containers)
+		c, relativeRoot, err = startShipshapeService(image, absRoot, containers, *dind)
 		if err != nil {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
 			return
@@ -240,7 +240,7 @@ func main() {
 		defer stop("kythe", 10*time.Second)
 		glog.Infof("Retrieving compilation units with %s", *build)
 
-		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, *build)
+		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, *build, *dind)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
@@ -257,7 +257,7 @@ func main() {
 				return
 			}
 		} else {
-			err = streamsAnalyze(image, absRoot, origDir, containers, req)
+			err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
 			if err != nil {
 				glog.Errorf("Error making stream call: %v", err)
 				return
@@ -276,7 +276,7 @@ func main() {
 // volume to the absRoot that we are analyzing, and any errors from attempting to run the service.
 // TODO(ciera): This *should* check the analyzers that are connected, but does not yet
 // do so.
-func startShipshapeService(image, absRoot string, analyzers []string) (*client.Client, string, error) {
+func startShipshapeService(image, absRoot string, analyzers []string, dind bool) (*client.Client, string, error) {
 	container := "shipping_container"
 	// subPath is the relatve path from the mapped volume on shipping container
 	// to the directory we are analyzing (absRoot)
@@ -289,7 +289,7 @@ func startShipshapeService(image, absRoot string, analyzers []string) (*client.C
 	if !docker.ImageMatches(image, container) || !isMapped || !docker.ContainsLinks(container, analyzers) {
 		glog.Infof("Restarting container with %s", image)
 		stop(container, 0)
-		result := docker.RunService(image, container, absRoot, localLogs, analyzers)
+		result := docker.RunService(image, container, absRoot, localLogs, analyzers, dind)
 		subPath = ""
 		printStreams(result)
 		if result.Err != nil {
@@ -320,7 +320,7 @@ func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir s
 	return nil
 }
 
-func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest) error {
+func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest, dind bool) error {
 	glog.Infof("Running image %s in stream mode", image)
 	reqBytes, err := proto.Marshal(req)
 	if err != nil {
@@ -328,7 +328,7 @@ func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []str
 	}
 
 	stop("shipping_container", 0)
-	result := docker.RunStreams(image, "shipping_container", absRoot, localLogs, analyzerContainers, reqBytes)
+	result := docker.RunStreams(image, "shipping_container", absRoot, localLogs, analyzerContainers, reqBytes, dind)
 	glog.Infoln(strings.TrimSpace(result.Stderr))
 
 	if result.Err != nil {
@@ -380,7 +380,7 @@ func pullAnalyzers(images []string) {
 	glog.Info("Analyzers pulled")
 }
 
-func startAnalyzers(sourceDir string, images []string) (containers []string, errs []error) {
+func startAnalyzers(sourceDir string, images []string, dind bool) (containers []string, errs []error) {
 	var wg sync.WaitGroup
 	for id, fullImage := range images {
 		wg.Add(1)
@@ -396,7 +396,7 @@ func startAnalyzers(sourceDir string, images []string) (containers []string, err
 				if result.Err != nil {
 					glog.Infof("Failed to stop %v (may not be running)", analyzerContainer)
 				}
-				result = docker.RunAnalyzer(fullImage, analyzerContainer, sourceDir, localLogs, port)
+				result = docker.RunAnalyzer(fullImage, analyzerContainer, sourceDir, localLogs, port, dind)
 				if result.Err != nil {
 					glog.Infof("Could not start %v at localhost:%d: %v, stderr: %v", fullImage, port, result.Err.Error(), result.Stderr)
 					errs = append(errs, result.Err)

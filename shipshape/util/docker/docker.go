@@ -108,8 +108,9 @@ func setupArgs(container string, portMap map[int]int, volumeMap map[string]strin
 }
 
 // RunAnalyzer runs the analyzer image with container analyzerContainer. It runs it at port (mapped
-// to internal port 10005), and binds the volumes for the workspacePath and logsPath
-func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int) CommandResult {
+// to internal port 10005), binds the volumes for the workspacePath and logsPath, and gives the privileged
+// if dind (docker-in-docker) is true.
+func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(analyzerContainer) == 0 {
@@ -121,6 +122,9 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 		logsPath:      shipshapeLogs,
 	}
 	args := []string{"run"}
+	if dind {
+		args = append(args, "--privileged")
+	}
 	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
 
@@ -134,9 +138,10 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 }
 
 // RunService runs the shipshape service at image, as the container named container. It binds the
-// shipshape workspace and logs appropriately and starts with the third party analyzers already
-// running at analyzerContainers
-func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string) CommandResult {
+// shipshape workspace and logs appropriately. It starts with the third-party analyzers already
+// running at analyzerContainers. The service is started with the privileged flag if dind (docker-in-docker)
+// is true.
+func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -152,6 +157,9 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	locations = append(locations, "localhost:10005", "localhost:10006", "localhost:10008")
 
 	args := []string{"run"}
+	if dind {
+		args = append(args, "--privileged")
+	}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
 	args = append(args, "-d", image)
 
@@ -165,9 +173,10 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 }
 
 // RunStreams runs the specified shipshape image in streams mode, as the container named container.
-// It binds the shipshape workspace and logs appropriately and starts with the third party analyzers
-// already running at analyzerContainers. It uses input as the stdin.
-func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte) CommandResult {
+// It binds the shipshape workspace and logs appropriately. It starts with the third-party analyzers
+// already running at analyzerContainers. It uses input as the stdin and gives the privileged flag id
+// dind (docker-in-docker) is true.
+func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -183,6 +192,9 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 	locations = append(locations, "localhost:10005", "localhost:10006")
 
 	args := []string{"run"}
+	if dind {
+		args = append(args, "--privileged")
+	}
 	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
 
@@ -195,10 +207,10 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 }
 
 // RunKythe runs the specified kythe docker image at the named container. It uses the
-// source root and extractor specified.
+// source root and extractor specified, and gives the privileged flag if dind (docker-in-docker) is true.
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
-func RunKythe(image, container, sourcePath, extractor string) CommandResult {
+func RunKythe(image, container, sourcePath, extractor string, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
 	if len(container) == 0 {
@@ -217,6 +229,9 @@ func RunKythe(image, container, sourcePath, extractor string) CommandResult {
 	// TODO(ciera): Can we exclude files in the .shipshape ignore path?
 	// TODO(ciera/emso): Can we use the same command for blaze extraction?
 	args := []string{"run"}
+	if dind {
+		args = append(args, "--privileged")
+	}
 	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
 	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
 	args = append(args, "--extract", extractor)
