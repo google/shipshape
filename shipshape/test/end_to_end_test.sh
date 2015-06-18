@@ -171,7 +171,7 @@ build_local() {
     names=(${container[@]})
     name=${names[1]}
     IFS=' ' # reset global string separator
-    docker tag -f $name:$TAG $REPO/$name:$TAG
+    run docker tag -f "$name:$TAG" "$REPO/$name:$TAG"
   done
 }
 
