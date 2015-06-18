@@ -121,11 +121,11 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 		logsPath:      shipshapeLogs,
 	}
 	args := []string{"run"}
+	if dind {
+		args = append(args, "--privileged")
+	}
 	args = append(args, setupArgs(analyzerContainer, map[int]int{port: 10005}, volumeMap, nil, nil)...)
 	args = append(args, "-d", image)
-	if dind {
-		args = append(args, "-privileged")
-	}
 
 	glog.Infof("Running 'docker %v'\n", args)
 
@@ -155,11 +155,11 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	locations = append(locations, "localhost:10005", "localhost:10006", "localhost:10008")
 
 	args := []string{"run"}
-	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
-	args = append(args, "-d", image)
 	if dind {
 		args = append(args, "--privileged")
 	}
+	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"START_SERVICE": "true", "ANALYZERS": strings.Join(locations, ",")})...)
+	args = append(args, "-d", image)
 
 	glog.Infof("Running 'docker %v'\n", args)
 
@@ -189,11 +189,11 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 	locations = append(locations, "localhost:10005", "localhost:10006")
 
 	args := []string{"run"}
-	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
-	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
 	if dind {
 		args = append(args, "--privileged")
 	}
+	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
+	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
@@ -226,12 +226,12 @@ func RunKythe(image, container, sourcePath, extractor string, dind bool) Command
 	// TODO(ciera): Can we exclude files in the .shipshape ignore path?
 	// TODO(ciera/emso): Can we use the same command for blaze extraction?
 	args := []string{"run"}
-	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
-	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
-	args = append(args, "--extract", extractor)
 	if dind {
 		args = append(args, "--privileged")
 	}
+	args = append(args, setupArgs(container, nil, volumeMap, nil, nil)...)
+	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
+	args = append(args, "--extract", extractor)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
