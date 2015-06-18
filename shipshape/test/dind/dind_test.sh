@@ -136,6 +136,7 @@ check_findings() {
 setup_logging
 
 run bazel build shipshape/test/dind/docker:dind-test
+# TODO(emso): find out why giving this command to run fails
 docker run --privileged shipshape_dind_test > $LOG_FILE 2>&1
 
 check_findings

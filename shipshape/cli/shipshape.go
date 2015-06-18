@@ -48,7 +48,7 @@ var (
 	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
 	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
 	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
-	dind           = flag.Bool("dind", false, "True if the CLI is run from inside a docker container")
+	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
 	event          = flag.String("event", "manual", "The name of the event to use")
 	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
 	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")

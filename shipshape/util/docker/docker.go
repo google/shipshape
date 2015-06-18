@@ -108,7 +108,8 @@ func setupArgs(container string, portMap map[int]int, volumeMap map[string]strin
 }
 
 // RunAnalyzer runs the analyzer image with container analyzerContainer. It runs it at port (mapped
-// to internal port 10005), and binds the volumes for the workspacePath and logsPath
+// to internal port 10005), binds the volumes for the workspacePath and logsPath, and gives the privileged
+// if dind (docker-in-docker) is true.
 func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port int, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
@@ -137,8 +138,9 @@ func RunAnalyzer(image, analyzerContainer, workspacePath, logsPath string, port 
 }
 
 // RunService runs the shipshape service at image, as the container named container. It binds the
-// shipshape workspace and logs appropriately and starts with the third party analyzers already
-// running at analyzerContainers
+// shipshape workspace and logs appropriately. It starts with the third-party analyzers already
+// running at analyzerContainers. The service is started with the privileged flag if dind (docker-in-docker)
+// is true.
 func RunService(image, container, workspacePath, logsPath string, analyzerContainers []string, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
@@ -171,8 +173,9 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 }
 
 // RunStreams runs the specified shipshape image in streams mode, as the container named container.
-// It binds the shipshape workspace and logs appropriately and starts with the third party analyzers
-// already running at analyzerContainers. It uses input as the stdin.
+// It binds the shipshape workspace and logs appropriately. It starts with the third-party analyzers
+// already running at analyzerContainers. It uses input as the stdin and gives the privileged flag id
+// dind (docker-in-docker) is true.
 func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte, dind bool) CommandResult {
 	stdout := bytes.NewBuffer(nil)
 	stderr := bytes.NewBuffer(nil)
@@ -204,7 +207,7 @@ func RunStreams(image, container, workspacePath, logsPath string, analyzerContai
 }
 
 // RunKythe runs the specified kythe docker image at the named container. It uses the
-// source root and extractor specified.
+// source root and extractor specified, and gives the privileged flag if dind (docker-in-docker) is true.
 // It returns stdout, stderr, and any errors from running.
 // This is a blocking call, and should be wrapped in a go routine for asynchonous use.
 func RunKythe(image, container, sourcePath, extractor string, dind bool) CommandResult {

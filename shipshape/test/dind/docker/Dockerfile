@@ -19,11 +19,7 @@ RUN apt-get update && apt-get upgrade -y  && \
    apt-get install -y  -qq --no-install-recommends
 
 # Add needed packages
-RUN apt-get install -y -qq --no-install-recommends \
-# SUDO
-  sudo \
-# ssh
-  ssh
+RUN apt-get install -y -qq --no-install-recommends
 
 # Install Go
 RUN curl -L -s http://golang.org/dl/go1.4.2.linux-amd64.tar.gz | tar -zx -C /usr/local

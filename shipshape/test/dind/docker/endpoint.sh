@@ -63,4 +63,4 @@ EOF
 
 create_test_repo
 
-./shipshape --categories='PostMessage' --stderrthreshold=INFO "$LOCAL_WORKSPACE"
+./shipshape --inside_docker --categories='PostMessage' --stderrthreshold=INFO "$LOCAL_WORKSPACE"
