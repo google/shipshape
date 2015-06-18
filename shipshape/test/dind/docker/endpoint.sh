@@ -17,7 +17,7 @@
 declare -xr LOCAL_WORKSPACE="/tmp/shipshape-tests"
 
 #######################################
-# Creates a test repository to analyze
+# Creates a test repository.
 # Globals:
 #   LOCAL_WORKSPACE
 # Arguments:
@@ -26,7 +26,7 @@ declare -xr LOCAL_WORKSPACE="/tmp/shipshape-tests"
 #   None
 #######################################
 create_test_repo() {
-  info "Creating test repo at $LOCAL_WORKSPACE"
+  echo "INFO: Creating test repo at $LOCAL_WORKSPACE"
   rm -r "$LOCAL_WORKSPACE" || true
   mkdir -p "$LOCAL_WORKSPACE"
   echo "this is not javascript" > "$LOCAL_WORKSPACE/test.js"
@@ -61,16 +61,6 @@ cat <<'EOF' >> $LOCAL_WORKSPACE/pom.xml
 EOF
 }
 
-
-
-# Start ssh
-/usr/sbin/sshd
-
 create_test_repo
 
-# Run shipshape
-sudo /shipshape --dind=true --categories='PostMessage' --stderrthreshold=INFO "$LOCAL_WORKSPACE"
-
-# Starting bash to end up in the container
-bash
-
+./shipshape --categories='PostMessage' --stderrthreshold=INFO "$LOCAL_WORKSPACE"

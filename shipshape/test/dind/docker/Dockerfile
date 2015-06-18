@@ -35,7 +35,7 @@ ENV GOROOT /usr/local/go
 ADD shipshape/test/dind/docker/endpoint.sh /endpoint.sh
 ADD shipshape/cli/shipshape /shipshape
 
-EXPOSE 10022
+ENV ONRUN ${ONRUN} "/endpoint.sh"
 
-ENTRYPOINT ["/endpoint.sh"]
+EXPOSE 10022
 
