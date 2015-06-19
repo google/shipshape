@@ -12,34 +12,24 @@ to analyze available on disk.
 
 The source code for Shipshape is located in the "shipshape" directory. Third-
 party libraries used by Shipshape are all in the "third_party" directory.
-Shipshape uses a build tool called "campfire"; the source code for this build
-tool is located in third_party/buildtools.
 
-# Download, install, and run Shipshape #
+# Download and Run ShipShape #
+Install dependencies, download and run Shipshape.
 
-## OS Requiremenents ##
-The instructions below assume a recent APT-based Linux distribution, like
-Ubuntu (>=14.04) or Debian unstable. Shipshape should be usable on any Linux
-distro (though it hasn't been tested).
+## System Requirements ##
+* Linux: tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
 
-## Install Docker ##
-To install Docker:
+## Dependencies ##
+Shipshape relies on the following external dependencies:
 
-`$ wget -qO- https://get.docker.com/ | sh`
+* [Docker](https://docs.docker.com/docker/userguide/)
+  Installations instructions: [ubuntu](https://docs.docker.com/installation/ubuntulinux), [debian](https://docs.docker.com/docker/installation/debian/). Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
+group and restarting docker:
 
-See [the Docker site](https://docs.docker.com/installation/) for more information.
+         $ sudo usermod -G docker $USER # Group may have to be created
+         $ sudo service docker.io restart
 
-Make sure you can run docker without sudo by adding your user to the docker
-group (the group may need to be created):
-
-`$ sudo usermod -G docker $USER`
-
-Restart the docker daemon:
-
-`$ sudo service docker.io restart`
-
-
-## Downloading and running the CLI ##
+## Download and Run ##
 
 Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
 
@@ -52,53 +42,71 @@ Get help!
 `./shipshape --help`
 
 
-# Building/running CLI entirely locally #
+# Run Shipshape from Source #
 
-## Install dependencies ##
+## System Requirements ##
+* Linux: tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
 
-You'll need the following developer tools:
+## Dependencies ##
+To build Shipshape you need the following tools:
 
+* [Bazel](http://bazel.io), follow these [installation
+  instructions](http://bazel.io/install.html).
 * [Bison](https://www.gnu.org/software/bison/)
 * [Clang](http://llvm.org/releases/download.html)
-* [Docker](https://docs.docker.com/installation/)
+* [Docker](https://docs.docker.com/docker/userguide), see above instructions.
 * [Flex](http://flex.sourceforge.net/)
 * [Go](http://golang.org/doc/install)
-* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
+* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html), install via 
 
-See above for Docker installation. To install the others (on Ubuntu 14.10 or greater):
+Install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 
 `$ apt-get install bison clang flex golang openjdk-8-jdk`
 
-On earlier versions of Ubuntu and Debian, you will need to install JDK 8 manually (the other packages should be available).
+On earlier versions of Ubuntu and Debian, you need to install JDK 8 manually (the other packages should be available).
 
-To run the unit tests, you'll need Android `lint` (part of the
-[Android SDK](https://developer.android.com/sdk/index.html)) installed in your
+To run tests for Shipshape you also need the following tool:
+
+* Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)) installed in your
 system `PATH`.
 
-Update `.campfire_settings` in the root directory to point to the correct tools paths, if necessary.
+## Building ##
 
-## Building/running the CLI from source with local docker images ##
+`$ ./setup-bazel.sh  # Run initial Shipshape+Bazel setup`
+`$ bazel build //...   # Build all Shipshape source`
 
-`$ ./test/end_to_end_test.sh local`
+## Running ##
 
-This will build the shipshape CLI and all docker containers used locally, and
-also run them once on test input. To rerun the CLI on your code with the locally
-built docker images:
+Bazel puts the Shipshape CLI binary in the bazel-bin directory. You can run it
+on you directory:
 
 ```
-$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" \
-      --tag=local <Directory>
+$ ./bazel-bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>
 ```
 
-## Building/running CLI with prod docker images ##
+### Run with Local Docker Images ###
 
-To build shipshape:
+The Shipshape CLI uses released docker images for Shipshape by default. If you
+pass the `--tag local` to the CLI it will use locally built images instead.
 
-`$ ./campfire build shipshape/...`
+To build and store docker images locally, run:
 
-To run the shipshape CLI:
+`bazel build //shipshape/docker:service`
+`bazel build //shipshape/androidlint_analyzer/docker:android_lint`
 
-`$ ./campfire-out/bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>`
+To run with local images:
+
+`$ ./shipshape/test/end_to_end_test.sh --tag local`
+
+## Testing ##
+
+For unit tests, run:
+
+`$ bazel test //...`
+
+For the end-to-end test, run:
+
+`$ ./shipshape/test/end-to-end.sh --tag local`
 
 
 # Running the Jenkins plugin #
@@ -171,17 +179,17 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
 
 **docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
 
-You can build and test the android lint analyzer by running (in root of repo):
-```
-$ ./campfire build //shipshape/androidlint_analyzer/androidlint/...
-$ ./campfire test //shipshape/androidlint_analyzer/androidlint/...
-```
-
-You can try building the android lint docker image by running (in root of repo):
+To build and test the android lint analyzer, run:
 
 ```
-$ ./campfire package --start_registry=false --docker_tag=local \
-    //shipshape/androidlint_analyzer/docker:android_lint
+$ bazel build //shipshape/androidlint_analyzer/androidlint/...
+$ bazel test //shipshape/androidlint_analyzer/androidlint/...
+```
+
+To build the android lint docker image, run:
+
+```
+$ bazel build //shipshape/androidlint_analyzer/docker:android_lint
 ```
 
 Once you have built an image, verify that it shows up in your list of docker images:
@@ -191,6 +199,6 @@ Once you have built an image, verify that it shows up in your list of docker ima
 Now, you can run the shipshape CLI with your analyzer added by passing in via the analyzer_images flag:
 
 ```
-$ ./campfire-out/bin/shipshape/cli/shipshape --categories="AndroidLint" \
+$ ./bazel-bin/shipshape/cli/shipshape --categories="AndroidLint" \
     --analyzer_images=android_lint:local --tag=local <Directory>
 ```
