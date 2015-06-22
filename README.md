@@ -23,10 +23,13 @@ Install dependencies, download and run Shipshape.
 Shipshape relies on the following external dependencies:
 
 * [Docker](https://docs.docker.com/docker/userguide/)
-  Installations instructions: [ubuntu](https://docs.docker.com/installation/ubuntulinux), [debian](https://docs.docker.com/docker/installation/debian/). Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
+  
+  Installation instructions: [ubuntu](https://docs.docker.com/installation/ubuntulinux), [debian](https://docs.docker.com/docker/installation/debian/).
+  
+  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
 group and restarting docker:
 
-         $ sudo usermod -G docker $USER # Group may have to be created
+         $ sudo usermod -G docker $USER    # Group may have to be created
          $ sudo service docker.io restart
 
 ## Download and Run ##
@@ -35,11 +38,15 @@ Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
 
 Run it!
 
-`./shipshape --categories="go vet,JSHint,PyLint" <Directory>`
+```
+$ ./shipshape --categories="go vet,JSHint,PyLint" <Directory>
+```
 
 Get help!
 
-`./shipshape --help`
+```
+$ ./shipshape --help
+```
 
 
 # Run Shipshape from Source #
@@ -57,23 +64,25 @@ To build Shipshape you need the following tools:
 * [Docker](https://docs.docker.com/docker/userguide), see above instructions.
 * [Flex](http://flex.sourceforge.net/)
 * [Go](http://golang.org/doc/install)
-* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html), install via 
+* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
 
 Install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 
-`$ apt-get install bison clang flex golang openjdk-8-jdk`
-
-On earlier versions of Ubuntu and Debian, you need to install JDK 8 manually (the other packages should be available).
+```
+$ apt-get install bison clang flex golang openjdk-8-jdk
+```
 
 To run tests for Shipshape you also need the following tool:
 
-* Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)) installed in your
+* Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)), install in your
 system `PATH`.
 
 ## Building ##
 
-`$ ./setup-bazel.sh  # Run initial Shipshape+Bazel setup`
-`$ bazel build //...   # Build all Shipshape source`
+```
+$ ./setup-bazel.sh   # Run initial Shipshape+Bazel setup
+$ bazel build //...  # Build all Shipshape source
+```
 
 ## Running ##
 
@@ -87,34 +96,41 @@ $ ./bazel-bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Direc
 ### Run with Local Docker Images ###
 
 The Shipshape CLI uses released docker images for Shipshape by default. If you
-pass the `--tag local` to the CLI it will use locally built images instead.
+pass `--tag local` to the CLI it will use locally built images instead.
 
 To build and store docker images locally, run:
 
-`bazel build //shipshape/docker:service`
-`bazel build //shipshape/androidlint_analyzer/docker:android_lint`
+```
+$ bazel build //shipshape/docker:service
+$ bazel build //shipshape/androidlint_analyzer/docker:android_lint
+```
 
 To run with local images:
 
-`$ ./shipshape/test/end_to_end_test.sh --tag local`
+```
+$ ./shipshape/test/end_to_end_test.sh --tag local
+```
 
 ## Testing ##
 
 For unit tests, run:
 
-`$ bazel test //...`
+```
+$ bazel test //...
+```
 
 For the end-to-end test, run:
 
-`$ ./shipshape/test/end-to-end.sh --tag local`
+```
+$ ./shipshape/test/end-to-end.sh --tag local
+```
+
+# Running the Jenkins Plugin #
+
+Instructions are located in `shipshape/jenkins_plugin/README.md`.
 
 
-# Running the Jenkins plugin #
-
-Instructions are located in shipshape/jenkins_plugin/README.md
-
-
-# Package structure of shipshape #
+# Package Structure of Shipshape #
 
 **analyzers** -- implementation for several simple analyzers run by the
   go_dispatcher. The canonical simplest analyzer is in analyzers/postmessage
@@ -156,7 +172,7 @@ Instructions are located in shipshape/jenkins_plugin/README.md
   slices, execing docker commands, or writing tests
 
 
-# Writing an analyzer #
+# Writing an Analyzer #
 
 To write a new analyzer service, you can use the androidlint_analyzer as an example.
 
@@ -194,9 +210,12 @@ $ bazel build //shipshape/androidlint_analyzer/docker:android_lint
 
 Once you have built an image, verify that it shows up in your list of docker images:
 
-`$ docker images`
+```
+$ docker images
+```
 
-Now, you can run the shipshape CLI with your analyzer added by passing in via the analyzer_images flag:
+Now, you can run the shipshape CLI with your analyzer added by passing in its category
+name via the `--analyzer_images` flag:
 
 ```
 $ ./bazel-bin/shipshape/cli/shipshape --categories="AndroidLint" \
