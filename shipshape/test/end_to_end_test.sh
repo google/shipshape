@@ -171,7 +171,8 @@ build_local() {
     names=(${container[@]})
     name=${names[1]}
     IFS=' ' # reset global string separator
-    run docker tag -f "$name:$TAG" "$REPO/$name:$TAG"
+    # TODO(emso): Why does this not work with the run function
+    docker tag -f "$name:$TAG" "$REPO/$name:$TAG"
   done
 }
 
