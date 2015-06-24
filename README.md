@@ -122,7 +122,7 @@ $ bazel test //...
 For the end-to-end test, run:
 
 ```
-$ ./shipshape/test/end-to-end.sh --tag local
+$ ./shipshape/test/end_to_end_test.sh --tag local
 ```
 
 # Running the Jenkins Plugin #
