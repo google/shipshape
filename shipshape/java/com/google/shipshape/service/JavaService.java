@@ -16,7 +16,6 @@
 
 package com.google.shipshape.service;
 
-import com.google.common.base.Throwables;
 import com.google.devtools.kythe.common.FormattingLogger;
 import com.google.shipshape.util.rpc.HttpServerFrontend;
 import com.google.shipshape.util.rpc.Server;
