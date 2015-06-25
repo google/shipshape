@@ -17,11 +17,7 @@ MANIFEST-*
 *.deb
 
 # Build artifacts
-/.campfire_lock
-/.campfire_state
-/campfire-out
 /doxygen-out
-*.ninja*
 /bazel-*
 
 # Misc
