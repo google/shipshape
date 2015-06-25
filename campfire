@@ -1,3 +1,0 @@
-#!/bin/sh
-DIR=$(dirname $0)
-${DIR}/third_party/node/bin/node ${DIR}/third_party/buildtools/main "$@"

@@ -33,9 +33,9 @@ grep -lR //kythe third_party/kythe | grep CAMPFIRE | xargs sed -i 's#//kythe/#//
 sed -ri "s/Version: .+/Version: $COMMIT/" third_party/kythe/README.google
 sed -ri "s#/kythe/tree/.+#/kythe/tree/$COMMIT#" third_party/kythe/README.google
 
-# Clean up CAMPFIRE files
-./campfire camper third_party/kythe
+# Clean up
+bazel clean //third_party/kythe
 
 # Check that everything still builds
-./campfire build third_party/kythe/...
-./campfire build ...
+bazel build //third_party/kythe/...
+bazel build ...

@@ -1,6 +1,6 @@
 global:
   ignore:
-    - campfire-out/
+    - bazel-out/
     - third_party/
     - shipshape/analyzers/govet/testdata/
 
