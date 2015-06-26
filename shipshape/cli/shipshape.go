@@ -119,6 +119,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
 }
 
 func main() {
+	glog.Infof("Starting shipshape...")
 	flag.Parse()
 
 	// Get the directory to analyze.
@@ -277,6 +278,7 @@ func main() {
 // TODO(ciera): This *should* check the analyzers that are connected, but does not yet
 // do so.
 func startShipshapeService(image, absRoot string, analyzers []string, dind bool) (*client.Client, string, error) {
+	glog.Infof("Starting shipshape...")
 	container := "shipping_container"
 	// subPath is the relatve path from the mapped volume on shipping container
 	// to the directory we are analyzing (absRoot)
@@ -421,7 +423,7 @@ func printStreams(result docker.CommandResult) {
 		glog.Infof("stdout:\n%s\n", strings.TrimSpace(result.Stdout))
 	}
 	if len(err) > 0 {
-		glog.Infof("stderr:\n%s\n", strings.TrimSpace(result.Stderr))
+		glog.Errorf("stderr:\n%s\n", strings.TrimSpace(result.Stderr))
 	}
 }
 
