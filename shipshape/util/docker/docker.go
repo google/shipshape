@@ -297,7 +297,7 @@ func ImageMatches(image, container string) bool {
 // of the shipshape service running at container. If it is, it returns the relative path
 // of path within the mapped volume.
 func MappedVolume(path, container string) (bool, string) {
-	// Why this big ugly mess you ask? Because we can't us a go template to index
+	// Why this big ugly mess you ask? Because we can't use a go template to index
 	// like this: .Volumes./shipshape-workspace because go templates only allow
 	// alphanumeric identifiers. So instead, we do this.
 	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
