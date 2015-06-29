@@ -14,6 +14,7 @@ before_install:
   - export PATH=${PATH}:${PWD}/android-sdk-linux/tools:${PWD}/android-sdk-linux/platform-tools
   - ./download_bazel.sh ${PWD}
   - export PATH=${PATH}:${PWD}/bazel/output
+  - ./setup_bazel.sh
   - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
   - echo "y" | android update sdk --no-ui --filter platform-tools,tools
 script:
