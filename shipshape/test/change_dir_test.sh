@@ -23,8 +23,8 @@ declare -xr TEST_DIR=$(realpath $(dirname "$0"))
 declare -xr BASE_DIR=$(realpath "${TEST_DIR}/../..")
 declare -xr SHIPSHAPE="${BASE_DIR}/bazel-bin/shipshape/cli/shipshape"
 
-declare -xr FIRST_REPO='/tmp/shipshape-first-test-repo'
-declare -xr SECOND_REPO='/tmp/shipshape-second-test-repo'
+declare -xr FIRST_REPO='/tmp/shipshape1'
+declare -xr SECOND_REPO='/tmp/shipshape2'
 declare -xr LOG_FILE='change_dir_test.log'
 
 declare -xr CONVOY_URL='gcr.io'
@@ -254,6 +254,7 @@ analyze_test_repo() {
     #/tmp/shipshape-cli --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
     /google/data/ro/teams/tricorder/shipshape --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   else
+    run bazel build //...
     info "Analyzing test repo using JSHint (with the locally built CLI) ..."
     "$SHIPSHAPE" --tag=$TAG --categories='JSHint' --stderrthreshold=INFO "$1" >> $LOG_FILE 2>&1
   fi
