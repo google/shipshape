@@ -191,8 +191,7 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
 
 **docker/Dockerfile,endpoint.sh** -- Dockerfile and shell script need to build a docker
   image containing this analyzer. All dependencies needed to run the analyzer should
-  be pulled down in the Dockerfile. The container is expected to run a service
-  on port 10005.
+  be pulled down in the Dockerfile and the image must run a service on port 10005.
 
 **docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
 
