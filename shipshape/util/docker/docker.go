@@ -297,15 +297,22 @@ func ImageMatches(image, container string) bool {
 // of the shipshape service running at container. If it is, it returns the relative path
 // of path within the mapped volume.
 func MappedVolume(path, container string) (bool, string) {
-	// Why this big ugly mess you ask? Because we can't us a go tempate to index
+	// Why this big ugly mess you ask? Because we can't use a go template to index
 	// like this: .Volumes./shipshape-workspace because go templates only allow
-	// alphanumeric identifiers. So instead, we so this.
+	// alphanumeric identifiers. So instead, we do this.
 	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
 	if err != nil {
 		return false, ""
 	}
 	volume := strings.TrimSpace(string(v))
-	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
+	// Handle the equal case
+	if path == volume {
+		return true, ""
+	}
+	// Handle the subdirectory case by adding a trailing '/'
+	// Want to rule out the case: volume='/a/b2' and path='/a/b'
+	path += "/"
+	return strings.HasPrefix(volume, path), strings.TrimPrefix(path, volume)
 }
 
 // ContainsLinks returns whether the given container has links to the given
