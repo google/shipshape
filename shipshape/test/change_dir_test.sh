@@ -23,7 +23,7 @@ declare -xr TEST_DIR=$(realpath $(dirname "$0"))
 declare -xr BASE_DIR=$(realpath "${TEST_DIR}/../..")
 declare -xr SHIPSHAPE="${BASE_DIR}/bazel-bin/shipshape/cli/shipshape"
 
-declare -xr FIRST_REPO='/tmp/shipshape1'
+declare -xr FIRST_REPO='/tmp/shipshape'
 declare -xr SECOND_REPO='/tmp/shipshape2'
 declare -xr LOG_FILE='change_dir_test.log'
 
