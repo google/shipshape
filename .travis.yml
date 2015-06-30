@@ -5,13 +5,11 @@ compiler:
   - clang
 jdk:
   - oraclejdk8
+go:
+  - 1.4
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y realpath
-  - wget https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz
-  - tar zxf go1.4.2.linux-amd64.tar.gz
-  - export PATH=${PATH}:${PWD}/go/bin
-  - export GOROOT=${PWD}/go
   - jdk_switcher use oraclejdk8
   - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
   - tar xvf android-sdk_r23-linux.tgz
