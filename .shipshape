@@ -1,6 +1,10 @@
 global:
   ignore:
     - bazel-out/
+    - bazel-bin/
+    - bazel-genfiles/
+    - bazel-shipshape/
+    - bazel-testlogs/
     - third_party/
     - shipshape/analyzers/govet/testdata/
 
