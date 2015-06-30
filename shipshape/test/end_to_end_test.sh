@@ -166,12 +166,9 @@ process_arguments() {
 build_local() {
   for container in ${CONTAINERS[@]}; do
     info "Building and deploying $container locally ..."
-    run bazel build $container
-    IFS=':' # Temporarily set global string separator to split image names
-    names=(${container[@]})
-    name=${names[1]}
-    IFS=' ' # reset global string separator
-    run docker tag -f "$REPO/$name:latest" "$name:$TAG"
+    bazel build $container
+    name="${container##*:}"
+    docker tag -f "$REPO/$name:latest" "$REPO/$name:$TAG"
   done
 }
 
