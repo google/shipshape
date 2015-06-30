@@ -58,7 +58,7 @@ $ ./shipshape --help
 To build Shipshape you need the following tools:
 
 * [Bazel](http://bazel.io), follow these [installation
-  instructions](http://bazel.io/install.html).
+  instructions](http://bazel.io/docs/install.html).
 * [Bison](https://www.gnu.org/software/bison/)
 * [Clang](http://llvm.org/releases/download.html)
 * [Docker](https://docs.docker.com/docker/userguide), see above instructions.
@@ -69,7 +69,7 @@ To build Shipshape you need the following tools:
 Install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 
 ```
-$ apt-get install bison clang flex golang openjdk-8-jdk
+$ sudo apt-get install bison clang flex golang openjdk-8-jdk
 ```
 
 To run tests for Shipshape you also need the following tool:
