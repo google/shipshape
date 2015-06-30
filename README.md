@@ -69,7 +69,7 @@ To build Shipshape you need the following tools:
 Install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 
 ```
-$ sudo apt-get install bison clang flex golang openjdk-8-jdk
+$ sudo apt-get install bison clang flex golang openjdk-8-jdk openjdk-8-source
 ```
 
 To run tests for Shipshape you also need the following tool:
