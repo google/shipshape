@@ -21,7 +21,7 @@ To build and then install the google analysis plugin follow the below steps.
     `$ ./build-plugin.sh`
 
  This will generated a .hpi file under the target directory in the root
- plugin directory.
+ plugin directory (`target/google-analysis-plugin.hpi`).
 
 2. Install the plugin in Jenkins.
 
