@@ -34,6 +34,7 @@ mvn install:install-file -Dfile=../../bazel-bin/shipshape/proto/libtextrange_pro
 # And also some protos from kythe;
 mvn install:install-file -Dfile=../../bazel-bin/third_party/kythe/proto/libanalysis_proto_java.jar -DgroupId=com.google.code -DartifactId=kythe-analysis-proto -Dversion=1.0 -Dpackaging=jar
 mvn install:install-file -Dfile=../../bazel-bin/third_party/kythe/proto/libstorage_proto_java.jar -DgroupId=com.google.code -DartifactId=kythe-storage-proto -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=../../bazel-bin/third_party/kythe/proto/libany_proto_java.jar -DgroupId=com.google.code -DartifactId=kythe-any-proto -Dversion=1.0 -Dpackaging=jar
 
 # And also jars from third party:
 mvn install:install-file -Dfile=../../third_party/gson/gson-2.3-SNAPSHOT.jar -DgroupId=com.google.code -DartifactId=gson -Dversion=2.3 -Dpackaging=jar
