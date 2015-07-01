@@ -3,6 +3,12 @@
 
 To build and then install the google analysis plugin follow the below steps.
 
+0. Get dependencies.
+
+ You need Maven installed to build the Jenkins plugin.
+
+    `$ sudo apt-get install maven`
+
 1. Build the plugin.
 
  The plugin needs jar files from kythe and shipshape to build.
@@ -12,7 +18,7 @@ To build and then install the google analysis plugin follow the below steps.
 
  To build the plugin you run:
 
-    `$ ./build_plugin.sh`
+    `$ ./build-plugin.sh`
 
  This will generated a .hpi file under the target directory in the root
  plugin directory.
