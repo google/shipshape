@@ -37,8 +37,8 @@ To build and then install the google analysis plugin follow the below steps.
 
 3. Invoke the plugin in you project build.
 
- To invoke the plugin add it as a build step in the configuration of a build of
- your project.
+ To invoke the plugin add it as a post build step in the configuration of a
+ build of your project.
 
  That is, in your project, select 'Configure' and add a 'Post Build' step in
  the 'Build' section. Select Shipshape from the list; the default configuration
