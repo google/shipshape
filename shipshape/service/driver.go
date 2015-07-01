@@ -246,6 +246,10 @@ func collectAllFiles(root string) ([]string, error) {
 		if f == nil {
 			return nil
 		}
+		// Skip symlinks.
+		if f.Mode() & os.ModeSymlink != 0 {
+			return nil
+		}
 		// Skip directories starting with "."
 		dot := strings.HasPrefix(f.Name(), ".")
 		if f.IsDir() && dot {
