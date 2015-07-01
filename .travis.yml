@@ -10,6 +10,8 @@ go:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y realpath
+  - go env
+  - echo ${GOROOT}
   - jdk_switcher use oraclejdk8
   - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
   - tar xvf android-sdk_r23-linux.tgz
