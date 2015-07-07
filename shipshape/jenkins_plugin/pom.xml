@@ -5,7 +5,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.521</version>
+    <version>1.619</version>
   </parent>
 
   <groupId>com.google.jenkins.plugins.analysis</groupId>

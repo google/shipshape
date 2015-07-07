@@ -18,10 +18,6 @@ java_library(
     name = "shipshape",
     srcs = [
         "AnalysisRunner.java",
-        "ShipshapeException.java",
-        "ShipshapeSlave.java",
-        "ShipshapeStreamLogger.java",
-        "StreamBufferHandler.java",
     ],
     deps = [
         "//shipshape/java/com/google/shipshape/util/rpc:client",
