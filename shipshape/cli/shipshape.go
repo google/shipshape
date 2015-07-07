@@ -429,10 +429,11 @@ func printStreams(result docker.CommandResult) {
 
 func getContainerAndAddress(fullImage string, id int) (analyzerContainer string, port int) {
 	end := strings.LastIndex(fullImage, ":")
-	if end == -1 {
+	slash := strings.LastIndex(fullImage, "/")
+	if end == -1 || end < slash {
 		end = len(fullImage)
 	}
-	image := fullImage[strings.LastIndex(fullImage, "/")+1 : end]
+	image := fullImage[slash+1 : end]
 	port = 10010 + id
 	analyzerContainer = fmt.Sprintf("%s_%d", image, id)
 	return analyzerContainer, port
