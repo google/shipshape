@@ -47,5 +47,18 @@ You can install a plugin with the [Jenkins CLI][1]:
         && java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin \
         ../../jenkins_plugin/target/google-analysis-plugin.hpi -restart
 
+## Local Docker Registry
+
+Running a local docker registry to host private analyzer images can be done
+using these commands:
+
+    $ docker run -d -p 5000:5000 --restart=always --name registry registry:2
+    $ docker run --privileged --net=host joqvist/jenkins
+
+The new option `--net=host` tells Docker to use the host network stack. This way
+your local docker registry can be used in the docker image URI for your
+analyzer: `localhost:5000/youranalyzer_image:latest`. When using `--net=host` it
+is redundant to specify port bindings since the container will have access to
+all the host ports.
 
 [1]: https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI
