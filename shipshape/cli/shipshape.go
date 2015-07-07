@@ -428,11 +428,18 @@ func printStreams(result docker.CommandResult) {
 }
 
 func getContainerAndAddress(fullImage string, id int) (analyzerContainer string, port int) {
+	// A docker image URI (location:port/path:tag) can have a host part
+	// with a port number and a path part with a tag.  Both tag and port
+	// are separated by colon, so we need to find out if the last colon is
+	// the one that separates the tag from the path, or the port in the
+	// location.
 	end := strings.LastIndex(fullImage, ":")
-	if end == -1 {
+	slash := strings.LastIndex(fullImage, "/")
+	if end == -1 || end < slash {
+		// No colon, or last colon is part of the location.
 		end = len(fullImage)
 	}
-	image := fullImage[strings.LastIndex(fullImage, "/")+1 : end]
+	image := fullImage[slash+1 : end]
 	port = 10010 + id
 	analyzerContainer = fmt.Sprintf("%s_%d", image, id)
 	return analyzerContainer, port
