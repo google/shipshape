@@ -27,13 +27,15 @@
 		<f:textbox default="" />
 	</f:entry>
 
-	<f:entry title="${%Verbose mode}" field="verbose">
-		<f:checkbox default="false"/>
-	</f:entry>
+	<f:advanced>
+		<f:entry title="${%Verbose mode}" field="verbose">
+			<f:checkbox default="false"/>
+		</f:entry>
 
-	<f:entry title="${%Docker socket}" field="socket">
-		<f:textbox default="unix:///var/run/docker.sock" />
-	</f:entry>
+		<f:entry title="${%Docker socket}" field="socket">
+			<f:textbox default="unix:///var/run/docker.sock" />
+		</f:entry>
+	</f:advanced>
 
 </j:jelly>
 
