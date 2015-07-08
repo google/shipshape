@@ -16,8 +16,8 @@ before_install:
   - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
   - tar xvf android-sdk_r23-linux.tgz
   - export PATH=${PATH}:${PWD}/android-sdk-linux/tools:${PWD}/android-sdk-linux/platform-tools
-  - ./download_bazel.sh ${PWD}
-  - export PATH=${PATH}:${PWD}/bazel/output
+  - ./download_bazel.sh /tmp/
+  - export PATH=${PATH}:/tmp/bazel/output
   - ./setup_bazel.sh
   - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
   - echo "y" | android update sdk --no-ui --filter platform-tools,tools
