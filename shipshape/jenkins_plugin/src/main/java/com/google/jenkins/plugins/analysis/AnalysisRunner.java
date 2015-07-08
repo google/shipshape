@@ -16,8 +16,6 @@
 
 package com.google.jenkins.plugins.analysis;
 
-import com.google.shipshape.proto.ShipshapeContextProto.Stage;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -56,8 +54,8 @@ public class AnalysisRunner extends Builder {
   public final boolean verbose;
   // Custom docker socket, e.g., tcp://localhost:4243.
   public final String socket;
-  // Stage to run analyses for
-  public final Stage stage;
+  // The build tool / kythe extractor
+  public final String buildTool;
 
   /**
    * Fields in config.jelly must match the parameter names in the
@@ -70,7 +68,7 @@ public class AnalysisRunner extends Builder {
   @DataBoundConstructor
   public AnalysisRunner(
       final String categories,
-      final Stage stage,
+      final String buildTool,
       final boolean verbose,
       final String socket,
       final String command,
@@ -78,7 +76,7 @@ public class AnalysisRunner extends Builder {
     this.categories = categories;
     this.verbose = verbose;
     this.socket = socket;
-    this.stage = stage;
+    this.buildTool = buildTool;
     this.command = command;
     this.analyzerImages = analyzerImages;
   }
@@ -110,6 +108,9 @@ public class AnalysisRunner extends Builder {
     if (analyzerImages != null && !analyzerImages.trim().isEmpty()) {
       cmd.add("--analyzer_images=" + analyzerImages.trim());
     }
+    if (buildTool != null && !buildTool.trim().isEmpty()) {
+      cmd.add("--build=" + buildTool.trim());
+    }
     cmd.add("--json_output=shipshape-findings.json");
     cmd.add("--inside_docker=true");
     cmd.add("."); // Analyze the workspace (the working directory).
@@ -133,10 +134,6 @@ public class AnalysisRunner extends Builder {
     @Override
     public boolean isApplicable(final Class<? extends AbstractProject> aClass) {
       return true;
-    }
-
-    public Stage[] stages() {
-      return new Stage[]{Stage.PRE_BUILD, Stage.POST_BUILD};
     }
 
     /**
