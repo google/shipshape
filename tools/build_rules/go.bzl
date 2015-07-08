@@ -24,6 +24,7 @@ link_args = {
 
 def go_compile(ctx, pkg, srcs, archive, setupGOPATH=False, extra_archives=[]):
   gotool = ctx.file._go
+  goroot = ctx.file._goroot
 
   archives = []
   recursive_deps = set()
@@ -50,12 +51,14 @@ def go_compile(ctx, pkg, srcs, archive, setupGOPATH=False, extra_archives=[]):
     args = build_args[ctx.var['COMPILATION_MODE']]
     cmd = (
         "export PATH;" +
+        "GOROOT=" + goroot.path + " " +
         "GOPATH=\"$PWD/" + ctx.label.package + "\" " +
         gotool.path + " build " + ' '.join(args) + " -o " + archive.path + " " + ctx.attr.package)
     mnemonic = 'GoBuild'
   else:
     args = compile_args[ctx.var['COMPILATION_MODE']]
     cmd = (
+        "GOROOT=" + goroot.path + " " +
         gotool.path + " tool 6g " + ' '.join(args) + " -p " + pkg + " -complete -pack -o " + archive.path + " " +
         include_paths + " " + cmd_helper.join_paths(" ", set(srcs)))
     mnemonic = 'GoCompile'
@@ -67,7 +70,7 @@ def go_compile(ctx, pkg, srcs, archive, setupGOPATH=False, extra_archives=[]):
     outs += [symlink]
 
   ctx.action(
-      inputs = srcs + archives + [gotool],
+      inputs = srcs + archives + [gotool, goroot],
       outputs = outs,
       mnemonic = mnemonic,
       command = cmd,
@@ -77,6 +80,7 @@ def go_compile(ctx, pkg, srcs, archive, setupGOPATH=False, extra_archives=[]):
 
 def link_binary(ctx, binary, archive, recursive_deps):
   gotool = ctx.file._go
+  goroot = ctx.file._goroot
 
   include_paths = ""
   for a in recursive_deps + [archive]:
@@ -86,12 +90,13 @@ def link_binary(ctx, binary, archive, recursive_deps):
   cmd = (
       "set -e;" +
       "export PATH;" +
+      "GOROOT=" + goroot.path + " " +
       gotool.path + " tool 6l " + ' '.join(args) +
       " " + include_paths + " -o " + binary.path + " " +
       " " + archive.path + ";")
 
   ctx.action(
-      inputs = list(recursive_deps) + [archive, gotool],
+      inputs = list(recursive_deps) + [archive, gotool, goroot],
       outputs = [binary],
       mnemonic = 'GoLink',
       command = cmd,
@@ -171,6 +176,11 @@ base_attrs = {
     "go_package_prefix": attr.string(default = ""),
     "_go": attr.label(
         default = Label("//tools/go"),
+        allow_files = True,
+        single_file = True,
+    ),
+    "_goroot": attr.label(
+        default = Label("//tools/go:GOROOT"),
         allow_files = True,
         single_file = True,
     ),
