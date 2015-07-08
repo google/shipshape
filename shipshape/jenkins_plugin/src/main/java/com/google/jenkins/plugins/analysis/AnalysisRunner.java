@@ -16,14 +16,11 @@
 
 package com.google.jenkins.plugins.analysis;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.google.shipshape.proto.ShipshapeContextProto.Stage;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
@@ -47,10 +44,6 @@ import java.util.LinkedList;
  * </p>
  */
 public class AnalysisRunner extends Builder {
-
-  // Configure how we split up a comma-separated list of Shipshape categories.
-  private static final Splitter CATEGORY_PARSER =
-      Splitter.on(",").trimResults().omitEmptyStrings();
 
   // Plugin parameters (needs to be public final):
   // Comma-separated list of categories to run.
