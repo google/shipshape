@@ -50,6 +50,21 @@ fi
 echo "Using go found at $GO" >&2
 ln ${LNOPTS} "$GO" tools/go/go
 
+if [[ -z "$GOROOT" ]]; then
+  if [[ -z "$(go env GOROOT)" ]]; then
+    echo 'You need to have go installed to build Shipshape.'
+    echo 'Please see CONTRIBUTING.md for more information.'
+    exit 1
+  fi
+  if ! GOROOT="$(realpath -s "$(go env GOROOT)")"; then
+    echo 'ERROR: could not locate GOROOT directory' >&2
+    exit 1
+  fi
+fi
+
+echo "Using GOROOT found at $GOROOT" >&2
+ln ${LNOPTS} "$GOROOT" tools/go/GOROOT
+
 # This must be the same C++ compiler used to build the LLVM source.
 if [[ -z "$CLANG" ]]; then
   if [[ -z "$(which clang)" ]]; then
