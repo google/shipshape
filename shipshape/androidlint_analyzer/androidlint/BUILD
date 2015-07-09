@@ -51,5 +51,6 @@ go_test(
     deps = [
         "//shipshape/util/test:test",
     ],
+    data = glob(["testdata/**/*"]),
     library = ":androidlint",
 )
