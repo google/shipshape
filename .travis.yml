@@ -20,7 +20,7 @@ before_install:
   - export PATH=${PATH}:/tmp/bazel/output
   - ./setup_bazel.sh
   - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
-  - echo "y" | android update sdk --no-ui --filter platform-tools,tools
+  - ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui --filter platform-tool,tool
 script:
   - bazel build //...
   - bazel test //shipshape/...
