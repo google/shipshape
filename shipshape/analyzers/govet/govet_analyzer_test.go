@@ -27,6 +27,11 @@ const (
 	hasErrors = "shipshape/analyzers/govet/testdata/has_errors.go"
 )
 
+func init() {
+	// Use the version of Go we know to be available via Bazel.
+	goCmd = "tools/go/go"
+}
+
 func TestNoErrorsInGoFile(t *testing.T) {
 	ctx := &ctxpb.ShipshapeContext{}
 	gva := new(GoVetAnalyzer)
