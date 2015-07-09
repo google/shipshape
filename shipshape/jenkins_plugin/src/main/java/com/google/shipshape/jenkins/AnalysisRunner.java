@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.jenkins.plugins.analysis;
+package com.google.shipshape.jenkins;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 

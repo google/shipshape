@@ -24,7 +24,7 @@ curl http://localhost:8080/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
 CLI="java -jar jenkins-cli.jar -s http://localhost:8080/"
 
 $CLI install-plugin \
-        ../../jenkins_plugin/target/google-analysis-plugin.hpi
+        ../../jenkins_plugin/target/shipshape-plugin.hpi
 
 $CLI install-plugin credentials
 $CLI install-plugin scm-api
@@ -62,14 +62,14 @@ $CLI create-job JUnit <<EOF
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <com.google.jenkins.plugins.analysis.AnalysisRunner plugin="google-analysis-plugin@0.37">
+    <com.google.shipshape.jenkins.AnalysisRunner plugin="shipshape-plugin@0.37">
       <categories>ExtendJ</categories>
       <command>shipshape</command>
       <analyzerImages>localhost:5000/extendj_shipshape/extendj:latest</analyzerImages>
       <verbose>true</verbose>
       <socket>unix:///var/run/docker.sock</socket>
       <stage>PRE_BUILD</stage>
-    </com.google.jenkins.plugins.analysis.AnalysisRunner>
+    </com.google.shipshape.jenkins.AnalysisRunner>
   </builders>
   <publishers/>
   <buildWrappers/>
