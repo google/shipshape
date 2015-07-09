@@ -21,7 +21,7 @@ set -e
 
 curl http://localhost:8080/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
 
-CLI="java -jar jenkins-cli.jar -s http://localhost:8080/"
+CLI="java -jar jenkins-cli.jar -s http://localhost:8080/ -noKeyAuth"
 
 $CLI install-plugin \
         ../../jenkins_plugin/target/shipshape-plugin.hpi
