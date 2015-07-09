@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.jenkins.plugins.analysis;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.shipshape.proto.ShipshapeContextProto.Stage;
+package com.google.shipshape.jenkins;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.AbstractBuild;
@@ -32,6 +27,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * A {@link Builder} for Shipshape.
@@ -46,26 +43,19 @@ import java.io.IOException;
  */
 public class AnalysisRunner extends Builder {
 
-  // Default socket value used for docker communication. This is used as the default for
-  // the socket plugin parameter when no other value is given.
-  // For containers running inside a slave container this is the socket used (there is typically no
-  // TCP socket available inside slave containers, but instead the plugin runs as root)
-  // and no other value should be given.
-  private static final String DEFAULT_DOCKER_SOCKET = "unix:///var/run/docker.sock";
-
-  // Configure how we split up a comma-separated list of Shipshape categories.
-  private static final Splitter CATEGORY_PARSER =
-      Splitter.on(",").trimResults().omitEmptyStrings();
-
   // Plugin parameters (needs to be public final):
   // Comma-separated list of categories to run.
   public final String categories;
+  /** The shipshape CLI command.  */
+  public final String command;
+  /** Comma-separated Docker image URIs for third-party analyzers.  */
+  public final String analyzerImages;
   // Whether to use verbose output
   public final boolean verbose;
   // Custom docker socket, e.g., tcp://localhost:4243.
   public final String socket;
-  // Stage to run analyses for
-  public final Stage stage;
+  // The build tool / kythe extractor
+  public final String buildTool;
 
   /**
    * Fields in config.jelly must match the parameter names in the
@@ -78,13 +68,17 @@ public class AnalysisRunner extends Builder {
   @DataBoundConstructor
   public AnalysisRunner(
       final String categories,
-      final Stage stage,
+      final String buildTool,
       final boolean verbose,
-      final String socket) {
+      final String socket,
+      final String command,
+      final String analyzerImages) {
     this.categories = categories;
     this.verbose = verbose;
     this.socket = socket;
-    this.stage = stage;
+    this.buildTool = buildTool;
+    this.command = command;
+    this.analyzerImages = analyzerImages;
   }
 
   /**
@@ -103,31 +97,29 @@ public class AnalysisRunner extends Builder {
       final Launcher launcher,
       final BuildListener listener) throws InterruptedException, IOException {
 
-    // Serializable values (strings, primitive types ...) needed on the Jenkins slave should be
-    // moved to final variables here to be used in the anonymous Callable class below.
-    final String socket = (this.socket == null || this.socket.trim().equals(""))
-        ? DEFAULT_DOCKER_SOCKET : this.socket;
-    final ImmutableList<String> categoryList = ImmutableList.copyOf(
-        CATEGORY_PARSER.split(this.categories == null ? "" : this.categories));
-
-    final FilePath workspace = build.getWorkspace();
-    final String jobName = build.getProject().getDisplayName();
-    final boolean isVerbose = verbose;
-    int actionableResults = 0;
-    try {
-      actionableResults = workspace.act(
-          new ShipshapeSlave(workspace, isVerbose, categoryList, socket, jobName, stage, listener));
-    } catch (Exception e) {
-      listener.getLogger().println(String.format("[Shipshape] Error: %s", e.getMessage()));
-      e.printStackTrace(listener.getLogger());
-      return false;
+    List<String> cmd = new LinkedList<String>();
+    cmd.add(command == null ? "shipshape" : command);
+    if (verbose) {
+      cmd.add("--stderrthreshold=INFO");
     }
-
-    listener.getLogger().println("[Shipshape] Done");
-
-    // TODO(ciera): use a configurable setting in the plugin to determine whether to fail
-    // and on what kind of results.
-    return actionableResults == 0;
+    if (categories != null && !categories.trim().isEmpty()) {
+      cmd.add("--categories=" + categories);
+    }
+    if (analyzerImages != null && !analyzerImages.trim().isEmpty()) {
+      cmd.add("--analyzer_images=" + analyzerImages.trim());
+    }
+    if (buildTool != null && !buildTool.trim().isEmpty()) {
+      cmd.add("--build=" + buildTool.trim());
+    }
+    cmd.add("--json_output=shipshape-findings.json");
+    cmd.add("--inside_docker=true");
+    cmd.add("."); // Analyze the workspace (the working directory).
+    launcher.launch()
+        .cmds(cmd)
+        .stdout(listener)
+        .pwd(build.getProject().getWorkspace())
+        .join();
+    return true;
   }
 
   /**
@@ -144,16 +136,12 @@ public class AnalysisRunner extends Builder {
       return true;
     }
 
-    public Stage[] stages() {
-      return new Stage[]{Stage.PRE_BUILD, Stage.POST_BUILD};
-    }
-
     /**
      * @return This name is used in the configuration screen.
      */
     @Override
     public String getDisplayName() {
-      return "Google Analysis Plugin";
+      return "Shipshape Plugin";
     }
   }
 }

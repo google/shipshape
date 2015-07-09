@@ -46,7 +46,7 @@ You can install a plugin with the [Jenkins CLI][1]:
 
     $ curl http://localhost:8080/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar \
         && java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin \
-        ../../jenkins_plugin/target/google-analysis-plugin.hpi -restart
+        ../../jenkins_plugin/target/shipshape-plugin.hpi -restart
 
 ## Local Docker Registry
 

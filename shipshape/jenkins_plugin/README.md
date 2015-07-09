@@ -21,7 +21,7 @@ To build and then install the google analysis plugin follow the below steps.
     `$ ./build-plugin.sh`
 
  This will generated a .hpi file under the target directory in the root
- plugin directory (`target/google-analysis-plugin.hpi`).
+ plugin directory (`target/shipshape-plugin.hpi`).
 
 2. Install the plugin in Jenkins.
 
@@ -50,7 +50,9 @@ To build and then install the google analysis plugin follow the below steps.
 
  Invoke a build for your project, for instance, by explicitly pressing
  'Build Now'. This should start a build, and if you look at the console output
- of that build, you should see output from Shipshape.
+ of that build, you should see output from Shipshape. The shipshape findings
+ are stored in a file named `shipshape-findings.json` in the workspace of the
+ job.
 
 
 # Testing locally
