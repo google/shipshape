@@ -38,6 +38,8 @@ const (
 
 var (
 	issueRE = regexp.MustCompile(`([^:]*):([0-9]+): (.*)`)
+	// Allow the go command to be replaced for testing.
+	goCmd = "go"
 )
 
 // GoVetAnalyzer is a wrapper around the go vet command line tool.
@@ -52,7 +54,7 @@ func isGoFile(path string) bool {
 
 func (gva *GoVetAnalyzer) analyzeOneFile(ctx *ctxpb.ShipshapeContext, path string) ([]*notepb.Note, error) {
 	var notes []*notepb.Note
-	cmd := exec.Command("go", "vet", path)
+	cmd := exec.Command(goCmd, "vet", path)
 	buf, err := cmd.CombinedOutput()
 
 	switch err := err.(type) {

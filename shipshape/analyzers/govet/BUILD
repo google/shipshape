@@ -37,5 +37,10 @@ go_test(
     deps = [
         "//shipshape/proto:shipshape_context_proto_go",
     ],
+    data = [
+        ":testdata/has_errors.go",
+        ":testdata/no_errors.go",
+        "//tools/go",
+    ],
     library = ":govet",
 )
