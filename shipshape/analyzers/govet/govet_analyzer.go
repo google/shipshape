@@ -63,7 +63,7 @@ func (gva *GoVetAnalyzer) analyzeOneFile(ctx *ctxpb.ShipshapeContext, path strin
 	case *exec.ExitError:
 		// go vet exits with an error when there are findings to report.
 		if err.Error() != exitStatus {
-			return notes, fmt.Errorf("%q: %q", err, buf)
+			return notes, fmt.Errorf("%v: %q", err, buf)
 		}
 
 		// go vet gives one issue per line, with the penultimate line indicating
