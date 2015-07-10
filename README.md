@@ -166,8 +166,6 @@ Instructions are located in `shipshape/jenkins_plugin/README.md`.
 **test** -- manual integration tests to simplify the process of running Shipshape 
   locally on test input, useful when developing new analyzer services
 
-**test_data** -- test data used by unit and integration tests
-
 **util** -- various go utilities that simplify Shipshape code, e.g. for working with
   slices, execing docker commands, or writing tests
 
@@ -184,8 +182,6 @@ To write a new analyzer service, you can use the androidlint_analyzer as an exam
   to copy this file and update the names to reflect your analyzer.
 
 **androidlint/analyzer_test.go** -- some sample tests of the analyzer.
-
-**androidlint/test_data** -- test data used by the analyzer unit tests.
 
 **androidlint/CAMPFIRE** -- build file for this analyzer. Should copy and update names.
 

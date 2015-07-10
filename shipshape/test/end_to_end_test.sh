@@ -271,7 +271,7 @@ analyze_test_repo() {
   # Run a second time for AndroidLint. We have to do this separately because
   # otherwise kythe will try to build all the java files, even the ones that maven
   # doesn't build.
-  cp -r "$BASE_DIR/shipshape/androidlint_analyzer/test_data/TicTacToeLib" "$LOCAL_WORKSPACE/"
+  cp -r "$BASE_DIR/shipshape/androidlint_analyzer/androidlint/testdata/TicTacToeLib" "$LOCAL_WORKSPACE/"
   info "Analyzing test repo using AndroidLint ..."
   "$SHIPSHAPE" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
   # Copying logs again to LOG_FILE to have all logs in one place
