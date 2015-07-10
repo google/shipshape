@@ -39,6 +39,7 @@ const (
 
 var (
 	exitStatus = "exit status 1"
+	lintBin = "lint"
 )
 
 // Analyzer is a wrapper around the Android lint tool. This analyzer looks for
@@ -67,7 +68,7 @@ func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error)
 		// TODO(ciera): Add project options (--classpath) when we have build information.
 		// TODO(clconway): The path to the binary should be configurable, especially since
 		// the "lint" command name is overloaded.
-		cmd := exec.Command("lint",
+		cmd := exec.Command(lintBin,
 			"--showall",
 			"--quiet",
 			"--exitcode",
@@ -75,7 +76,7 @@ func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error)
 			prj)
 		out, err := cmd.CombinedOutput()
 
-		log.Printf("lint output is %s", out)
+		log.Printf("lint output is %q", out)
 
 		switch err := err.(type) {
 		case nil:

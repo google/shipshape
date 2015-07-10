@@ -51,6 +51,10 @@ go_test(
     deps = [
         "//shipshape/util/test:test",
     ],
-    data = glob(["testdata/**/*"]),
+    data = glob(["testdata/**/*"]) + [
+        # This is created by setup_bazel.sh. It is a symlink to the
+        # Android Lint binary installed on the system.
+        ":lint",
+    ],
     library = ":androidlint",
 )

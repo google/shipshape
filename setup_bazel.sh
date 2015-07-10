@@ -65,6 +65,18 @@ fi
 echo "Using GOROOT found at $GOROOT" >&2
 ln ${LNOPTS} "$GOROOT" tools/go/GOROOT
 
+# Optionally configure Android Lint support. This is necessary for the
+# Android Lint analyzer's tests.
+ALTARGET=shipshape/androidlint_analyzer/androidlint/lint
+if ! LINT="$(which lint)"; then
+  echo "Android Lint not found, Android analyzer tests will fail" >&2
+  ln ${LNOPTS} /bin/false "$ALTARGET"
+else
+  ANDROIDLINT="$(realpath -s "$LINT")"
+  echo "Using Android Lint from $ANDROIDLINT" >&2
+  ln ${LNOPTS} "$ANDROIDLINT" "$ALTARGET"
+fi
+
 # This must be the same C++ compiler used to build the LLVM source.
 if [[ -z "$CLANG" ]]; then
   if [[ -z "$(which clang)" ]]; then

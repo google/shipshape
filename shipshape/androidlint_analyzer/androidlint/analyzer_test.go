@@ -1,10 +1,21 @@
 package androidlint
 
 import (
+	"path/filepath"
 	"testing"
 
 	testutil "shipshape/util/test"
 )
+
+func init() {
+	// Use the path to Android Lint that is visible to Bazel.
+	bin, err := filepath.Abs("shipshape/androidlint_analyzer/androidlint/lint")
+	if err != nil {
+		panic(err)
+	} else {
+		lintBin = bin
+	}
+}
 
 func TestAnalyze(t *testing.T) {
 	tests := []struct {
