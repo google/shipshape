@@ -17,6 +17,7 @@
 package govet
 
 import (
+	"os"
 	"testing"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"
@@ -30,6 +31,7 @@ const (
 func init() {
 	// Use the version of Go we know to be available via Bazel.
 	goCmd = "tools/go/go"
+	os.Setenv("GOROOT", "tools/go/GOROOT")
 }
 
 func TestNoErrorsInGoFile(t *testing.T) {

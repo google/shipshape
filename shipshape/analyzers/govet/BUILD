@@ -41,6 +41,7 @@ go_test(
         ":testdata/has_errors.go",
         ":testdata/no_errors.go",
         "//tools/go",
+        "//tools/go:GOROOT"
     ],
     library = ":govet",
 )
