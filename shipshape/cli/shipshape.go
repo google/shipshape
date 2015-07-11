@@ -410,9 +410,11 @@ func startAnalyzers(sourceDir string, images []string, dind bool) (containers []
 			wg.Done()
 		}(id, fullImage)
 	}
-	glog.Info("Waiting for dockerized analyzers to start up...")
-	wg.Wait()
-	glog.Info("Analyzers up")
+	if len(images) > 0 {
+		glog.Info("Waiting for dockerized analyzers to start up...")
+		wg.Wait()
+		glog.Info("Analyzers up")
+	}
 	return containers, errs
 }
 
