@@ -20,7 +20,9 @@
 cd "$(dirname "$0")"
 
 if [[ $(uname) == 'Darwin' ]]; then
-  LNOPTS="-sf"
+  FALSE=/usr/bin/false
+  # Forcibly replace symlinks, even if the symlink is to a directory.
+  LNOPTS="-sfFh"
   realpath() {
     python -c 'import os, sys; print os.path.realpath(sys.argv[2])' $@
   }
@@ -32,6 +34,7 @@ if [[ $(uname) == 'Darwin' ]]; then
     fi
   }
 else
+  FALSE=/bin/false
   LNOPTS="-sTf"
 fi
 
@@ -70,7 +73,7 @@ ln ${LNOPTS} "$GOROOT" tools/go/GOROOT
 ALTARGET=shipshape/androidlint_analyzer/androidlint/lint
 if ! LINT="$(which lint)"; then
   echo "Android Lint not found, Android analyzer tests will fail" >&2
-  ln ${LNOPTS} /bin/false "$ALTARGET"
+  ln ${LNOPTS} "$FALSE" "$ALTARGET"
 else
   ANDROIDLINT="$(realpath -s "$LINT")"
   echo "Using Android Lint from $ANDROIDLINT" >&2
