@@ -10,8 +10,8 @@ run as a command-line interface, or as a Jenkins plugin. The requirements to run
 are that you are running Linux with docker installed and the source code you want
 to analyze available on disk.
 
-The source code for Shipshape is located in the "shipshape" directory. Third-
-party libraries used by Shipshape are all in the "third_party" directory.
+The source code for Shipshape is located in the "shipshape" directory.
+Third-party libraries used by Shipshape are all in the "third_party" directory.
 
 # Download and Run ShipShape #
 Install dependencies, download and run Shipshape.
