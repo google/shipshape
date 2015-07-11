@@ -370,12 +370,12 @@ func stop(container string, timeWait time.Duration) {
 
 func pullAnalyzers(images []string) {
 	var wg sync.WaitGroup
-	for _, analyzerRepo := range images {
+	for _, analyzerImage := range images {
 		wg.Add(1)
-		go func() {
-			pull(analyzerRepo)
+		go func(image string) {
+			pull(image)
 			wg.Done()
-		}()
+		}(analyzerImage)
 	}
 	glog.Info("Pulling dockerized analyzers...")
 	wg.Wait()
@@ -386,29 +386,29 @@ func startAnalyzers(sourceDir string, images []string, dind bool) (containers []
 	var wg sync.WaitGroup
 	for id, fullImage := range images {
 		wg.Add(1)
-		go func() {
-			analyzerContainer, port := getContainerAndAddress(fullImage, id)
-			if docker.ImageMatches(fullImage, analyzerContainer) {
-				glog.Infof("Reusing analyzer %v started at localhost:%d", fullImage, port)
+		go func(id int, image string) {
+			analyzerContainer, port := getContainerAndAddress(image, id)
+			if docker.ImageMatches(image, analyzerContainer) {
+				glog.Infof("Reusing analyzer %v started at localhost:%d", image, port)
 			} else {
-				glog.Infof("Found no analyzer container (%v) to reuse for %v", analyzerContainer, fullImage)
+				glog.Infof("Found no analyzer container (%v) to reuse for %v", analyzerContainer, image)
 				// Analyzer is either running with the wrong image version, or not running
 				// Stopping in case it's the first case
 				result := docker.Stop(analyzerContainer, 0, true)
 				if result.Err != nil {
 					glog.Infof("Failed to stop %v (may not be running)", analyzerContainer)
 				}
-				result = docker.RunAnalyzer(fullImage, analyzerContainer, sourceDir, localLogs, port, dind)
+				result = docker.RunAnalyzer(image, analyzerContainer, sourceDir, localLogs, port, dind)
 				if result.Err != nil {
-					glog.Infof("Could not start %v at localhost:%d: %v, stderr: %v", fullImage, port, result.Err.Error(), result.Stderr)
+					glog.Infof("Could not start %v at localhost:%d: %v, stderr: %v", image, port, result.Err.Error(), result.Stderr)
 					errs = append(errs, result.Err)
 				} else {
-					glog.Infof("Analyzer %v started at localhost:%d", fullImage, port)
+					glog.Infof("Analyzer %v started at localhost:%d", image, port)
 					containers = append(containers, analyzerContainer)
 				}
 			}
 			wg.Done()
-		}()
+		}(id, fullImage)
 	}
 	glog.Info("Waiting for dockerized analyzers to start up...")
 	wg.Wait()

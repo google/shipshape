@@ -163,12 +163,12 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	context := proto.Clone(in.ShipshapeContext).(*contextpb.ShipshapeContext)
 	context.FilePath, err = retrieveAndFilterFiles(*context.RepoRoot, context.FilePath, ignorePaths)
 	if err != nil {
-		log.Print("Had problems accessing files: %v", err.Error())
+		log.Printf("Had problems accessing files: %v", err.Error())
 		ars = append(ars, generateFailure("Driver setup", fmt.Sprint(err)))
 		return err
 	}
 	if len(context.FilePath) == 0 {
-		log.Printf("No files to run on, doing nothing")
+		log.Print("No files to run on, doing nothing")
 		return nil
 	}
 
@@ -200,6 +200,7 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 			ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
 		}
 	}
+
 	log.Print("Analysis completed")
 	return nil
 }
