@@ -63,6 +63,7 @@ func (s analyzerService) Analyze(ctx server.Context, in *rpcpb.AnalyzeRequest) (
 
 	orgDir, restore, err := file.ChangeDir(*in.ShipshapeContext.RepoRoot)
 	if err != nil {
+		log.Printf("Internal error before analyzing: %v", err)
 		appendFailure(&errs, "InternalFailure", err)
 		return resp, err
 	}
