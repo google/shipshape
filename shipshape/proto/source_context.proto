@@ -81,19 +81,19 @@ message CloudWorkspaceSourceContext {
 // A SourceContext referring to a Gerrit project.
 message GerritSourceContext {
   // The URI of a running Gerrit instance.
-  string host_uri = 1;
+  optional string host_uri = 1;
 
   // The full project name within the host. Projects may be nested, so
   // "project/subproject" is a valid project name.
   // The "repo name" is hostURI/project.
-  string gerrit_project = 2;
+  optional string gerrit_project = 2;
 
   // A revision in a Gerrit project can be identified by either its revision ID
   // or its alias name.
   // A revision (commit) ID.
-  string revision_id = 3;
+  optional string revision_id = 3;
 
   // The name of an alias (branch, tag, etc.).
-  string alias_name = 4;
+  optional string alias_name = 4;
 }
 
