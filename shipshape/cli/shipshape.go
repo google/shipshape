@@ -152,6 +152,11 @@ func main() {
 		os.Exit(returnError)
 	}
 
+	if !docker.HasDocker() {
+		fmt.Print("docker could not be found. Make sure you have docker installed.")
+		return
+	}
+
 	image := docker.FullImageName(*repo, image, *tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
