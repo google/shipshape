@@ -64,9 +64,14 @@ const (
 	localLogs  = "/tmp"
 	image      = "service"
 	kytheImage = "kythe"
+
+	returnNoFindings = 0
+	returnFindings = 1
+	returnError = 2
 )
 
-func logMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
+func logMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
+	numNotes := 0
 	if *jsonOutput == "" {
 		fileNotes := make(map[string][]*notepb.Note)
 		for _, analysis := range msg.AnalyzeResponse {
@@ -103,19 +108,20 @@ func logMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
 					}
 				}
 
+				numNotes++;
 				fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
 				fmt.Printf("\t%s\n", *note.Description)
 			}
 			fmt.Println()
 		}
-		return nil
+		return numNotes, nil
 	}
 
 	b, err := json.Marshal(msg)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return ioutil.WriteFile(*jsonOutput, b, 0644)
+	return numNotes, ioutil.WriteFile(*jsonOutput, b, 0644)
 }
 
 func main() {
@@ -125,14 +131,14 @@ func main() {
 	// Get the directory to analyze.
 	if len(flag.Args()) != 1 {
 		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
-		return
+		os.Exit(returnError)
 	}
 
 	file := flag.Arg(0)
 	fs, err := os.Stat(file)
 	if err != nil {
 		fmt.Printf("%s is not a valid file or directory\n", file)
-		return
+		os.Exit(returnError)
 	}
 
 	origDir := file
@@ -143,7 +149,7 @@ func main() {
 	absRoot, err := filepath.Abs(origDir)
 	if err != nil {
 		fmt.Printf("Could not get absolute path for %s: %v\n", origDir, err)
-		return
+		os.Exit(returnError)
 	}
 
 	image := docker.FullImageName(*repo, image, *tag)
@@ -198,6 +204,7 @@ func main() {
 
 	var c *client.Client
 	var req *rpcpb.ShipshapeRequest
+	var numNotes int
 
 	// Run it on files
 	if *streams {
@@ -206,27 +213,27 @@ func main() {
 			files = []string{file}
 		}
 		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
-		err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
+		numNotes, err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
 		if err != nil {
 			glog.Errorf("Error making stream call: %v", err)
-			return
+			os.Exit(returnError)
 		}
 	} else {
 		relativeRoot := ""
 		c, relativeRoot, err = startShipshapeService(image, absRoot, containers, *dind)
 		if err != nil {
 			glog.Errorf("HTTP client did not become healthy: %v", err)
-			return
+			os.Exit(returnError)
 		}
 		var files []string
 		if !fs.IsDir() {
 			files = []string{filepath.Base(file)}
 		}
 		req = createRequest(trigger, files, *event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
-		err = serviceAnalyze(c, req, origDir)
+		numNotes, err = serviceAnalyze(c, req, origDir)
 		if err != nil {
 			glog.Errorf("Error making service call: %v", err)
-			return
+			os.Exit(returnError)
 		}
 	}
 
@@ -246,27 +253,33 @@ func main() {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
 			glog.Errorf("Error from run: %v", result.Err)
-			return
+			os.Exit(returnError)
 		}
 		glog.Infoln("CompilationUnits prepared")
 
+		var numBuildNotes = 0
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		if !*streams {
-			err = serviceAnalyze(c, req, origDir)
+			numBuildNotes, err = serviceAnalyze(c, req, origDir)
 			if err != nil {
 				glog.Errorf("Error making service call: %v", err)
-				return
+				os.Exit(returnError)
 			}
 		} else {
-			err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
+			numBuildNotes, err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
 			if err != nil {
 				glog.Errorf("Error making stream call: %v", err)
-				return
+				os.Exit(returnError)
 			}
 		}
+		numNotes += numBuildNotes
 	}
 
 	glog.Infoln("End of Results.")
+	if numNotes > 0 {
+		os.Exit(returnFindings)
+	}
+	os.Exit(returnNoFindings)
 }
 
 // startShipshapeService ensures that there is a service started with the given image and
@@ -303,7 +316,8 @@ func startShipshapeService(image, absRoot string, analyzers []string, dind bool)
 	return c, subPath, c.WaitUntilReady(10 * time.Second)
 }
 
-func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string) error {
+func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string) (int, error) {
+	var numNotes = 0
 	glog.Infof("Calling to the shipshape service with %v", req)
 	rd := c.Stream("/ShipshapeService/Run", req)
 	defer rd.Close()
@@ -312,21 +326,23 @@ func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir s
 		if err := rd.NextResult(&msg); err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("received an error from calling run: %v", err.Error())
+			return 0, fmt.Errorf("received an error from calling run: %v", err.Error())
 		}
 
-		if err := logMessage(&msg, originalDir); err != nil {
-			return fmt.Errorf("could not parse results: %v", err.Error())
+		n, err := logMessage(&msg, originalDir)
+		if err != nil {
+			return 0, fmt.Errorf("could not parse results: %v", err.Error())
 		}
+		numNotes += n
 	}
-	return nil
+	return numNotes, nil
 }
 
-func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest, dind bool) error {
+func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest, dind bool) (int, error) {
 	glog.Infof("Running image %s in stream mode", image)
 	reqBytes, err := proto.Marshal(req)
 	if err != nil {
-		return fmt.Errorf("error marshalling %v: %v", req, err)
+		return 0, fmt.Errorf("error marshalling %v: %v", req, err)
 	}
 
 	stop("shipping_container", 0)
@@ -334,11 +350,11 @@ func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []str
 	glog.Infoln(strings.TrimSpace(result.Stderr))
 
 	if result.Err != nil {
-		return fmt.Errorf("error from run: %v", result.Err)
+		return 0, fmt.Errorf("error from run: %v", result.Err)
 	}
 	var msg rpcpb.ShipshapeResponse
 	if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
-		return fmt.Errorf("unexpected ShipshapeResponse %v", err)
+		return 0, fmt.Errorf("unexpected ShipshapeResponse %v", err)
 	}
 	return logMessage(&msg, originalDir)
 }
