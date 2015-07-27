@@ -33,8 +33,6 @@ import com.sun.source.tree.CompilationUnitTree;
 
 import java.net.URI;
 
-import javax.annotation.Nullable;
-
 /**
  * An abstract JavacAnalyzer. This implements the analyzer method and provides an
  * abstract method for analyzing a single file at a time.
