@@ -66,8 +66,8 @@ const (
 	kytheImage = "kythe"
 
 	returnNoFindings = 0
-	returnFindings = 1
-	returnError = 2
+	returnFindings   = 1
+	returnError      = 2
 )
 
 func logMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
@@ -108,7 +108,7 @@ func logMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
 					}
 				}
 
-				numNotes++;
+				numNotes++
 				fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
 				fmt.Printf("\t%s\n", *note.Description)
 			}
@@ -245,6 +245,10 @@ func main() {
 			pull(fullKytheImage)
 		}
 
+		// TODO(emso): Add a check for an already running kythe container.
+		// The below defer should stop the one started below but in case this
+		// failed for some reason (or a kythe container was started in some other
+		// way) the below run command will fail.
 		defer stop("kythe", 10*time.Second)
 		glog.Infof("Retrieving compilation units with %s", *build)
 
