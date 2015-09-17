@@ -227,6 +227,7 @@ EOF
 #   None
 #############################################
 copy_shipshape_logs() {
+  info "Copying Shipshape logs into test log ..."
   log_files=(
     /tmp/shipshape.shipping_container.log
     /tmp/shipshape.go_dispatcher.log
@@ -234,7 +235,6 @@ copy_shipshape_logs() {
     /tmp/shipshape.javac_dispatcher.log
     /tmp/shipshape.android_lint.log
   )
-  info "Copying Shipshape logs into test log ..."
   echo "START[$1]:" >> $LOG_FILE
   for log_file in ${log_files[@]}; do
     echo "" >> $LOG_FILE
@@ -264,18 +264,20 @@ analyze_test_repo() {
   info "Building Shipshape CLI ..."
   run bazel build shipshape/cli/...
   # Run CLI over the new repo
+  # TODO: Verify that the returned result is 1 or 0. 2 means that it has an
+  # error
   info "Analyzing test repo using PostMessage,JSHint,ErrorProne ..."
-  "$SHIPSHAPE" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+  "$SHIPSHAPE" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1 || echo "${SHIPSHAPE} failed with $?"
   # Copying logs into LOG_FILE to not have them overwritten by the next CLI run
-  copy_shipshape_logs 'Logs from first CLI run for PostMessage,JSHint,ErrorProne'
+  copy_shipshape_logs "Logs from first CLI run for PostMessage,JSHint,ErrorProne"
   # Run a second time for AndroidLint. We have to do this separately because
   # otherwise kythe will try to build all the java files, even the ones that maven
   # doesn't build.
   cp -r "$BASE_DIR/shipshape/androidlint_analyzer/androidlint/testdata/TicTacToeLib" "$LOCAL_WORKSPACE/"
   info "Analyzing test repo using AndroidLint ..."
-  "$SHIPSHAPE" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1
+  "$SHIPSHAPE" --tag=$TAG --analyzer_images=$REPO/android_lint:$TAG --categories='AndroidLint' --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1 || echo "${SHIPSHAPE} failed with $?"
   # Copying logs again to LOG_FILE to have all logs in one place
-  copy_shipshape_logs 'Logs from second CLI run for AndroidLint'
+  copy_shipshape_logs "Logs from second CLI run for AndroidLint"
 }
 
 ##############################################

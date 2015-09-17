@@ -57,10 +57,16 @@ def go_compile(ctx, pkg, srcs, archive, setupGOPATH=False, extra_archives=[]):
     mnemonic = 'GoBuild'
   else:
     args = compile_args[ctx.var['COMPILATION_MODE']]
-    cmd = (
-        "GOROOT=" + goroot.path + " " +
-        gotool.path + " tool 6g " + ' '.join(args) + " -p " + pkg + " -complete -pack -o " + archive.path + " " +
-        include_paths + " " + cmd_helper.join_paths(" ", set(srcs)))
+    cmd = "\n".join([
+        "GOROOT=" + goroot.path,
+        'if ' + gotool.path + ' tool | grep -q 6g; then',
+        '  TOOL=6g',
+        'else',
+        '  TOOL=compile',
+        'fi',
+        gotool.path + " tool $TOOL " + ' '.join(args) + " -p " + pkg + " -complete -pack -o " + archive.path + " " +
+        include_paths + " " + cmd_helper.join_paths(" ", set(srcs)),
+    ])
     mnemonic = 'GoCompile'
 
   outs = [archive]
@@ -87,14 +93,18 @@ def link_binary(ctx, binary, archive, recursive_deps):
     include_paths += "-L \"" + a.path + "_gopath\" "
 
   args = link_args[ctx.var['COMPILATION_MODE']]
-  cmd = (
-      "set -e;" +
-      "export PATH;" +
-      "GOROOT=" + goroot.path + " " +
-      gotool.path + " tool 6l " + ' '.join(args) +
-      " " + include_paths + " -o " + binary.path + " " +
-      " " + archive.path + ";")
-
+  cmd = "\n".join([
+      'set -e',
+      'export PATH',
+      'if ' + gotool.path + ' tool | grep -q 6l; then',
+      '  TOOL=6l',
+      'else',
+      '  TOOL=link',
+      'fi',
+      gotool.path + ' tool $TOOL ' + ' '.join(args)
+      + ' ' + include_paths + ' -o ' + binary.path + ' '
+      + ' ' + archive.path + ';',
+  ])
   ctx.action(
       inputs = list(recursive_deps) + [archive, gotool, goroot],
       outputs = [binary],
