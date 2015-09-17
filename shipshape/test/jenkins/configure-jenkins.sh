@@ -68,7 +68,6 @@ $CLI create-job JUnit <<EOF
       <analyzerImages>localhost:5000/extendj_shipshape/extendj:latest</analyzerImages>
       <verbose>true</verbose>
       <socket>unix:///var/run/docker.sock</socket>
-      <stage>PRE_BUILD</stage>
     </com.google.shipshape.jenkins.AnalysisRunner>
   </builders>
   <publishers/>
