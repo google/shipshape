@@ -38,7 +38,6 @@ const (
 	shipshapeLogs = "/shipshape-output"
 )
 
-// TODO(ciera): add some checking to ensure docker is installed.
 // TODO(ciera): Consider making these all use channels.
 type CommandResult struct {
 	Stdout string
@@ -48,6 +47,13 @@ type CommandResult struct {
 
 func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 	return CommandResult{strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err}
+}
+
+// HasDocker determines whether docker is installed
+// and included in PATH.
+func HasDocker() bool {
+	cmd := exec.Command("which", "docker")
+	return cmd.Run() == nil
 }
 
 // FullImageName creates a full image name from a repository URI, an image name, and a tag.
