@@ -32,8 +32,8 @@ ADD shipshape /shipshape/cli/shipshape
 RUN cd /shipshape/ && npm install winston
 
 # Support Gerrit
-ADD gitconfig /etc/gitconfig
-ADD git-credential-gerrit.sh /google-cloud-sdk/bin/git-credential-gerrit.sh
+ADD shipshape/contrib/phabricator/gitconfig /etc/gitconfig
+ADD shipshape/contrib/phabricator/git-credential-gerrit.sh /google-cloud-sdk/bin/git-credential-gerrit.sh
 RUN chmod +x /google-cloud-sdk/bin/git-credential-gerrit.sh
 
 CMD [ "/shipshape/launch.sh"]
