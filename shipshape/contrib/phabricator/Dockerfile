@@ -22,12 +22,12 @@ RUN cd /arc && git clone https://github.com/phacility/libphutil.git
 RUN cd /arc && git clone https://github.com/phacility/arcanist.git
 
 ENV PATH /arc/arcanist/bin:$PATH
-ADD async.js /shipshape/async.js
-ADD conduit.js /shipshape/conduit.js
-ADD server.js /shipshape/server.js
-ADD analyze.sh /shipshape/analyze.sh
+ADD shipshape/contrib/phabricator/async.js /shipshape/async.js
+ADD shipshape/contrib/phabricator/conduit.js /shipshape/conduit.js
+ADD shipshape/contrib/phabricator/server.js /shipshape/server.js
+ADD shipshape/contrib/phabricator/analyze.sh /shipshape/analyze.sh
+ADD shipshape/contrib/phabricator/launch.sh /shipshape/launch.sh
 ADD shipshape /shipshape/cli/shipshape
-ADD launch.sh /shipshape/launch.sh
 
 RUN cd /shipshape/ && npm install winston
 
