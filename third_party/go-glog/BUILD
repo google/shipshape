@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # BSD
 
-load("//tools/build_rules/go", "go_library")
+load("/tools/build_rules/go", "go_library")
 
 go_library(
     name = "go-glog",
