@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("//tools/build_rules/genproto", "proto_library")
+load("/tools/build_rules/genproto", "proto_library")
 
 proto_library(
     name = "any_proto",

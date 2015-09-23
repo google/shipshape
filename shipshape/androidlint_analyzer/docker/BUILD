@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tools/build_rules/docker", "docker_build")
+load("/tools/build_rules/docker", "docker_build")
 
 docker_build(
     name = "android_lint",

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tools/build_rules/go", "go_binary")
+load("/tools/build_rules/go", "go_binary")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -14,7 +14,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//tools/build_rules/go", "go_binary", "go_library")
+load("/tools/build_rules/go", "go_binary", "go_library")
 
 # TODO split libraries into separate BUILD files once https://github.com/google/bazel/issues/118 is fixed
 licenses(["notice"])
