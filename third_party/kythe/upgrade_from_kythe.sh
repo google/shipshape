@@ -27,14 +27,14 @@ rsync --delete --files-from=third_party/kythe/imported_paths_from_kythe $KYTHE_R
 
 # Fix all the imports
 grep -lR '"third_party/kythe/' third_party/kythe | xargs sed -i 's#"third_party/kythe/#"third_party/kythe/#g'
-grep -lR //kythe third_party/kythe | grep CAMPFIRE | xargs sed -i 's#//kythe/#//third_party/kythe/#g'
+grep -lR //kythe third_party/kythe | grep BUILD | xargs sed -i 's#//kythe/#//third_party/kythe/#g'
 
 # Update README.google
 sed -ri "s/Version: .+/Version: $COMMIT/" third_party/kythe/README.google
 sed -ri "s#/kythe/tree/.+#/kythe/tree/$COMMIT#" third_party/kythe/README.google
 
 # Clean up
-bazel clean //third_party/kythe
+bazel clean
 
 # Check that everything still builds
 bazel build //third_party/kythe/...
