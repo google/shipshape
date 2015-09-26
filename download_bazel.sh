@@ -8,7 +8,6 @@
 TARGET=$1
 
 cd $TARGET && \
-  git clone https://github.com/google/bazel/ && \
+  git clone -b 0.1.0 --depth 1 https://github.com/google/bazel/ && \
   cd bazel && \
-  git checkout 14cd308832a681af9a6755cd01ca145c58a318f6 && \
   ./compile.sh
