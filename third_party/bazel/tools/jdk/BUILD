@@ -33,12 +33,12 @@ filegroup(
 
 filegroup(
     name = "langtools",
-    srcs = ["//external:langtools"],
+    srcs = ["//third_party/java/jdk/langtools:javac_jar"],
 )
 
 java_import(
     name = "langtools-neverlink",
-    jars = ["//external:langtools"],
+    jars = [":langtools"],
     neverlink = 1,
 )
 
@@ -61,6 +61,7 @@ java_toolchain(
 )
 
 exports_files([
+    "GenClass_deploy.jar",
     "JavaBuilder_deploy.jar",
     "SingleJar_deploy.jar",
 ])
