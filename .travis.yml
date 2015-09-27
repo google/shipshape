@@ -12,14 +12,16 @@ addons:
     packages:
       - realpath
 before_install:
+  - wget https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
+  - chmod u+x bazel-0.1.0-installer-linux-x86_64.sh
+  - ./bazel-0.1.0-installer-linux-x86_64.sh --user
+  - export PATH=${PATH}:${HOME}/bin
   - go env
   - echo ${GOROOT}
   - jdk_switcher use oraclejdk8
   - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
   - tar xvf android-sdk_r23-linux.tgz
   - export PATH=${PATH}:${PWD}/android-sdk-linux/tools:${PWD}/android-sdk-linux/platform-tools
-  - ./download_bazel.sh /tmp/
-  - export PATH=${PATH}:/tmp/bazel/output
   - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
   - ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui --filter platform-tool,tool
 script:
