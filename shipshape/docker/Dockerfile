@@ -14,21 +14,18 @@
 
 FROM gcr.io/dev-con/cloud-dev-java:prod
 
-# The default apt source list does not provide nodejs so we need to add a new source that does.
-RUN echo "deb http://ftp.us.debian.org/debian wheezy-backports main" >> /etc/apt/sources.list
 # Make sure instance is up to date
 RUN apt-get update && apt-get upgrade -y  && \
    apt-get install -y  -qq --no-install-recommends \
-# SUDO
-  sudo \
+# utilities
+  sudo curl \
 # Packages needed for jshint
-  nodejs-legacy curl moreutils \
+  npm \
 # Packages needed for pylint
-  pylint
+  pylint=1.3.1-3
 
 # Setup jshint
-RUN curl -L https://www.npmjs.org/install.sh | sponge | clean=no   sh
-RUN npm install -g jshint
+RUN npm install -g jshint@2.8.0
 
 # Install Go, needed for the go vet analyzer
 RUN curl -L -s http://golang.org/dl/go1.3.linux-amd64.tar.gz | tar -zx -C /usr/local
