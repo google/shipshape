@@ -19,20 +19,13 @@
 
 set -eu
 
+declare -xr TEST_DIR=$(realpath $(dirname "$0"))
 declare -xr CONTAINER="test_testing_env"
+declare -xr IMAGE="gcr.io/shipshape_releases/testing_env"
 
-echo " Building docker image ... "
-docker build -f Dockerfile -t gcr.io/shipshape_releases/testing_env .
-
-echo " Remove running container [$CONTAINER] "
-CONTAINER_ID=`docker ps -a | grep $CONTAINER | awk '{print $1}'`
-echo " Found container id: $CONTAINER_ID "
-if [ -n "$CONTAINER_ID" ]
-then
-  docker rm -f $CONTAINER_ID
-fi
+"${TEST_DIR}/docker_build.sh" "${CONTAINER}" "${IMAGE}" || exit 1
 
 # Starts a container with the test image and a volume mapped to /tmp.
 echo " Starting docker container ... "
-docker run --privileged -it --name $CONTAINER -v /tmp:/tmp gcr.io/shipshape_releases/testing_env bash
+docker run --privileged -it --name "${CONTAINER}" -v /tmp:/tmp "${IMAGE}" bash
 

@@ -1,6 +1,8 @@
 package androidlint
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -12,8 +14,16 @@ func init() {
 	bin, err := filepath.Abs("shipshape/androidlint_analyzer/androidlint/lint")
 	if err != nil {
 		panic(err)
-	} else {
-		lintBin = bin
+	}
+	lintBin = bin
+
+	linkedBin, err := filepath.EvalSymlinks(lintBin)
+	if err != nil {
+		panic(err);
+	}
+	if filepath.Base(linkedBin) == "false" {
+		fmt.Println("Android Lint not installed.")
+		os.Exit(1)
 	}
 }
 

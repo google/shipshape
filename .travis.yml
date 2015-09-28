@@ -1,30 +1,11 @@
 os:
   - linux
-language: cpp
-compiler:
-  - clang
-jdk:
-  - oraclejdk8
-go:
-  - 1.4
+sudo: required
+services:
+  - docker
 addons:
   apt:
     packages:
       - realpath
-before_install:
-  - go env
-  - echo ${GOROOT}
-  - jdk_switcher use oraclejdk8
-  - wget http://dl.google.com/android/android-sdk_r23-linux.tgz
-  - tar xvf android-sdk_r23-linux.tgz
-  - export PATH=${PATH}:${PWD}/android-sdk-linux/tools:${PWD}/android-sdk-linux/platform-tools
-  - echo "sdk.dir=${PWD}/android-sdk-linux" > local.properties
-  - ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --no-ui --filter platform-tool,tool
-  - wget https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
-  - chmod u+x bazel-0.1.0-installer-linux-x86_64.sh
-  - ./bazel-0.1.0-installer-linux-x86_64.sh --user
-  - export PATH=${PATH}:${HOME}/bin
-  - ./setup_bazel.sh
 script:
-  - bazel build --spawn_strategy=standalone //...
-  - bazel test --test_output=errors //...
+  - ./shipshape/test/docker/docker_run_tests.sh
