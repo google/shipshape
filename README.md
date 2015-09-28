@@ -81,7 +81,7 @@ system `PATH`.
 
 ```
 $ ./setup-bazel.sh   # Run initial Shipshape+Bazel setup
-$ bazel build //...  # Build all Shipshape source
+$ bazel build --spawn_strategy=standalone //...  # Build all Shipshape source
 ```
 
 ## Running ##
