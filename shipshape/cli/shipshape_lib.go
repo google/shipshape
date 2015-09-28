@@ -206,6 +206,7 @@ func (s *Shipshape) Run() (int, error) {
 		files = []string{filepath.Base(s.File)}
 	}
 	req = createRequest(s.TriggerCats, files, s.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
+	glog.Infof("Calling with request %v", req)
 	numNotes, err = analyze(c, req, origDir, s.JsonOutput)
 	if err != nil {
 		return 0, fmt.Errorf("error making service call: %v", err)
@@ -236,6 +237,7 @@ func (s *Shipshape) Run() (int, error) {
 
 		var numBuildNotes = 0
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
+		glog.Infof("Calling with request %v", req)
 		numBuildNotes, err = analyze(c, req, origDir, s.JsonOutput)
 		if err != nil {
 			return 0, fmt.Errorf("error making service call: %v", err)
