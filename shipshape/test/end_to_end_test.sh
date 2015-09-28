@@ -266,10 +266,10 @@ analyze_test_repo() {
   # Run CLI over the new repo
   # TODO: Verify that the returned result is 1 or 0. 2 means that it has an
   # error
-  info "Analyzing test repo using PostMessage,JSHint,ErrorProne ..."
-  "$SHIPSHAPE" --tag=$TAG --categories='PostMessage,JSHint,ErrorProne' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1 || echo "${SHIPSHAPE} failed with $?"
+  info "Analyzing test repo using PostMessage,JSHint ..."
+  "$SHIPSHAPE" --tag=$TAG --categories='PostMessage,JSHint' --build=maven --stderrthreshold=INFO --local_kythe=$KYTHE_TEST "$LOCAL_WORKSPACE" >> $LOG_FILE 2>&1 || echo "${SHIPSHAPE} failed with $?"
   # Copying logs into LOG_FILE to not have them overwritten by the next CLI run
-  copy_shipshape_logs "Logs from first CLI run for PostMessage,JSHint,ErrorProne"
+  copy_shipshape_logs "Logs from first CLI run for PostMessage,JSHint"
   # Run a second time for AndroidLint. We have to do this separately because
   # otherwise kythe will try to build all the java files, even the ones that maven
   # doesn't build.
@@ -293,13 +293,11 @@ check_findings() {
   info "Checking analyzer results ..."
   local jshint=$(grep "\[JSHint\]" $LOG_FILE | wc -l)
   local postmessage=$(grep "\[PostMessage\]" $LOG_FILE | wc -l)
-  local errorprone=$(grep "\[ErrorProne\]" $LOG_FILE | wc -l)
   local androidlint=$(grep " \[AndroidLint:" $LOG_FILE | wc -l)
   local failure=$(grep "Failure" $LOG_FILE | wc -l)
   local status=0
   [[ $jshint == 8 ]] || error "Wrong number of JSHint results, expected 8, found $jshint"; status=1;
   [[ $postmessage == 2 ]] || error "Wrong number of PostMessage results, expected 2, found $postmessage"; status=1;
-  [[ $errorprone == 2 ]] || error "Wrong number of ErrorProne results, expected 2, found $errorprone"; status=1;
   [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 8, found $androidlint"; status=1;
   [[ $failure == 0 ]] || error "Some analyses failed; please check $LOG_FILE" ; status=1;
   if [[ $status -eq 0 ]]; then
