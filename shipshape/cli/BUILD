@@ -14,12 +14,20 @@
 
 package(default_visibility = ["//shipshape:default_visibility"])
 
-load("/tools/build_rules/go", "go_binary")
+load("/tools/build_rules/go", "go_binary", "go_library", "go_test")
 
 go_binary(
     name = "shipshape",
     srcs = [
         "shipshape.go",
+    ],
+    deps = [":cli"],
+)
+
+go_library(
+    name = "cli",
+    srcs = [
+        "shipshape_lib.go",
     ],
     deps = [
         "//shipshape/proto:note_proto_go",
@@ -32,4 +40,12 @@ go_binary(
         "//third_party/go-glog:go-glog",
         "//third_party/go:protobuf",
     ],
+)
+
+go_test(
+    name = "shipshape_test",
+    srcs = [
+        "shipshape_test.go",
+    ],
+    library = ":cli",
 )
