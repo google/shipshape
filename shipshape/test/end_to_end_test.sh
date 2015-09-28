@@ -296,10 +296,22 @@ check_findings() {
   local androidlint=$(grep " \[AndroidLint:" $LOG_FILE | wc -l)
   local failure=$(grep "Failure" $LOG_FILE | wc -l)
   local status=0
-  [[ $jshint == 8 ]] || error "Wrong number of JSHint results, expected 8, found $jshint"; status=1;
-  [[ $postmessage == 2 ]] || error "Wrong number of PostMessage results, expected 2, found $postmessage"; status=1;
-  [[ $androidlint == 8 ]] || error "Wrong number of AndroidLint results, expected 8, found $androidlint"; status=1;
-  [[ $failure == 0 ]] || error "Some analyses failed; please check $LOG_FILE" ; status=1;
+  if [[ $jshint -ne 8 ]]; then
+    error "Wrong number of JSHint results, expected 8, found $jshint"
+    status=1
+  fi
+  if [[ $postmessage -ne 2 ]]; then
+    error "Wrong number of PostMessage results, expected 2, found $postmessage"
+    status=1
+  fi
+  if [[ $androidlint -ne 8 ]]; then
+    error "Wrong number of AndroidLint results, expected 8, found $androidlint"
+    status=1
+  fi
+  if [[ $failure -ne 0 ]]; then
+    error "Some analyses failed; please check $LOG_FILE"
+    status=1
+  fi
   if [[ $status -eq 0 ]]; then
     info "Success! Analyzer produced expected number of results. Full output in $LOG_FILE"
   fi
