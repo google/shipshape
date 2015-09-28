@@ -41,7 +41,7 @@ RUN apt-get update && apt-get upgrade -y  && \
 RUN apt-get install -y -qq --no-install-recommends openjdk-8-jdk openjdk-8-source
 
 # -- Go --
-RUN curl -L -s http://golang.org/dl/go1.4.2.linux-amd64.tar.gz | tar -zx -C /usr/local
+RUN curl -L -s http://golang.org/dl/go1.5.1.linux-amd64.tar.gz | tar -zx -C /usr/local
 ENV PATH $PATH:/usr/local/go/bin
 ENV GOPATH /go
 ENV GOROOT /usr/local/go
