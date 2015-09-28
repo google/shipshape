@@ -50,12 +50,13 @@ ENV GOROOT /usr/local/go
 RUN apt-get install -y -qq --no-install-recommends bison clang flex
 
 # -- Shipshape --
-RUN git clone https://github.com/google/shipshape.git
+RUN git clone --depth 1 https://github.com/google/shipshape.git
 
 # -- Bazel --
 RUN apt-get install -y -qq --no-install-recommends pkg-config zip g++ zlib1g-dev unzip
-RUN ./shipshape/download_bazel.sh /tmp
-ENV PATH /tmp/bazel/output:$PATH
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
+RUN chmod u+x bazel-0.1.0-installer-linux-x86_64.sh
+RUN ./bazel-0.1.0-installer-linux-x86_64.sh
 
 # -- Android lint --
 RUN wget http://dl.google.com/android/android-sdk_r23-linux.tgz
