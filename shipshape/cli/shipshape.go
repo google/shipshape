@@ -56,11 +56,20 @@ func main() {
 		os.Exit(returnError)
 	}
 
+	thirdPartyAnalyzers := []string{}
+	if *analyzerImages != "" {
+		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
+	}
+	cats := []string{}
+	if *categories != "" {
+		cats = strings.Split(*categories, ",")
+	}
+
 	shipshape := &cli.Shipshape{
 		File:                flag.Arg(0),
-		ThirdPartyAnalyzers: strings.Split(*analyzerImages, ","),
+		ThirdPartyAnalyzers: thirdPartyAnalyzers,
 		Build:               *build,
-		TriggerCats:         strings.Split(*categories, ","),
+		TriggerCats:         cats,
 		Dind:                *dind,
 		Event:               *event,
 		JsonOutput:          *jsonOutput,
