@@ -24,6 +24,11 @@ import (
 	"shipshape/cli"
 )
 
+// TODO(ciera): This main should actually define all of the flags for the CLI
+// parse them, and call to the library with the appropriate parameters set up as part
+// of a struct. The method that we call should return the number of notes or an error,
+// and the exit code should be handleded here.
+
 func main() {
 	cli.Shipshape()
 }
