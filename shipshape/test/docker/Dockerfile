@@ -55,8 +55,7 @@ RUN git clone --depth 1 https://github.com/google/shipshape.git
 # -- Bazel --
 RUN apt-get install -qq --no-install-recommends pkg-config zip g++ zlib1g-dev unzip
 RUN wget -nv -O /tmp/bazel-installer.sh https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
-RUN chmod u+x /tmp/bazel-installer.sh
-RUN /tmp/bazel-installer.sh
+RUN bash /tmp/bazel-installer.sh
 
 # -- Android lint --
 RUN wget -nv -O - http://dl.google.com/android/android-sdk_r23-linux.tgz | tar xzf -
