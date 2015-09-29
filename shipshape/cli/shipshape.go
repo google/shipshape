@@ -66,7 +66,7 @@ func main() {
 		cats = strings.Split(*categories, ",")
 	}
 
-	shipshape := &cli.Shipshape{
+	invoke := &cli.Invocation{
 		File:                flag.Arg(0),
 		ThirdPartyAnalyzers: thirdPartyAnalyzers,
 		Build:               *build,
@@ -80,7 +80,7 @@ func main() {
 		LocalKythe:          *useLocalKythe,
 	}
 
-	numResults, err := shipshape.Run()
+	numResults, err := invoke.Run()
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(returnError)
