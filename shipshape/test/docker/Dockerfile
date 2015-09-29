@@ -34,11 +34,11 @@
 FROM b.gcr.io/dev_containers/cloud-dev-java:prod
 
 # Make sure image is up to date
-RUN apt-get update && apt-get upgrade -y  && \
-   apt-get install -y  -qq --no-install-recommends
+RUN apt-get update -qq && apt-get upgrade -qq && \
+   apt-get install -qq --no-install-recommends
 
 # -- JDK 8 ---
-RUN apt-get install -y -qq --no-install-recommends openjdk-8-jdk openjdk-8-source
+RUN apt-get install -qq --no-install-recommends openjdk-8-jdk openjdk-8-source
 
 # -- Go --
 RUN curl -L -s http://golang.org/dl/go1.5.1.linux-amd64.tar.gz | tar -zx -C /usr/local
@@ -47,20 +47,19 @@ ENV GOPATH /go
 ENV GOROOT /usr/local/go
 
 # -- Bison, Clang, and Flex --
-RUN apt-get install -y -qq --no-install-recommends bison clang flex
+RUN apt-get install -qq --no-install-recommends bison clang flex
 
 # -- Shipshape --
 RUN git clone --depth 1 https://github.com/google/shipshape.git
 
 # -- Bazel --
-RUN apt-get install -y -qq --no-install-recommends pkg-config zip g++ zlib1g-dev unzip
-RUN wget -nv https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
-RUN chmod u+x bazel-0.1.0-installer-linux-x86_64.sh
-RUN ./bazel-0.1.0-installer-linux-x86_64.sh
+RUN apt-get install -qq --no-install-recommends pkg-config zip g++ zlib1g-dev unzip
+RUN wget -nv -O /tmp/bazel-installer.sh https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
+RUN chmod u+x /tmp/bazel-installer.sh
+RUN /tmp/bazel-installer.sh
 
 # -- Android lint --
-RUN wget -nv http://dl.google.com/android/android-sdk_r23-linux.tgz
-RUN tar xvf android-sdk_r23-linux.tgz
+RUN wget -nv -O - http://dl.google.com/android/android-sdk_r23-linux.tgz | tar xzf -
 ENV PATH /android-sdk-linux/tools:$PATH
 RUN echo "y" | android update sdk --no-ui --filter platform-tool
 RUN echo "y" | android update sdk --no-ui --filter tools
@@ -69,14 +68,14 @@ RUN echo "y" | android update sdk --no-ui --filter tools
 # The update fails to clobber the /tools directory for some reason, so
 # we have to do the clobbering for it.
 RUN rm -rf /android-sdk-linux/tools
-RUN unzip /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux
+RUN unzip -qq /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux
 ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # Make sure Bazel is setup (and android lint)
-RUN ./shipshape/setup_bazel.sh
+WORKDIR /shipshape
+RUN ./setup_bazel.sh
 
 ADD startup.sh /startup.sh
 
 # The underlying dind container requires this kind of start up for its dind support
 ENV ONRUN ${ONRUN} "/startup.sh"
-
