@@ -60,8 +60,8 @@ RUN bash /tmp/bazel-installer.sh
 # -- Android lint --
 RUN wget -nv -O - http://dl.google.com/android/android-sdk_r23-linux.tgz | tar xzf -
 ENV PATH /android-sdk-linux/tools:$PATH
-RUN echo "y" | android update sdk --no-ui --filter platform-tool
-RUN echo "y" | android update sdk --no-ui --filter tools
+RUN echo "y" | android -s update sdk --no-ui --filter platform-tool
+RUN echo "y" | android -s update sdk --no-ui --filter tools
 # This is a workaround for a failure in the "android update" command:
 # https://github.com/google/shipshape/issues/27
 # The update fails to clobber the /tools directory for some reason, so
