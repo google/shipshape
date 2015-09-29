@@ -66,8 +66,7 @@ type Shipshape struct {
 	LocalKythe  bool
 }
 
-func printMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
-	numNotes := 0
+func printMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
 	fileNotes := make(map[string][]*notepb.Note)
 	for _, analysis := range msg.AnalyzeResponse {
 		for _, failure := range analysis.Failure {
@@ -102,17 +101,15 @@ func printMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
 				}
 			}
 
-			numNotes++
 			fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
 			fmt.Printf("\t%s\n", *note.Description)
 		}
 		fmt.Println()
 	}
-	return numNotes, nil
+	return nil
 }
 
-func logMessage(msg *rpcpb.ShipshapeResponse, directory string, jsonFile string) (int, error) {
-	numNotes := 0
+func logMessage(msg *rpcpb.ShipshapeResponse, directory string, jsonFile string) error {
 	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
 	if jsonFile == "" {
 		return printMessage(msg, directory)
@@ -120,9 +117,9 @@ func logMessage(msg *rpcpb.ShipshapeResponse, directory string, jsonFile string)
 
 	b, err := json.Marshal(msg)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return numNotes, ioutil.WriteFile(jsonFile, b, 0644)
+	return ioutil.WriteFile(jsonFile, b, 0644)
 }
 
 func (s *Shipshape) Run() (int, error) {
@@ -239,14 +236,23 @@ func (s *Shipshape) Run() (int, error) {
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		glog.Infof("Calling with request %v", req)
 		numBuildNotes, err = analyze(c, req, origDir, s.JsonOutput)
+		numNotes += numBuildNotes
 		if err != nil {
 			return 0, fmt.Errorf("error making service call: %v", err)
 		}
-		numNotes += numBuildNotes
 	}
 
 	glog.Infoln("End of Results.")
 	return numNotes, nil
+}
+
+func numNotes(msg *rpcpb.ShipshapeResponse) int {
+	numNotes := 0
+	for _, analysis := range msg.AnalyzeResponse {
+		numNotes += len(analysis.Note)
+	}
+	return numNotes
+
 }
 
 // startShipshapeService ensures that there is a service started with the given image and
@@ -284,7 +290,7 @@ func startShipshapeService(image, absRoot string, analyzers []string, dind bool)
 }
 
 func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir, jsonFile string) (int, error) {
-	var numNotes = 0
+	var totalNotes = 0
 	glog.Infof("Calling to the shipshape service with %v", req)
 	rd := c.Stream("/ShipshapeService/Run", req)
 	defer rd.Close()
@@ -296,13 +302,13 @@ func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir, jsonFil
 			return 0, fmt.Errorf("received an error from calling run: %v", err.Error())
 		}
 
-		n, err := logMessage(&msg, originalDir, jsonFile)
+		err := logMessage(&msg, originalDir, jsonFile)
 		if err != nil {
 			return 0, fmt.Errorf("could not parse results: %v", err.Error())
 		}
-		numNotes += n
+		totalNotes += numNotes(&msg)
 	}
-	return numNotes, nil
+	return totalNotes, nil
 }
 
 func pull(image string) {
