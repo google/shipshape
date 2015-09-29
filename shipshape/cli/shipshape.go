@@ -66,7 +66,7 @@ func main() {
 		cats = strings.Split(*categories, ",")
 	}
 
-	invoke := &cli.Invocation{
+	options := cli.Options{
 		File:                flag.Arg(0),
 		ThirdPartyAnalyzers: thirdPartyAnalyzers,
 		Build:               *build,
@@ -80,7 +80,7 @@ func main() {
 		LocalKythe:          *useLocalKythe,
 	}
 
-	numResults, err := invoke.Run()
+	numResults, err := cli.New(options).Run()
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(returnError)

@@ -51,7 +51,7 @@ const (
 	kytheImage = "kythe"
 )
 
-type Invocation struct {
+type Options struct {
 	File                string
 	ThirdPartyAnalyzers []string
 	// TODO(ciera): make an enum
@@ -64,6 +64,14 @@ type Invocation struct {
 	StayUp      bool
 	Tag         string
 	LocalKythe  bool
+}
+
+type Invocation struct {
+	options Options
+}
+
+func New(options Options) *Invocation {
+	return &Invocation{options}
 }
 
 func printMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
@@ -124,14 +132,14 @@ func logMessage(msg *rpcpb.ShipshapeResponse, directory string, jsonFile string)
 
 func (i *Invocation) Run() (int, error) {
 	glog.Infof("Starting shipshape...")
-	fs, err := os.Stat(i.File)
+	fs, err := os.Stat(i.options.File)
 	if err != nil {
-		return 0, fmt.Errorf("%s is not a valid file or directory\n", i.File)
+		return 0, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
 	}
 
-	origDir := i.File
+	origDir := i.options.File
 	if !fs.IsDir() {
-		origDir = filepath.Dir(i.File)
+		origDir = filepath.Dir(i.options.File)
 	}
 
 	absRoot, err := filepath.Abs(origDir)
@@ -143,17 +151,17 @@ func (i *Invocation) Run() (int, error) {
 		return 0, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
 	}
 
-	image := docker.FullImageName(i.Repo, image, i.Tag)
+	image := docker.FullImageName(i.options.Repo, image, i.options.Tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
 	// Create the request
 
-	if len(i.TriggerCats) == 0 {
-		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", i.Event)
+	if len(i.options.TriggerCats) == 0 {
+		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", i.options.Event)
 	}
 
-	if len(i.ThirdPartyAnalyzers) == 0 {
-		i.ThirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
+	if len(i.options.ThirdPartyAnalyzers) == 0 {
+		i.options.ThirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
 		if err != nil {
 			glog.Infof("Could not get global config; using only the default analyzers: %v", err)
 		}
@@ -162,27 +170,27 @@ func (i *Invocation) Run() (int, error) {
 	// If we are not running in local mode, pull the latest copy
 	// Notice this will use the local tag as a signal to not pull the
 	// third-party analyzers either.
-	if i.Tag != "local" {
+	if i.options.Tag != "local" {
 		pull(image)
-		pullAnalyzers(i.ThirdPartyAnalyzers)
+		pullAnalyzers(i.options.ThirdPartyAnalyzers)
 	}
 
 	// Put in this defer before calling run. Even if run fails, it can
 	// still create the container.
-	if !i.StayUp {
+	if !i.options.StayUp {
 		// TODO(ciera): Rather than immediately sending a SIGKILL,
 		// we should use the default 10 seconds and properly handle
 		// SIGTERMs in the endpoint script.
 		defer stop("shipping_container", 0)
 		// Stop all the analyzers, even the ones that had trouble starting,
 		// in case they did actually start
-		for id, analyzerRepo := range i.ThirdPartyAnalyzers {
+		for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
 			container, _ := getContainerAndAddress(analyzerRepo, id)
 			defer stop(container, 0)
 		}
 	}
 
-	containers, errs := startAnalyzers(absRoot, i.ThirdPartyAnalyzers, i.Dind)
+	containers, errs := startAnalyzers(absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
 	for _, err := range errs {
 		glog.Errorf("Could not start up third party analyzer: %v", err)
 	}
@@ -193,26 +201,26 @@ func (i *Invocation) Run() (int, error) {
 
 	// Run it on files
 	relativeRoot := ""
-	c, relativeRoot, err = startShipshapeService(image, absRoot, containers, i.Dind)
+	c, relativeRoot, err = startShipshapeService(image, absRoot, containers, i.options.Dind)
 	if err != nil {
 		return 0, fmt.Errorf("HTTP client did not become healthy: %v", err)
 	}
 	var files []string
 	if !fs.IsDir() {
-		files = []string{filepath.Base(i.File)}
+		files = []string{filepath.Base(i.options.File)}
 	}
-	req = createRequest(i.TriggerCats, files, i.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
+	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
 	glog.Infof("Calling with request %v", req)
-	numNotes, err = analyze(c, req, origDir, i.JsonOutput)
+	numNotes, err = analyze(c, req, origDir, i.options.JsonOutput)
 	if err != nil {
 		return numNotes, fmt.Errorf("error making service call: %v", err)
 	}
 
 	// If desired, generate compilation units with a kythe image
-	if i.Build != "" {
+	if i.options.Build != "" {
 		// TODO(ciera): Handle other build systems
-		fullKytheImage := docker.FullImageName(i.Repo, kytheImage, i.Tag)
-		if !i.LocalKythe {
+		fullKytheImage := docker.FullImageName(i.options.Repo, kytheImage, i.options.Tag)
+		if !i.options.LocalKythe {
 			pull(fullKytheImage)
 		}
 
@@ -221,9 +229,9 @@ func (i *Invocation) Run() (int, error) {
 		// failed for some reason (or a kythe container was started in some other
 		// way) the below run command will fail.
 		defer stop("kythe", 10*time.Second)
-		glog.Infof("Retrieving compilation units with %s", i.Build)
+		glog.Infof("Retrieving compilation units with %s", i.options.Build)
 
-		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, i.Build, i.Dind)
+		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, i.options.Build, i.options.Dind)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
@@ -233,7 +241,7 @@ func (i *Invocation) Run() (int, error) {
 
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		glog.Infof("Calling with request %v", req)
-		numBuildNotes, err := analyze(c, req, origDir, i.JsonOutput)
+		numBuildNotes, err := analyze(c, req, origDir, i.options.JsonOutput)
 		numNotes += numBuildNotes
 		if err != nil {
 			return numNotes, fmt.Errorf("error making service call: %v", err)
