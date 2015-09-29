@@ -24,8 +24,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"shipshape/cli"
 	"strings"
+
+	"shipshape/cli"
 )
 
 var (

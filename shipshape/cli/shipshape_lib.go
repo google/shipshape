@@ -206,7 +206,7 @@ func (s *Shipshape) Run() (int, error) {
 	glog.Infof("Calling with request %v", req)
 	numNotes, err = analyze(c, req, origDir, s.JsonOutput)
 	if err != nil {
-		return 0, fmt.Errorf("error making service call: %v", err)
+		return numNotes, fmt.Errorf("error making service call: %v", err)
 	}
 
 	// If desired, generate compilation units with a kythe image
@@ -228,17 +228,16 @@ func (s *Shipshape) Run() (int, error) {
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
-			return 0, fmt.Errorf("error from run: %v", result.Err)
+			return numNotes, fmt.Errorf("error from run: %v", result.Err)
 		}
 		glog.Infoln("CompilationUnits prepared")
 
-		var numBuildNotes = 0
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		glog.Infof("Calling with request %v", req)
-		numBuildNotes, err = analyze(c, req, origDir, s.JsonOutput)
+		numBuildNotes, err := analyze(c, req, origDir, s.JsonOutput)
 		numNotes += numBuildNotes
 		if err != nil {
-			return 0, fmt.Errorf("error making service call: %v", err)
+			return numNotes, fmt.Errorf("error making service call: %v", err)
 		}
 	}
 
