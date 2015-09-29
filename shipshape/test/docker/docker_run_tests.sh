@@ -27,4 +27,4 @@ declare -xr IMAGE="gcr.io/shipshape_releases/testing_env"
 
 # Starts a Shipshape container and runs the Bazel tests.
 echo " Starting docker container ... "
-docker run --privileged -it --name "${CONTAINER}" "${IMAGE}" "cd shipshape; bazel test --test_output=errors //..."
+docker run --privileged -it --name "${CONTAINER}" "${IMAGE}" "bazel build //... && bazel test --test_output=errors //..."
