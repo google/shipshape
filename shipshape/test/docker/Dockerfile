@@ -34,11 +34,19 @@
 FROM b.gcr.io/dev_containers/cloud-dev-java:prod
 
 # Make sure image is up to date
-RUN apt-get update -qq && apt-get upgrade -qq && \
-   apt-get install -qq --no-install-recommends
-
-# -- JDK 8 ---
-RUN apt-get install -qq --no-install-recommends openjdk-8-jdk openjdk-8-source
+RUN apt-get -qq update && \
+    apt-get -qq upgrade && \
+    apt-get -qq install --no-install-recommends \
+        bison \
+        clang \
+        flex \
+        g++ \ 
+        openjdk-8-jdk \
+        openjdk-8-source \
+        pkg-config \
+        unzip \
+        zip \
+        zlib1g-dev 
 
 # -- Go --
 RUN curl -L -s http://golang.org/dl/go1.5.1.linux-amd64.tar.gz | tar -zx -C /usr/local
@@ -46,19 +54,15 @@ ENV PATH $PATH:/usr/local/go/bin
 ENV GOPATH /go
 ENV GOROOT /usr/local/go
 
-# -- Bison, Clang, and Flex --
-RUN apt-get install -qq --no-install-recommends bison clang flex
-
 # -- Shipshape --
 RUN git clone --depth 1 https://github.com/google/shipshape.git
 
 # -- Bazel --
-RUN apt-get install -qq --no-install-recommends pkg-config zip g++ zlib1g-dev unzip
 RUN wget -nv -O /tmp/bazel-installer.sh https://github.com/bazelbuild/bazel/releases/download/0.1.0/bazel-0.1.0-installer-linux-x86_64.sh
 RUN bash /tmp/bazel-installer.sh
 
 # -- Android lint --
-RUN wget -nv -O - http://dl.google.com/android/android-sdk_r23-linux.tgz | tar xzf -
+RUN wget -nv -O - http://dl.google.com/android/android-sdk_r23-linux.tgz | tar -zx
 ENV PATH /android-sdk-linux/tools:$PATH
 RUN echo "y" | android -s update sdk --no-ui --filter platform-tool
 RUN echo "y" | android -s update sdk --no-ui --filter tools
