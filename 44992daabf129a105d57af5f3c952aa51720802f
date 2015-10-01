@@ -35,3 +35,5 @@
 {"timestamp":"1443722885","v":0,"agent":"Jenkins(1.627) GitNotesJobLogger","url":"https://jenkins-dot-shipshapecode.appspot.com/job/shipshape/46/","status":"failure"}
 
 {"timestamp":"1443723489","v":0,"agent":"Jenkins(1.627) GitNotesJobLogger","url":"https://jenkins-dot-shipshapecode.appspot.com/job/shipshape/47/"}
+
+{"timestamp":"1443723491","v":0,"agent":"Jenkins(1.627) GitNotesJobLogger","url":"https://jenkins-dot-shipshapecode.appspot.com/job/shipshape/47/","status":"failure"}
