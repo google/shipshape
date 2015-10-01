@@ -21,14 +21,72 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+	"strings"
+
 	"shipshape/cli"
 )
 
-// TODO(ciera): This main should actually define all of the flags for the CLI
-// parse them, and call to the library with the appropriate parameters set up as part
-// of a struct. The method that we call should return the number of notes or an error,
-// and the exit code should be handleded here.
+var (
+	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
+	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
+	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
+	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
+	event          = flag.String("event", "manual", "The name of the event to use")
+	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
+	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
+	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
+	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
+	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
+)
+
+const (
+	returnNoFindings = 0
+	returnFindings   = 1
+	returnError      = 2
+)
 
 func main() {
-	cli.Shipshape()
+	flag.Parse()
+
+	// Get the file/directory to analyze.
+	if len(flag.Args()) != 1 {
+		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
+		os.Exit(returnError)
+	}
+
+	thirdPartyAnalyzers := []string{}
+	if *analyzerImages != "" {
+		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
+	}
+	cats := []string{}
+	if *categories != "" {
+		cats = strings.Split(*categories, ",")
+	}
+
+	options := cli.Options{
+		File:                flag.Arg(0),
+		ThirdPartyAnalyzers: thirdPartyAnalyzers,
+		Build:               *build,
+		TriggerCats:         cats,
+		Dind:                *dind,
+		Event:               *event,
+		JsonOutput:          *jsonOutput,
+		Repo:                *repo,
+		StayUp:              *stayUp,
+		Tag:                 *tag,
+		LocalKythe:          *useLocalKythe,
+	}
+
+	numResults, err := cli.New(options).Run()
+	if err != nil {
+		fmt.Printf("Error: %v", err.Error())
+		os.Exit(returnError)
+	}
+	if numResults != 0 {
+		os.Exit(returnFindings)
+	}
+	os.Exit(returnNoFindings)
 }
