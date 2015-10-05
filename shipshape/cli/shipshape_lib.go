@@ -21,10 +21,8 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,7 +36,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	notepb "shipshape/proto/note_proto"
 	ctxpb "shipshape/proto/shipshape_context_proto"
 	rpcpb "shipshape/proto/shipshape_rpc_proto"
 )
@@ -55,15 +52,15 @@ type Options struct {
 	File                string
 	ThirdPartyAnalyzers []string
 	// TODO(ciera): make an enum
-	Build       string
-	TriggerCats []string
-	Dind        bool
-	Event       string
-	JsonOutput  string
-	Repo        string
-	StayUp      bool
-	Tag         string
-	LocalKythe  bool
+	Build          string
+	TriggerCats    []string
+	Dind           bool
+	Event          string
+	Repo           string
+	StayUp         bool
+	Tag            string
+	LocalKythe     bool
+	HandleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error
 }
 
 type Invocation struct {
@@ -72,62 +69,6 @@ type Invocation struct {
 
 func New(options Options) *Invocation {
 	return &Invocation{options}
-}
-
-func printMessage(msg *rpcpb.ShipshapeResponse, directory string) error {
-	fileNotes := make(map[string][]*notepb.Note)
-	for _, analysis := range msg.AnalyzeResponse {
-		for _, failure := range analysis.Failure {
-			fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", *failure.Category, *failure.FailureMessage)
-		}
-		for _, note := range analysis.Note {
-			path := ""
-			if note.Location != nil {
-				path = filepath.Join(directory, note.Location.GetPath())
-			}
-			fileNotes[path] = append(fileNotes[path], note)
-		}
-	}
-
-	for path, notes := range fileNotes {
-		if path != "" {
-			fmt.Println(path)
-		} else {
-			fmt.Println("Global")
-		}
-		for _, note := range notes {
-			loc := ""
-			subCat := ""
-			if note.Subcategory != nil {
-				subCat = ":" + *note.Subcategory
-			}
-			if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
-				if note.GetLocation().GetRange().StartColumn != nil {
-					loc = fmt.Sprintf("Line %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
-				} else {
-					loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
-				}
-			}
-
-			fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
-			fmt.Printf("\t%s\n", *note.Description)
-		}
-		fmt.Println()
-	}
-	return nil
-}
-
-func logMessage(msg *rpcpb.ShipshapeResponse, directory string, jsonFile string) error {
-	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
-	if jsonFile == "" {
-		return printMessage(msg, directory)
-	}
-
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(jsonFile, b, 0644)
 }
 
 func (i *Invocation) Run() (int, error) {
@@ -211,7 +152,7 @@ func (i *Invocation) Run() (int, error) {
 	}
 	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
 	glog.Infof("Calling with request %v", req)
-	numNotes, err = analyze(c, req, origDir, i.options.JsonOutput)
+	numNotes, err = analyze(c, req, origDir, i.options.HandleResponse)
 	if err != nil {
 		return numNotes, fmt.Errorf("error making service call: %v", err)
 	}
@@ -241,7 +182,7 @@ func (i *Invocation) Run() (int, error) {
 
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		glog.Infof("Calling with request %v", req)
-		numBuildNotes, err := analyze(c, req, origDir, i.options.JsonOutput)
+		numBuildNotes, err := analyze(c, req, origDir, i.options.HandleResponse)
 		numNotes += numBuildNotes
 		if err != nil {
 			return numNotes, fmt.Errorf("error making service call: %v", err)
@@ -294,7 +235,7 @@ func startShipshapeService(image, absRoot string, analyzers []string, dind bool)
 	return c, subPath, c.WaitUntilReady(10 * time.Second)
 }
 
-func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir, jsonFile string) (int, error) {
+func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string, handleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error) (int, error) {
 	var totalNotes = 0
 	glog.Infof("Calling to the shipshape service with %v", req)
 	rd := c.Stream("/ShipshapeService/Run", req)
@@ -307,7 +248,7 @@ func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir, jsonFil
 			return 0, fmt.Errorf("received an error from calling run: %v", err.Error())
 		}
 
-		err := logMessage(&msg, originalDir, jsonFile)
+		err := handleResponse(&msg, originalDir)
 		if err != nil {
 			return 0, fmt.Errorf("could not parse results: %v", err.Error())
 		}
