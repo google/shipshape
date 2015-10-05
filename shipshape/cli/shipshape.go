@@ -21,12 +21,18 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"shipshape/cli"
+
+	notepb "shipshape/proto/note_proto"
+	rpcpb "shipshape/proto/shipshape_rpc_proto"
 )
 
 var (
@@ -47,6 +53,59 @@ const (
 	returnFindings   = 1
 	returnError      = 2
 )
+
+func outputAsText(msg *rpcpb.ShipshapeResponse, directory string) error {
+	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+	fileNotes := make(map[string][]*notepb.Note)
+	for _, analysis := range msg.AnalyzeResponse {
+		for _, failure := range analysis.Failure {
+			fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", *failure.Category, *failure.FailureMessage)
+		}
+		for _, note := range analysis.Note {
+			path := ""
+			if note.Location != nil {
+				path = filepath.Join(directory, note.Location.GetPath())
+			}
+			fileNotes[path] = append(fileNotes[path], note)
+		}
+	}
+
+	for path, notes := range fileNotes {
+		if path != "" {
+			fmt.Println(path)
+		} else {
+			fmt.Println("Global")
+		}
+		for _, note := range notes {
+			loc := ""
+			subCat := ""
+			if note.Subcategory != nil {
+				subCat = ":" + *note.Subcategory
+			}
+			if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
+				if note.GetLocation().GetRange().StartColumn != nil {
+					loc = fmt.Sprintf("Line %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
+				} else {
+					loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
+				}
+			}
+
+			fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
+			fmt.Printf("\t%s\n", *note.Description)
+		}
+		fmt.Println()
+	}
+	return nil
+}
+
+func outputAsJson(msg *rpcpb.ShipshapeResponse, _ string) error {
+	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(*jsonOutput, b, 0644)
+}
 
 func main() {
 	flag.Parse()
@@ -73,11 +132,15 @@ func main() {
 		TriggerCats:         cats,
 		Dind:                *dind,
 		Event:               *event,
-		JsonOutput:          *jsonOutput,
 		Repo:                *repo,
 		StayUp:              *stayUp,
 		Tag:                 *tag,
 		LocalKythe:          *useLocalKythe,
+	}
+	if *jsonOutput == "" {
+		options.HandleResponse = outputAsText
+	} else {
+		options.HandleResponse = outputAsJson
 	}
 
 	numResults, err := cli.New(options).Run()
