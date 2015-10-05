@@ -60,6 +60,8 @@ type Options struct {
 	StayUp         bool
 	Tag            string
 	LocalKythe     bool
+	// Directory has the path the analyzed file is in (msg.AnalyzeResponse.Note.Location.GetPath()
+	// contains only the basename).
 	HandleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error
 }
 
