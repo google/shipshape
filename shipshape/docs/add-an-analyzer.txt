@@ -1,0 +1,18 @@
+Instructions for how to implement an analyzer
+
+Make sure you're set up with the necessary tools
+
+GCE
+
+Linux
+
+
+Implement your analyzer
+
+Create a Docker file
+
+Test your analyzer locally
+
+Push it up to gcr.io or docker.io
+
+Add it to our list!
