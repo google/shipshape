@@ -98,15 +98,6 @@ func outputAsText(msg *rpcpb.ShipshapeResponse, directory string) error {
 	return nil
 }
 
-func outputAsJson(msg *rpcpb.ShipshapeResponse, _ string) error {
-	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(*jsonOutput, b, 0644)
-}
-
 func main() {
 	flag.Parse()
 
@@ -140,7 +131,19 @@ func main() {
 	if *jsonOutput == "" {
 		options.HandleResponse = outputAsText
 	} else {
-		options.HandleResponse = outputAsJson
+		var allResponses rpcpb.ShipshapeResponse
+		options.HandleResponse = func(msg *rpcpb.ShipshapeResponse, _ string) error {
+			allResponses.AnalyzeResponse = append(allResponses.AnalyzeResponse, msg.AnalyzeResponse...)
+			return nil
+		}
+		options.ResponsesDone = func() error {
+			// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+			b, err := json.Marshal(allResponses)
+			if err != nil {
+				return err
+			}
+			return ioutil.WriteFile(*jsonOutput, b, 0644)
+		}
 	}
 
 	numResults, err := cli.New(options).Run()
