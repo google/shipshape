@@ -26,8 +26,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/shipshape/shipshape/api"
 	"shipshape/androidlint_analyzer/androidlint"
-	"shipshape/api"
 	"shipshape/util/rpc/server"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"

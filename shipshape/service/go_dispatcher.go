@@ -22,13 +22,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/shipshape/shipshape/api"
 	"shipshape/analyzers/codealert"
 	"shipshape/analyzers/govet"
 	"shipshape/analyzers/jshint"
 	"shipshape/analyzers/postmessage"
 	"shipshape/analyzers/pylint"
 	"shipshape/analyzers/wordcount"
-	"shipshape/api"
 	"shipshape/util/rpc/server"
 
 	ctxpb "shipshape/proto/shipshape_context_proto"

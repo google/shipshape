@@ -19,8 +19,8 @@ package api
 import (
 	"log"
 
+	strset "github.com/google/shipshape/shipshape/util/strings"
 	"shipshape/util/file"
-	strset "shipshape/util/strings"
 	"shipshape/util/rpc/server"
 
 	"github.com/golang/protobuf/proto"
