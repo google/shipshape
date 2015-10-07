@@ -19,11 +19,10 @@ package api
 import (
 	"log"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/google/shipshape/shipshape/util/file"
 	"github.com/google/shipshape/shipshape/util/rpc/server"
 	strset "github.com/google/shipshape/shipshape/util/strings"
-
-	"github.com/golang/protobuf/proto"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"

@@ -25,19 +25,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/file"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 	strset "github.com/google/shipshape/shipshape/util/strings"
 	//	"kythe.io/kythe/go/platform/kindex"
-	"shipshape/util/file"
-	"shipshape/util/rpc/client"
-	"shipshape/util/rpc/server"
-
-	"github.com/golang/protobuf/proto"
-
-	//	apb "kythe.io/kythe/proto/analysis_proto"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	contextpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	//	apb "kythe.io/kythe/proto/analysis_proto"
 )
 
 const (

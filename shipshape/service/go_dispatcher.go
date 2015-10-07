@@ -22,7 +22,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/google/shipshape/shipshape/api"
 	"shipshape/analyzers/codealert"
 	"shipshape/analyzers/govet"
 	"shipshape/analyzers/jshint"
@@ -30,6 +29,8 @@ import (
 	"shipshape/analyzers/pylint"
 	"shipshape/analyzers/wordcount"
 	"shipshape/util/rpc/server"
+
+	"github.com/google/shipshape/shipshape/api"
 
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
