@@ -26,8 +26,8 @@ import (
 	"net/http"
 	"strings"
 
-	"shipshape/util/rpc/protocol"
-	"shipshape/util/httpencoding"
+	"github.com/google/shipshape/shipshape/util/httpencoding"
+	"github.com/google/shipshape/shipshape/util/rpc/protocol"
 )
 
 // An Endpoint is a collection of services that implements http.Handler to
