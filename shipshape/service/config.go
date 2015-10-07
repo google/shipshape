@@ -27,7 +27,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	configpb "shipshape/proto/shipshape_config_proto"
+	configpb "github.com/google/shipshape/shipshape/proto/shipshape_config_proto"
 )
 
 const (

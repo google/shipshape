@@ -21,9 +21,9 @@ import (
 
 	"shipshape/util/strings"
 
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 type fakeAnalyzer struct {

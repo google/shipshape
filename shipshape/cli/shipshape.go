@@ -31,8 +31,8 @@ import (
 
 	"shipshape/cli"
 
-	notepb "shipshape/proto/note_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 var (

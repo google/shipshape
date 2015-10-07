@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	epb "shipshape/util/rpc/server/test_proto"
+	epb "github.com/google/shipshape/shipshape/util/rpc/server/test_proto"
 )
 
 // Verify that an endpoint satisfies http.Handler.

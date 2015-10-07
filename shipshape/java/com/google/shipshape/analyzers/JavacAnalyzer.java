@@ -81,11 +81,11 @@ public abstract class JavacAnalyzer implements Analyzer<JavaCompilationDetails> 
     * and it is in the current compilation unit.
     */
   public boolean isRelevantJavaFile(ShipshapeContext context, String path) {
-    for (String sourceFile : context.getCompilationDetails().getCompilationUnit().getSourceFileList()) {
-      if (path.endsWith(sourceFile)) {
-        return path.endsWith(".java") && Iterables.contains(context.getFilePathList(), path);
-      }
-    }
+//    for (String sourceFile : context.getCompilationDetails().getCompilationUnit().getSourceFileList()) {
+//      if (path.endsWith(sourceFile)) {
+//        return path.endsWith(".java") && Iterables.contains(context.getFilePathList(), path);
+//      }
+//    }
     return false;
   }
 

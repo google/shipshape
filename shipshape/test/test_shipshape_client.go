@@ -30,9 +30,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
-	spb "shipshape/proto/source_context_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	spb "github.com/google/shipshape/shipshape/proto/source_context_proto"
 )
 
 var (

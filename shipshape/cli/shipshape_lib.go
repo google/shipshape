@@ -36,8 +36,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 const (
@@ -52,19 +52,19 @@ type Options struct {
 	File                string
 	ThirdPartyAnalyzers []string
 	// TODO(ciera): make an enum
-	Build          string
-	TriggerCats    []string
-	Dind           bool
-	Event          string
-	Repo           string
-	StayUp         bool
-	Tag            string
-	LocalKythe     bool
+	Build       string
+	TriggerCats []string
+	Dind        bool
+	Event       string
+	Repo        string
+	StayUp      bool
+	Tag         string
+	LocalKythe  bool
 	// Directory has the path the analyzed file is in (msg.AnalyzeResponse.Note.Location.GetPath()
 	// contains only the basename). HandleResponse can be called multiple times although the calls
 	// are not concurrent.
 	HandleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error
-	ResponsesDone func() error
+	ResponsesDone  func() error
 }
 
 type Invocation struct {

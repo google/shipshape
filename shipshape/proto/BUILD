@@ -48,7 +48,7 @@ proto_library(
     gen_java = 1,
     deps = [
         ":source_context_proto",
-        "//third_party/kythe/proto:analysis_proto",
+#        "//third_party/kythe/proto:analysis_proto",
     ],
 )
 

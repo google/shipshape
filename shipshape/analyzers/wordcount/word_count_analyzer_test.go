@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	"shipshape/util/test"
 
-	notespb "shipshape/proto/note_proto"
+	"github.com/golang/protobuf/proto"
+
+	notespb "github.com/google/shipshape/shipshape/proto/note_proto"
 )
 
-const dataDir = "shipshape/analyzers/wordcount/testdata";
+const dataDir = "shipshape/analyzers/wordcount/testdata"
 
 func TestWordCount(t *testing.T) {
 	tests := []struct {

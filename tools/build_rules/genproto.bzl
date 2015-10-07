@@ -108,7 +108,7 @@ genproto_go = rule(
             allow_files = True,
         ),
         # TODO(schroederc): put package prefix into common configuration file
-        "go_package_prefix": attr.string(default = ""),
+        "go_package_prefix": attr.string(default = "github.com/google/shipshape/"),
     },
 )
 
@@ -153,7 +153,7 @@ def proto_library(name, src=None, deps=[], visibility=None,
     for dep in deps:
       go_deps += [dep+"_go"]
     if not go_package:
-      go_package = PACKAGE_NAME + "/" + name
+      go_package = "github.com/google/shipshape/" + PACKAGE_NAME + "/" + name
     go_library(
         name  = name+"_go",
         srcs = [name+"_go_src"],

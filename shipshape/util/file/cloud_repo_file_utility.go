@@ -29,7 +29,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	spb "shipshape/proto/source_context_proto"
+	spb "github.com/google/shipshape/shipshape/proto/source_context_proto"
 )
 
 const (

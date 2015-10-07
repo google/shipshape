@@ -28,10 +28,11 @@ import (
 	"shipshape/analyzers/postmessage"
 	"shipshape/analyzers/pylint"
 	"shipshape/analyzers/wordcount"
-	"shipshape/api"
 	"shipshape/util/rpc/server"
 
-	ctxpb "shipshape/proto/shipshape_context_proto"
+	"github.com/google/shipshape/shipshape/api"
+
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
 
 var (

@@ -30,7 +30,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 var (

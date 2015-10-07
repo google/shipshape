@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package(default_visibility = ["//shipshape:default_visibility"])
+package(default_visibility = ["//visibility:public"])
 
-load("/tools/build_rules/go", "go_library", "go_binary")
+load("/tools/build_rules/go", "go_library")
 
 go_library(
     name = "file",
@@ -26,18 +26,6 @@ go_library(
         "//shipshape/proto:shipshape_context_proto_go",
         "//shipshape/proto:shipshape_rpc_proto_go",
         "//shipshape/proto:source_context_proto_go",
-        "//third_party/go:protobuf",
-    ],
-)
-
-go_binary(
-    name = "copy_cloud_repo",
-    srcs = [
-        "copy_cloud_repo.go",
-    ],
-    deps = [
-        ":file",
-        "//shipshape/util/rpc/client:client",
         "//third_party/go:protobuf",
     ],
 )
