@@ -69,3 +69,14 @@ proto_library(
     gen_go = 1,
     gen_java = 1,
 )
+
+proto_library(
+    name = "shipshape_reporter_proto",
+    src = "shipshape_reporter.proto",
+    gen_go = 1,
+    gen_java = 1,
+    deps = [
+        ":note_proto",
+        ":shipshape_context_proto",
+    ],
+)
