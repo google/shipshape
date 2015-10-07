@@ -6,7 +6,7 @@ option java_outer_classname = "ShipshapeContextProto";
 option java_package = "com.google.shipshape.proto";
 
 import "shipshape/proto/source_context.proto";
-import "third_party/kythe/proto/analysis.proto";
+//import "third_party/kythe/proto/analysis.proto";
 
 // Root object that provides access to information
 // about the environment the analysis is running in.
@@ -56,7 +56,7 @@ message ChangelistDetails {
 message CompilationDetails {
   // Set when running compiler based analysis; compilation_details describes
   // a single invocation of a compiler.
-  optional kythe.proto.CompilationUnit compilation_unit = 1;
+  //optional kythe.proto.CompilationUnit compilation_unit = 1;
   // The local path to a compilation description file (.kindex)
   // that this compilation unit came from.
   optional string compilation_description_path = 2;

@@ -26,14 +26,14 @@ import (
 	"time"
 
 	strset "github.com/google/shipshape/shipshape/util/strings"
-	"kythe.io/kythe/go/platform/kindex"
+	//	"kythe.io/kythe/go/platform/kindex"
 	"shipshape/util/file"
 	"shipshape/util/rpc/client"
 	"shipshape/util/rpc/server"
 
 	"github.com/golang/protobuf/proto"
 
-	apb "kythe.io/kythe/proto/analysis_proto"
+	//	apb "kythe.io/kythe/proto/analysis_proto"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	contextpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
@@ -182,7 +182,7 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	log.Printf("Analyzing stage %s", stage.String())
 	if stage == contextpb.Stage_PRE_BUILD {
 		ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
-	} else {
+	} /*else {
 		comps := filepath.Join(*context.RepoRoot, compilationsDir)
 		compUnits, err := findCompilationUnits(comps)
 		log.Printf("Found %d compUnits at %s", len(compUnits), comps)
@@ -199,7 +199,9 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 			log.Printf("Calling services with comp unit at %s", path)
 			ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
 		}
+
 	}
+	*/
 
 	log.Print("Analysis completed")
 	return nil
@@ -422,6 +424,7 @@ func callAnalyze(analyzer string, req *rpcpb.AnalyzeRequest, out chan<- *rpcpb.A
 // retrieves all the compilation units from it. Currently, kythe puts the compilation units
 // in directories by language. Returns a mapping from the path to the kindex file and the
 // compilation unit found within it.
+/*
 func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
 	var units = make(map[string]*apb.CompilationUnit)
 	walkpath := func(path string, file os.FileInfo, err error) error {
@@ -442,7 +445,7 @@ func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
 	}
 	return units, nil
 }
-
+*/
 // generateFailure creates a response with an analysis failure containing the given
 // category and message
 func generateFailure(cat string, message string) *rpcpb.AnalyzeResponse {
