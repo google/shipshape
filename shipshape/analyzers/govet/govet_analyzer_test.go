@@ -20,7 +20,7 @@ import (
 	"os"
 	"testing"
 
-	ctxpb "shipshape/proto/shipshape_context_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
 
 const (

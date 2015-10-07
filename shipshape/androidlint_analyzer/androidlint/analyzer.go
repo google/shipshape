@@ -25,9 +25,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rangepb "shipshape/proto/textrange_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rangepb "github.com/google/shipshape/shipshape/proto/textrange_proto"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -39,7 +39,7 @@ const (
 
 var (
 	exitStatus = "exit status 1"
-	lintBin = "lint"
+	lintBin    = "lint"
 )
 
 // Analyzer is a wrapper around the Android lint tool. This analyzer looks for

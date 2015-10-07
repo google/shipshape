@@ -30,7 +30,7 @@ import (
 	"shipshape/androidlint_analyzer/androidlint"
 	"shipshape/util/rpc/server"
 
-	ctxpb "shipshape/proto/shipshape_context_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
 
 var (

@@ -108,7 +108,7 @@ genproto_go = rule(
             allow_files = True,
         ),
         # TODO(schroederc): put package prefix into common configuration file
-        "go_package_prefix": attr.string(default = ""),
+        "go_package_prefix": attr.string(default = "github.com/google/shipshape/"),
     },
 )
 

@@ -26,9 +26,9 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rangepb "shipshape/proto/textrange_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rangepb "github.com/google/shipshape/shipshape/proto/textrange_proto"
 )
 
 const (

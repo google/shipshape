@@ -25,19 +25,19 @@ import (
 	"sync"
 	"time"
 
+	strset "github.com/google/shipshape/shipshape/util/strings"
+	"kythe.io/kythe/go/platform/kindex"
 	"shipshape/util/file"
 	"shipshape/util/rpc/client"
 	"shipshape/util/rpc/server"
-	strset "shipshape/util/strings"
-	"third_party/kythe/go/platform/kindex"
 
 	"github.com/golang/protobuf/proto"
 
-	apb "third_party/kythe/proto/analysis_proto"
+	apb "kythe.io/kythe/proto/analysis_proto"
 
-	notepb "shipshape/proto/note_proto"
-	contextpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	contextpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 const (
@@ -248,7 +248,7 @@ func collectAllFiles(root string) ([]string, error) {
 			return nil
 		}
 		// Skip symlinks.
-		if f.Mode() & os.ModeSymlink != 0 {
+		if f.Mode()&os.ModeSymlink != 0 {
 			return nil
 		}
 		// Skip directories starting with "."
