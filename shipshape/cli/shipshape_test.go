@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	rpcpb "shipshape/proto/shipshape_rpc_proto"  
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"  
 )
 
 func countFailures(resp rpcpb.ShipshapeResponse) int {
