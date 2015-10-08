@@ -57,26 +57,26 @@ func TestBasic(t *testing.T) {
 		return nil
 	}
 
-	numNotes, err := New(options).Run()
+	returnedNotesCount, err := New(options).Run()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if countFailures(allResponses) != 0 {
-		t.Errorf("Expected 0 failures: %v", allResponses)
+	testName := "TestBasic"
+
+	if got, want := countFailures(allResponses), 0; got != want {
+		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if numNotes != countNotes(allResponses) {
-		t.Errorf("Disagreement between returned count (%v) and count of notes: %v", numNotes, allResponses)
+	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
+		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if numNotes != 10 {
-		t.Errorf("Expected 10 notes, got %v: %v", numNotes, allResponses)
+	if got, want := returnedNotesCount, 10; got != want {
+		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	jshintNotes := countCategoryNotes(allResponses, "JSHint")
-	if jshintNotes != 8 {
-		t.Errorf("Expected 8 notes from JSHint, got %v: %v", jshintNotes, allResponses)
+	if got, want := countCategoryNotes(allResponses, "JSHint"), 8; got != want {
+		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	postMessageNotes := countCategoryNotes(allResponses, "PostMessage")
-	if postMessageNotes != 2 {
-		t.Errorf("Expected 2 notes from PostMessage, got %v: %v", postMessageNotes, allResponses)
+	if got, want := countCategoryNotes(allResponses, "PostMessage"), 2; got != want {
+		t.Errorf("%v: Wrong number of PostMessage notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 }
 
