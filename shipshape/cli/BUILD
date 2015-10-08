@@ -50,5 +50,8 @@ go_test(
     srcs = [
         "shipshape_test.go",
     ],
+    data = [
+        "testdata",
+    ],
     library = ":cli",
 )
