@@ -80,7 +80,7 @@ system `PATH`.
 ## Building ##
 
 ```
-$ ./setup-bazel.sh   # Run initial Shipshape+Bazel setup
+$ ./configure        # Run initial Shipshape+Bazel setup
 $ bazel build //...  # Build all Shipshape source
 ```
 

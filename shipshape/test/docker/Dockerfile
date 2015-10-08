@@ -76,7 +76,7 @@ ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # Make sure Bazel is setup (and android lint)
 WORKDIR /shipshape
-RUN ./setup_bazel.sh
+RUN ./configure
 
 ADD startup.sh /startup.sh
 

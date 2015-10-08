@@ -36,9 +36,9 @@ go_binary(
     ],
     deps = [
         ":androidlint",
-        "//shipshape/api:api",
+        "//shipshape/api",
         "//shipshape/proto:shipshape_context_proto_go",
-        "//shipshape/util/rpc/server:server",
+        "//shipshape/util/rpc/server",
         "//third_party/go:protobuf",
     ],
 )
@@ -48,13 +48,13 @@ go_test(
     srcs = [
         "analyzer_test.go",
     ],
-    deps = [
-        "//shipshape/util/test:test",
-    ],
     data = glob(["testdata/**/*"]) + [
-        # This is created by setup_bazel.sh. It is a symlink to the
+        # This is created by the configure script. It is a symlink to the
         # Android Lint binary installed on the system.
         ":lint",
     ],
     library = ":androidlint",
+    deps = [
+        "//shipshape/util/test",
+    ],
 )
