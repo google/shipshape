@@ -47,7 +47,24 @@ Get help!
 $ ./shipshape --help
 ```
 
-# Add a new analyzer
+## Analyzers ##
+
+The following analyzers are bundled with Shipshape:
+
+* [Error Prone](https://github.com/google/error-prone) (category: `ErrorProne`) ***[Currently broken: [Issue #104](https://github.com/google/shipshape/issues/104)]***
+* [go vet](https://godoc.org/golang.org/x/tools/cmd/vet)
+* [JSHint](http://www.jshint.com/)
+* [PyLint](http://www.pylint.org/ )
+
+### Contributed analyzers ###
+
+The following analyzers were contributed by external developers:
+
+* [AndroidLint](http://tools.android.com/tips/lint). Image: `gcr.io/shipshape_releases/android_lint:prod`.
+* [CTADetector](http://mir.cs.illinois.edu/~yulin2/CTADetector) - Yu Lin (University of Illinois at Urbana-Champaign). Image: `yulin2/ctadetector`.
+* [ExtendJ](https://github.com/google/simplecfg) - Jesper Öqvist (Lund University). Image: N/A (build from source).
+
+### Add a new analyzer
 
 See our
 [documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/add-an-analyzer.md) on how to create more analyzers of your own. We also have [a complete example](https://github.com/google/shipshape/tree/master/shipshape/androidlint_analyzer/README.md).
@@ -173,4 +190,3 @@ Instructions are located in `shipshape/jenkins_plugin/README.md`.
 
 **util** -- various go utilities that simplify Shipshape code, e.g. for working with
   slices, execing docker commands, or writing tests
-
