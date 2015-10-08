@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This docker image is for testing of Shipshape. It provides a ready-made
-# environment in which Shipshape's source code is mounted and ready to be
-# built.
+load("/tools/build_rules/docker", "docker_build")
 
-FROM gcr.io/shipshape_releases/dev_container:prod
-
-# -- Shipshape --
-RUN git clone --depth 1 https://github.com/google/shipshape.git
-WORKDIR /shipshape
-RUN ./configure
-
-ADD startup.sh /startup.sh
-
-# The underlying dind container requires this kind of start up for its dind support
-ENV ONRUN ${ONRUN} "/startup.sh"
+docker_build(
+    name = "dev_container",
+    src = "Dockerfile",
+    data = ["startup.sh"],
+    image_name = "gcr.io/shipshape_releases/dev_container",
+    tags = ["manual"],
+    use_cache = True,
+)

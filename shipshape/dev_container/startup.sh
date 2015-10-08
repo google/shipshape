@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2015 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This docker image is for testing of Shipshape. It provides a ready-made
-# environment in which Shipshape's source code is mounted and ready to be
-# built.
+#
+# Start up script for the Docker test image.
+#
 
-FROM gcr.io/shipshape_releases/dev_container:prod
-
-# -- Shipshape --
-RUN git clone --depth 1 https://github.com/google/shipshape.git
-WORKDIR /shipshape
-RUN ./configure
-
-ADD startup.sh /startup.sh
-
-# The underlying dind container requires this kind of start up for its dind support
-ENV ONRUN ${ONRUN} "/startup.sh"
+# TODO(emso): Add commands to run at start up here
