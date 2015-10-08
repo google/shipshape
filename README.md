@@ -20,11 +20,10 @@ Install dependencies, download and run Shipshape.
 * Linux: tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
 
 ## Dependencies ##
-Shipshape relies on the following external dependencies:
-
-* [Docker](https://docs.docker.com/docker/userguide/)
+Shipshape requires [Docker](https://docs.docker.com/docker/userguide/) to run.
   
-  Installation instructions: [ubuntu](https://docs.docker.com/installation/ubuntulinux), [debian](https://docs.docker.com/docker/installation/debian/).
+  `apt-get install docker-engine` works for most machines, but [complete
+  instructions](https://docs.docker.com/installation) are available.
   
   Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
 group and restarting docker:
@@ -48,6 +47,10 @@ Get help!
 $ ./shipshape --help
 ```
 
+# Add a new analyzer
+
+See our
+[documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/add-an-analyzer.md) on how to create more analyzers of your own. We also have [a complete example](https://github.com/google/shipshape/tree/master/shipshape/androidlint_analyzer/README.md).
 
 # Run Shipshape from Source #
 
@@ -169,51 +172,3 @@ Instructions are located in `shipshape/jenkins_plugin/README.md`.
 **util** -- various go utilities that simplify Shipshape code, e.g. for working with
   slices, execing docker commands, or writing tests
 
-
-# Writing an Analyzer #
-
-To write a new analyzer service, you can use the androidlint_analyzer as an example.
-
-**androidlint/analyzer.go** -- implements the analyzer interface. Basically a wrapper
-  that calls out to androidlint as subprocess and translates the output into Notes
-  (see the proto dir for more information on the Note message).
-
-**androidlint/service.go** -- sets up running android lint as a service. You will want
-  to copy this file and update the names to reflect your analyzer.
-
-**androidlint/analyzer_test.go** -- some sample tests of the analyzer.
-
-**androidlint/CAMPFIRE** -- build file for this analyzer. Should copy and update names.
-
-**docker/Dockerfile,endpoint.sh** -- Dockerfile and shell script need to build a docker
-  image containing this analyzer. All dependencies needed to run the analyzer should
-  be pulled down in the Dockerfile and the image must run a service on port 10005.
-
-**docker/CAMPFIRE** -- build file for creating a docker image. Should copy and update names.
-
-To build and test the android lint analyzer, run:
-
-```
-$ bazel build //shipshape/androidlint_analyzer/androidlint/...
-$ bazel test //shipshape/androidlint_analyzer/androidlint/...
-```
-
-To build the android lint docker image, run:
-
-```
-$ bazel build //shipshape/androidlint_analyzer/docker:android_lint
-```
-
-Once you have built an image, verify that it shows up in your list of docker images:
-
-```
-$ docker images
-```
-
-Now, you can run the shipshape CLI with your analyzer added by passing in its category
-name via the `--analyzer_images` flag:
-
-```
-$ ./bazel-bin/shipshape/cli/shipshape --categories="AndroidLint" \
-    --analyzer_images=android_lint:local --tag=local <Directory>
-```
