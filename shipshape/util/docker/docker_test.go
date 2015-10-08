@@ -21,10 +21,9 @@ import (
 )
 
 func TestHasDocker(t *testing.T) {
-	expected := true
-	res := HasDocker()
-	if res != expected {
+        got, want := HasDocker(), true;
+        if got != want {
 		t.Errorf("Unexpected error for HasDocker test: got %v, expected %v",
-			res, expected)
+			got, want)
 	}
 }
