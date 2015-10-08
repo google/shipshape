@@ -87,7 +87,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if got, want := countCategoryNotes(allResponses, "go vet"), 0; got != want {
 		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if got, want := countCategoryNotes(allResponses, "PyLint"), 10; got != want {
+	if got, want := countCategoryNotes(allResponses, "PyLint"), 11; got != want {
 		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 }
