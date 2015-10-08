@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	glog "third_party/go-glog"
+	glog "github.com/google/shipshape/third_party/go-glog"
 )
 
 const (

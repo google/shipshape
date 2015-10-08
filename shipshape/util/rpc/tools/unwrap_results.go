@@ -25,7 +25,7 @@ import (
 	"log"
 	"os"
 
-	"shipshape/util/rpc/client"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
 )
 
 func main() {

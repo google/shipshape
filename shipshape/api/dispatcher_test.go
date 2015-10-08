@@ -19,7 +19,7 @@ package api
 import (
 	"testing"
 
-	"shipshape/util/strings"
+	"github.com/google/shipshape/shipshape/util/strings"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"

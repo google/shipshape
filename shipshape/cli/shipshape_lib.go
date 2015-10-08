@@ -29,12 +29,11 @@ import (
 	"sync"
 	"time"
 
-	"shipshape/service"
-	"shipshape/util/docker"
-	"shipshape/util/rpc/client"
-	glog "third_party/go-glog"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/service"
+	"github.com/google/shipshape/shipshape/util/docker"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
+	glog "github.com/google/shipshape/third_party/go-glog"
 
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"

@@ -25,8 +25,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	apb "third_party/kythe/proto/analysis_proto"
-	spb "third_party/kythe/proto/storage_proto"
+	apb "github.com/google/shipshape/third_party/kythe/proto/analysis_proto"
+	spb "github.com/google/shipshape/third_party/kythe/proto/storage_proto"
 )
 
 // A fakeFetcher maps file "paths" to their contents.

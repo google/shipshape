@@ -20,9 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	"shipshape/util/test"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/test"
 
 	notespb "github.com/google/shipshape/shipshape/proto/note_proto"
 )

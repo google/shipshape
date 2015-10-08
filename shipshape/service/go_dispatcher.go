@@ -22,15 +22,14 @@ import (
 	"log"
 	"net/http"
 
-	"shipshape/analyzers/codealert"
-	"shipshape/analyzers/govet"
-	"shipshape/analyzers/jshint"
-	"shipshape/analyzers/postmessage"
-	"shipshape/analyzers/pylint"
-	"shipshape/analyzers/wordcount"
-	"shipshape/util/rpc/server"
-
+	"github.com/google/shipshape/shipshape/analyzers/codealert"
+	"github.com/google/shipshape/shipshape/analyzers/govet"
+	"github.com/google/shipshape/shipshape/analyzers/jshint"
+	"github.com/google/shipshape/shipshape/analyzers/postmessage"
+	"github.com/google/shipshape/shipshape/analyzers/pylint"
+	"github.com/google/shipshape/shipshape/analyzers/wordcount"
 	"github.com/google/shipshape/shipshape/api"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )

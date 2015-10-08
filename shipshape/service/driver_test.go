@@ -22,11 +22,10 @@ import (
 	"strings"
 	"testing"
 
-	"shipshape/util/rpc/server"
-	testutil "shipshape/util/test"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 	strset "github.com/google/shipshape/shipshape/util/strings"
+	testutil "github.com/google/shipshape/shipshape/util/test"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"

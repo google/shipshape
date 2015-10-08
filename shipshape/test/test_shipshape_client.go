@@ -25,10 +25,9 @@ import (
 	"log"
 	"strings"
 
-	"shipshape/util/file"
-	"shipshape/util/rpc/client"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/file"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
 
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"

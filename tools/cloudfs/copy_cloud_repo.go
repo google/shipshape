@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"log"
 
-	"shipshape/util/file"
+	"github.com/google/shipshape/shipshape/util/file"
 )
 
 var (

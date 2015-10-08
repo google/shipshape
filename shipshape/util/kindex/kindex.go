@@ -21,7 +21,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	kythe_index "third_party/kythe/go/platform/kindex"
+
+	kythe_index "github.com/google/shipshape/third_party/kythe/go/platform/kindex"
 )
 
 var (

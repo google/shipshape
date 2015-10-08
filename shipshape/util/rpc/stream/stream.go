@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"io"
 
-	"shipshape/util/delimited"
+	"github.com/google/shipshape/shipshape/util/delimited"
 )
 
 // Reader provides sequential access to a stream of RPC values.

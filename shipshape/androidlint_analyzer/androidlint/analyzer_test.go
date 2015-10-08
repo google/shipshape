@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	testutil "shipshape/util/test"
+	testutil "github.com/google/shipshape/shipshape/util/test"
 )
 
 func init() {
@@ -19,7 +19,7 @@ func init() {
 
 	linkedBin, err := filepath.EvalSymlinks(lintBin)
 	if err != nil {
-		panic(err);
+		panic(err)
 	}
 	if filepath.Base(linkedBin) == "false" {
 		fmt.Println("Android Lint not installed.")

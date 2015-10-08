@@ -29,7 +29,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"shipshape/cli"
+	"github.com/google/shipshape/shipshape/cli"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"

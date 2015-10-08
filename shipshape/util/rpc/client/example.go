@@ -31,7 +31,7 @@ import (
 	"log"
 	"time"
 
-	"shipshape/util/rpc/client"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
 )
 
 var (

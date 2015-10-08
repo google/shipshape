@@ -23,9 +23,8 @@ import (
 	"strings"
 	"testing"
 
-	"shipshape/util/rpc/server"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
