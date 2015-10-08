@@ -88,6 +88,14 @@ func NewTestDriver(services []serviceInfo) *ShipshapeDriver {
 	return &ShipshapeDriver{AnalyzerLocations: addrs, serviceMap: trimmedServices}
 }
 
+func (sd ShipshapeDriver) GetCategory(ctx server.Context, in *rpcpb.GetCategoryRequest) (*rpcpb.GetCategoryResponse, error) {
+	sd.serviceMap = sd.getAllServiceInfo()
+	allCats := sd.allCats()
+	return &rpcpb.GetCategoryResponse{
+		Category: allCats.ToSlice(),
+	}, nil
+}
+
 // Run runs the analyzers that this driver knows about on the provided ShipshapeRequest,
 // taking configuration into account.
 func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, out chan<- *rpcpb.ShipshapeResponse) error {

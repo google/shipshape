@@ -46,8 +46,9 @@ var (
 	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
 	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
-	keyFlags = []string{"analyzer_images", "build", "categories", "inside_docker", "event", "json_output", 
-		"repo", "stay_up", "tag", "local_kythe"}
+	showCategories = flag.Bool("show_categories", false, "Show what categories are available instead of running analyses.")
+	keyFlags       = []string{"analyzer_images", "build", "categories", "inside_docker", "event", "json_output",
+		"repo", "stay_up", "tag", "local_kythe", "show_categories"}
 )
 
 const (
@@ -63,13 +64,13 @@ func shipshapeUsage() {
 	}
 	fmt.Println("USAGE: shipshape [flags] <directory>")
 	fmt.Println("Shipshape flags: (for all flags, run shipshape -help)")
-	flag.VisitAll(func (f *flag.Flag) {
+	flag.VisitAll(func(f *flag.Flag) {
 		_, isShipshapeArg := shipshapeArgs[f.Name]
-		if (!isShipshapeArg) {
+		if !isShipshapeArg {
 			return
 		}
 		defValue := f.DefValue
-		if (defValue == "") {
+		if defValue == "" {
 			defValue = "\"\""
 		}
 		fmt.Printf("  -%s:\n\t %s (default: %s)\n", f.Name, f.Usage, defValue)
@@ -124,7 +125,11 @@ func main() {
 	flag.Parse()
 
 	// Get the file/directory to analyze.
-	if len(flag.Args()) != 1 {
+	// If we are just showing category list, default to the current directory
+	file := "."
+	if len(flag.Args()) > 1 {
+		file = flag.Arg(0)
+	} else if !*showCategories {
 		shipshapeUsage()
 		os.Exit(returnError)
 	}
@@ -139,7 +144,7 @@ func main() {
 	}
 
 	options := cli.Options{
-		File:                flag.Arg(0),
+		File:                file,
 		ThirdPartyAnalyzers: thirdPartyAnalyzers,
 		Build:               *build,
 		TriggerCats:         cats,
@@ -153,6 +158,7 @@ func main() {
 	if *jsonOutput == "" {
 		options.HandleResponse = outputAsText
 	} else {
+		// TODO(supertri): Does not work for showCategories
 		var allResponses rpcpb.ShipshapeResponse
 		options.HandleResponse = func(msg *rpcpb.ShipshapeResponse, _ string) error {
 			allResponses.AnalyzeResponse = append(allResponses.AnalyzeResponse, msg.AnalyzeResponse...)
@@ -167,8 +173,16 @@ func main() {
 			return ioutil.WriteFile(*jsonOutput, b, 0644)
 		}
 	}
+	invocation := cli.New(options)
+	numResults := 0
+	var err error = nil
 
-	numResults, err := cli.New(options).Run()
+	if *showCategories {
+		err = invocation.ShowCategories()
+	} else {
+		numResults, err = invocation.Run()
+	}
+
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(returnError)

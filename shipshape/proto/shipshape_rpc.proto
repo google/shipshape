@@ -92,4 +92,8 @@ service Shipshape {
   // Called by systems that need to start up the Shipshape Pipeline
   // Will return immediately, but results will continue
   rpc Run(ShipshapeRequest) returns (ShipshapeResponse) {}
+
+  // Retrieve the list of known analysis categories for all analyzers
+  // available from the Shipshape service.
+  rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse) {}
 }

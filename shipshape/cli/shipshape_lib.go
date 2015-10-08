@@ -66,6 +66,13 @@ type Options struct {
 	ResponsesDone  func() error
 }
 
+type Paths struct {
+	fs           os.FileInfo
+	relativeRoot string
+	absRoot      string
+	origDir      string
+}
+
 type Invocation struct {
 	options Options
 }
@@ -74,29 +81,52 @@ func New(options Options) *Invocation {
 	return &Invocation{options}
 }
 
-func (i *Invocation) Run() (int, error) {
+func (i *Invocation) ShowCategories() error {
+	var c *client.Client
+	var res *rpcpb.GetCategoryResponse
+
+	// Run it on files
+	c, _, err := i.startServices()
+	if err != nil {
+		return fmt.Errorf("HTTP client did not become healthy: %v", err)
+	}
+	glog.Infof("Calling to get the categories")
+	err = c.Call("/ShipshapeService/GetCategory", &rpcpb.GetCategoryRequest{}, &res)
+	if err != nil {
+		fmt.Errorf("Could not get categories: %v", err)
+		return err
+	}
+
+	fmt.Println(strings.Join(res.Category, "\n"))
+	return nil
+}
+
+func (i *Invocation) startServices() (*client.Client, Paths, error) {
+	var paths Paths
+	var err error
+
 	glog.Infof("Starting shipshape...")
-	fs, err := os.Stat(i.options.File)
+	paths.fs, err = os.Stat(i.options.File)
 	if err != nil {
-		return 0, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
+		return nil, paths, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
 	}
 
-	origDir := i.options.File
-	if !fs.IsDir() {
-		origDir = filepath.Dir(i.options.File)
+	paths.origDir = i.options.File
+	if !paths.fs.IsDir() {
+		paths.origDir = filepath.Dir(i.options.File)
 	}
 
-	absRoot, err := filepath.Abs(origDir)
+	paths.absRoot, err = filepath.Abs(paths.origDir)
 	if err != nil {
-		return 0, fmt.Errorf("could not get absolute path for %s: %v\n", origDir, err)
+		return nil, paths, fmt.Errorf("could not get absolute path for %s: %v\n", paths.origDir, err)
 	}
 
 	if !docker.HasDocker() {
-		return 0, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
+		return nil, paths, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
 	}
 
 	image := docker.FullImageName(i.options.Repo, image, i.options.Tag)
-	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
+	glog.Infof("Starting shipshape using %s on %s", image, paths.absRoot)
 
 	// Create the request
 
@@ -105,7 +135,7 @@ func (i *Invocation) Run() (int, error) {
 	}
 
 	if len(i.options.ThirdPartyAnalyzers) == 0 {
-		i.options.ThirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
+		i.options.ThirdPartyAnalyzers, err = service.GlobalConfig(paths.absRoot)
 		if err != nil {
 			glog.Infof("Could not get global config; using only the default analyzers: %v", err)
 		}
@@ -134,28 +164,35 @@ func (i *Invocation) Run() (int, error) {
 		}
 	}
 
-	containers, errs := startAnalyzers(absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
+	containers, errs := startAnalyzers(paths.absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
 	for _, err := range errs {
 		glog.Errorf("Could not start up third party analyzer: %v", err)
 	}
+	var c *client.Client
+	c, paths.relativeRoot, err = startShipshapeService(image, paths.absRoot, containers, i.options.Dind)
+	if err != nil {
+		return nil, paths, fmt.Errorf("HTTP client did not become healthy: %v", err)
+	}
+	return c, paths, nil
+}
 
+func (i *Invocation) Run() (int, error) {
 	var c *client.Client
 	var req *rpcpb.ShipshapeRequest
 	var numNotes int
 
 	// Run it on files
-	relativeRoot := ""
-	c, relativeRoot, err = startShipshapeService(image, absRoot, containers, i.options.Dind)
+	c, paths, err := i.startServices()
 	if err != nil {
-		return 0, fmt.Errorf("HTTP client did not become healthy: %v", err)
+		return 0, err
 	}
 	var files []string
-	if !fs.IsDir() {
+	if !paths.fs.IsDir() {
 		files = []string{filepath.Base(i.options.File)}
 	}
-	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
+	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, paths.relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
 	glog.Infof("Calling with request %v", req)
-	numNotes, err = analyze(c, req, origDir, i.options.HandleResponse)
+	numNotes, err = analyze(c, req, paths.origDir, i.options.HandleResponse)
 	if err != nil {
 		return numNotes, fmt.Errorf("error making service call: %v", err)
 	}
@@ -180,7 +217,7 @@ func (i *Invocation) Run() (int, error) {
 		defer stop("kythe", 10*time.Second)
 
 		glog.Infof("Retrieving compilation units with %s", i.options.Build)
-		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, i.options.Build, i.options.Dind)
+		result := docker.RunKythe(fullKytheImage, "kythe", paths.absRoot, i.options.Build, i.options.Dind)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
@@ -190,7 +227,7 @@ func (i *Invocation) Run() (int, error) {
 
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
 		glog.Infof("Calling with request %v", req)
-		numBuildNotes, err := analyze(c, req, origDir, i.options.HandleResponse)
+		numBuildNotes, err := analyze(c, req, paths.origDir, i.options.HandleResponse)
 		numNotes += numBuildNotes
 		if err != nil {
 			return numNotes, fmt.Errorf("error making service call: %v", err)
