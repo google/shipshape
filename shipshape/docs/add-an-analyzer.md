@@ -37,9 +37,11 @@ SSH into your instance TODO
 
 ### Linux
 
-If you do not already have it, install docker
+If you do not already have it, install docker and make it usable without sudo
 
     $ sudo apt-get install docker-engine
+    $ sudo usermod -G docker $USER
+    $ sudo service docker.io restart
 
 If you do not already have it, install go by following the [go install instructions](https://golang.org/doc/install)
 
