@@ -75,7 +75,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
 		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if got, want := returnedNotesCount, 10; got != want {
+	if got, want := returnedNotesCount, 21; got != want {
 		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PostMessage"), 2; got != want {
@@ -85,10 +85,10 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "go vet"), 0; got != want {
-		t.Errorf("%v: Wrong number of PostMessage notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
+		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if got, want := countCategoryNotes(allResponses, "PyLint"), 0; got != want {
-		t.Errorf("%v: Wrong number of PostMessage notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
+	if got, want := countCategoryNotes(allResponses, "PyLint"), 10; got != want {
+		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 }
 
