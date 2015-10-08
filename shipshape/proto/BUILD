@@ -48,7 +48,7 @@ proto_library(
     gen_java = 1,
     deps = [
         ":source_context_proto",
-        "//third_party/kythe/proto:analysis_proto",
+#        "//third_party/kythe/proto:analysis_proto",
     ],
 )
 
@@ -68,4 +68,15 @@ proto_library(
     src = "shipshape_config.proto",
     gen_go = 1,
     gen_java = 1,
+)
+
+proto_library(
+    name = "shipshape_reporter_proto",
+    src = "shipshape_reporter.proto",
+    gen_go = 1,
+    gen_java = 1,
+    deps = [
+        ":note_proto",
+        ":shipshape_context_proto",
+    ],
 )

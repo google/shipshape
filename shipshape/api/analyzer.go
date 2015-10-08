@@ -18,8 +18,8 @@
 package api
 
 import (
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
 
 // An Analyzer provides the shipshape service with the functionality to run analysis

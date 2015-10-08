@@ -21,41 +21,22 @@
 package cli
 
 import (
-	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"shipshape/service"
-	"shipshape/util/docker"
-	"shipshape/util/rpc/client"
-	glog "third_party/go-glog"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/service"
+	"github.com/google/shipshape/shipshape/util/docker"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
+	glog "github.com/google/shipshape/third_party/go-glog"
 
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
-)
-
-var (
-	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
-	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
-	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
-	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
-	event          = flag.String("event", "manual", "The name of the event to use")
-	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
-	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
-	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
-	streams        = flag.Bool("streams", false, "True if we should run in streams mode, false if we should run as a service.")
-	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
-	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 const (
@@ -64,145 +45,96 @@ const (
 	localLogs  = "/tmp"
 	image      = "service"
 	kytheImage = "kythe"
-
-	returnNoFindings = 0
-	returnFindings   = 1
-	returnError      = 2
 )
 
-func logMessage(msg *rpcpb.ShipshapeResponse, directory string) (int, error) {
-	numNotes := 0
-	if *jsonOutput == "" {
-		fileNotes := make(map[string][]*notepb.Note)
-		for _, analysis := range msg.AnalyzeResponse {
-			for _, failure := range analysis.Failure {
-				fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", *failure.Category, *failure.FailureMessage)
-			}
-			for _, note := range analysis.Note {
-				path := ""
-				if note.Location != nil {
-					path = filepath.Join(directory, note.Location.GetPath())
-				}
-				fileNotes[path] = append(fileNotes[path], note)
-			}
-		}
-
-		// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
-		for path, notes := range fileNotes {
-			if path != "" {
-				fmt.Println(path)
-			} else {
-				fmt.Println("Global")
-			}
-			for _, note := range notes {
-				loc := ""
-				subCat := ""
-				if note.Subcategory != nil {
-					subCat = ":" + *note.Subcategory
-				}
-				if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
-					if note.GetLocation().GetRange().StartColumn != nil {
-						loc = fmt.Sprintf("Line %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
-					} else {
-						loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
-					}
-				}
-
-				numNotes++
-				fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
-				fmt.Printf("\t%s\n", *note.Description)
-			}
-			fmt.Println()
-		}
-		return numNotes, nil
-	}
-
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return 0, err
-	}
-	return numNotes, ioutil.WriteFile(*jsonOutput, b, 0644)
+type Options struct {
+	File                string
+	ThirdPartyAnalyzers []string
+	// TODO(ciera): make an enum
+	Build       string
+	TriggerCats []string
+	Dind        bool
+	Event       string
+	Repo        string
+	StayUp      bool
+	Tag         string
+	LocalKythe  bool
+	// Directory has the path the analyzed file is in (msg.AnalyzeResponse.Note.Location.GetPath()
+	// contains only the basename). HandleResponse can be called multiple times although the calls
+	// are not concurrent.
+	HandleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error
+	ResponsesDone  func() error
 }
 
-func Shipshape() {
+type Invocation struct {
+	options Options
+}
+
+func New(options Options) *Invocation {
+	return &Invocation{options}
+}
+
+func (i *Invocation) Run() (int, error) {
 	glog.Infof("Starting shipshape...")
-	flag.Parse()
-
-	// Get the directory to analyze.
-	if len(flag.Args()) != 1 {
-		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
-		os.Exit(returnError)
-	}
-
-	file := flag.Arg(0)
-	fs, err := os.Stat(file)
+	fs, err := os.Stat(i.options.File)
 	if err != nil {
-		fmt.Printf("%s is not a valid file or directory\n", file)
-		os.Exit(returnError)
+		return 0, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
 	}
 
-	origDir := file
+	origDir := i.options.File
 	if !fs.IsDir() {
-		origDir = filepath.Dir(file)
+		origDir = filepath.Dir(i.options.File)
 	}
 
 	absRoot, err := filepath.Abs(origDir)
 	if err != nil {
-		fmt.Printf("Could not get absolute path for %s: %v\n", origDir, err)
-		os.Exit(returnError)
+		return 0, fmt.Errorf("could not get absolute path for %s: %v\n", origDir, err)
 	}
 
 	if !docker.HasDocker() {
-		fmt.Print("docker could not be found. Make sure you have docker installed.")
-		return
+		return 0, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
 	}
 
-	image := docker.FullImageName(*repo, image, *tag)
+	image := docker.FullImageName(i.options.Repo, image, i.options.Tag)
 	glog.Infof("Starting shipshape using %s on %s", image, absRoot)
 
 	// Create the request
 
-	var trigger []string
-	if *categories != "" {
-		trigger = strings.Split(*categories, ",")
-	} else {
-		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", *event)
+	if len(i.options.TriggerCats) == 0 {
+		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", i.options.Event)
 	}
 
-	var thirdPartyAnalyzers []string
-	if *analyzerImages == "" {
-		thirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
+	if len(i.options.ThirdPartyAnalyzers) == 0 {
+		i.options.ThirdPartyAnalyzers, err = service.GlobalConfig(absRoot)
 		if err != nil {
 			glog.Infof("Could not get global config; using only the default analyzers: %v", err)
 		}
-	} else {
-		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
 	}
 
 	// If we are not running in local mode, pull the latest copy
 	// Notice this will use the local tag as a signal to not pull the
 	// third-party analyzers either.
-	if *tag != "local" {
+	if i.options.Tag != "local" {
 		pull(image)
-		pullAnalyzers(thirdPartyAnalyzers)
+		pullAnalyzers(i.options.ThirdPartyAnalyzers)
 	}
 
 	// Put in this defer before calling run. Even if run fails, it can
 	// still create the container.
-	if !*stayUp {
+	if !i.options.StayUp {
 		// TODO(ciera): Rather than immediately sending a SIGKILL,
 		// we should use the default 10 seconds and properly handle
 		// SIGTERMs in the endpoint script.
 		defer stop("shipping_container", 0)
 		// Stop all the analyzers, even the ones that had trouble starting,
 		// in case they did actually start
-		for id, analyzerRepo := range thirdPartyAnalyzers {
+		for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
 			container, _ := getContainerAndAddress(analyzerRepo, id)
 			defer stop(container, 0)
 		}
 	}
 
-	containers, errs := startAnalyzers(absRoot, thirdPartyAnalyzers, *dind)
+	containers, errs := startAnalyzers(absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
 	for _, err := range errs {
 		glog.Errorf("Could not start up third party analyzer: %v", err)
 	}
@@ -212,41 +144,27 @@ func Shipshape() {
 	var numNotes int
 
 	// Run it on files
-	if *streams {
-		var files []string
-		if !fs.IsDir() {
-			files = []string{file}
-		}
-		req = createRequest(trigger, files, *event, workspace, ctxpb.Stage_PRE_BUILD.Enum())
-		numNotes, err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
-		if err != nil {
-			glog.Errorf("Error making stream call: %v", err)
-			os.Exit(returnError)
-		}
-	} else {
-		relativeRoot := ""
-		c, relativeRoot, err = startShipshapeService(image, absRoot, containers, *dind)
-		if err != nil {
-			glog.Errorf("HTTP client did not become healthy: %v", err)
-			os.Exit(returnError)
-		}
-		var files []string
-		if !fs.IsDir() {
-			files = []string{filepath.Base(file)}
-		}
-		req = createRequest(trigger, files, *event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
-		numNotes, err = serviceAnalyze(c, req, origDir)
-		if err != nil {
-			glog.Errorf("Error making service call: %v", err)
-			os.Exit(returnError)
-		}
+	relativeRoot := ""
+	c, relativeRoot, err = startShipshapeService(image, absRoot, containers, i.options.Dind)
+	if err != nil {
+		return 0, fmt.Errorf("HTTP client did not become healthy: %v", err)
+	}
+	var files []string
+	if !fs.IsDir() {
+		files = []string{filepath.Base(i.options.File)}
+	}
+	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
+	glog.Infof("Calling with request %v", req)
+	numNotes, err = analyze(c, req, origDir, i.options.HandleResponse)
+	if err != nil {
+		return numNotes, fmt.Errorf("error making service call: %v", err)
 	}
 
 	// If desired, generate compilation units with a kythe image
-	if *build != "" {
+	if i.options.Build != "" {
 		// TODO(ciera): Handle other build systems
-		fullKytheImage := docker.FullImageName(*repo, kytheImage, *tag)
-		if !*useLocalKythe {
+		fullKytheImage := docker.FullImageName(i.options.Repo, kytheImage, i.options.Tag)
+		if !i.options.LocalKythe {
 			pull(fullKytheImage)
 		}
 
@@ -255,40 +173,40 @@ func Shipshape() {
 		// failed for some reason (or a kythe container was started in some other
 		// way) the below run command will fail.
 		defer stop("kythe", 10*time.Second)
-		glog.Infof("Retrieving compilation units with %s", *build)
+		glog.Infof("Retrieving compilation units with %s", i.options.Build)
 
-		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, *build, *dind)
+		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, i.options.Build, i.options.Dind)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
 			printStreams(result)
-			glog.Errorf("Error from run: %v", result.Err)
-			os.Exit(returnError)
+			return numNotes, fmt.Errorf("error from run: %v", result.Err)
 		}
 		glog.Infoln("CompilationUnits prepared")
 
-		var numBuildNotes = 0
 		req.Stage = ctxpb.Stage_POST_BUILD.Enum()
-		if !*streams {
-			numBuildNotes, err = serviceAnalyze(c, req, origDir)
-			if err != nil {
-				glog.Errorf("Error making service call: %v", err)
-				os.Exit(returnError)
-			}
-		} else {
-			numBuildNotes, err = streamsAnalyze(image, absRoot, origDir, containers, req, *dind)
-			if err != nil {
-				glog.Errorf("Error making stream call: %v", err)
-				os.Exit(returnError)
-			}
-		}
+		glog.Infof("Calling with request %v", req)
+		numBuildNotes, err := analyze(c, req, origDir, i.options.HandleResponse)
 		numNotes += numBuildNotes
+		if err != nil {
+			return numNotes, fmt.Errorf("error making service call: %v", err)
+		}
+	}
+	if i.options.ResponsesDone != nil {
+		if err := i.options.ResponsesDone(); err != nil {
+			return numNotes, err
+		}
 	}
 
 	glog.Infoln("End of Results.")
-	if numNotes > 0 {
-		os.Exit(returnFindings)
+	return numNotes, nil
+}
+
+func numNotes(msg *rpcpb.ShipshapeResponse) int {
+	numNotes := 0
+	for _, analysis := range msg.AnalyzeResponse {
+		numNotes += len(analysis.Note)
 	}
-	os.Exit(returnNoFindings)
+	return numNotes
 }
 
 // startShipshapeService ensures that there is a service started with the given image and
@@ -325,8 +243,8 @@ func startShipshapeService(image, absRoot string, analyzers []string, dind bool)
 	return c, subPath, c.WaitUntilReady(10 * time.Second)
 }
 
-func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string) (int, error) {
-	var numNotes = 0
+func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string, handleResponse func(msg *rpcpb.ShipshapeResponse, directory string) error) (int, error) {
+	var totalNotes = 0
 	glog.Infof("Calling to the shipshape service with %v", req)
 	rd := c.Stream("/ShipshapeService/Run", req)
 	defer rd.Close()
@@ -338,34 +256,13 @@ func serviceAnalyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir s
 			return 0, fmt.Errorf("received an error from calling run: %v", err.Error())
 		}
 
-		n, err := logMessage(&msg, originalDir)
+		err := handleResponse(&msg, originalDir)
 		if err != nil {
 			return 0, fmt.Errorf("could not parse results: %v", err.Error())
 		}
-		numNotes += n
+		totalNotes += numNotes(&msg)
 	}
-	return numNotes, nil
-}
-
-func streamsAnalyze(image, absRoot, originalDir string, analyzerContainers []string, req *rpcpb.ShipshapeRequest, dind bool) (int, error) {
-	glog.Infof("Running image %s in stream mode", image)
-	reqBytes, err := proto.Marshal(req)
-	if err != nil {
-		return 0, fmt.Errorf("error marshalling %v: %v", req, err)
-	}
-
-	stop("shipping_container", 0)
-	result := docker.RunStreams(image, "shipping_container", absRoot, localLogs, analyzerContainers, reqBytes, dind)
-	glog.Infoln(strings.TrimSpace(result.Stderr))
-
-	if result.Err != nil {
-		return 0, fmt.Errorf("error from run: %v", result.Err)
-	}
-	var msg rpcpb.ShipshapeResponse
-	if err := proto.Unmarshal([]byte(result.Stdout), &msg); err != nil {
-		return 0, fmt.Errorf("unexpected ShipshapeResponse %v", err)
-	}
-	return logMessage(&msg, originalDir)
+	return totalNotes, nil
 }
 
 func pull(image string) {

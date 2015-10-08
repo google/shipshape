@@ -21,7 +21,11 @@ go_binary(
     srcs = [
         "shipshape.go",
     ],
-    deps = [":cli"],
+    deps = [
+        ":cli",
+        "//shipshape/proto:note_proto_go",
+        "//shipshape/proto:shipshape_rpc_proto_go",
+    ],
 )
 
 go_library(
@@ -30,7 +34,6 @@ go_library(
         "shipshape_lib.go",
     ],
     deps = [
-        "//shipshape/proto:note_proto_go",
         "//shipshape/proto:shipshape_context_proto_go",
         "//shipshape/proto:shipshape_rpc_proto_go",
         "//shipshape/service:service",
@@ -46,6 +49,9 @@ go_test(
     name = "shipshape_test",
     srcs = [
         "shipshape_test.go",
+    ],
+    data = [
+        "testdata",
     ],
     library = ":cli",
 )

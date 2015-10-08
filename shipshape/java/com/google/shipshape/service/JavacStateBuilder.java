@@ -16,11 +16,11 @@
 
 package com.google.shipshape.service;
 
-import com.google.devtools.kythe.extractors.shared.CompilationDescription;
-import com.google.devtools.kythe.extractors.shared.IndexInfoUtils;
+//import com.google.devtools.kythe.extractors.shared.CompilationDescription;
+//import com.google.devtools.kythe.extractors.shared.IndexInfoUtils;
 import com.google.devtools.kythe.platform.java.JavaCompilationDetails;
-import com.google.devtools.kythe.platform.shared.FileDataCache;
-import com.google.devtools.kythe.proto.Analysis.CompilationUnit;
+//import com.google.devtools.kythe.platform.shared.FileDataCache;
+//import com.google.devtools.kythe.proto.Analysis.CompilationUnit;
 import com.google.shipshape.proto.ShipshapeContextProto.ShipshapeContext;
 
 import java.io.IOException;
@@ -36,6 +36,8 @@ public class JavacStateBuilder implements AnalyzerStateBuilder<JavaCompilationDe
   }
 
   public JavaCompilationDetails build(ShipshapeContext context) throws AnalyzerException {
+    return null;
+    /*
     if (!context.getCompilationDetails().hasCompilationDescriptionPath()) {
       return null;
     }
@@ -54,5 +56,6 @@ public class JavacStateBuilder implements AnalyzerStateBuilder<JavaCompilationDe
     FileDataCache cachedFiles = new FileDataCache(desc.getFileContents());
     CompilationUnit compilationUnit = context.getCompilationDetails().getCompilationUnit();
     return JavaCompilationDetails.createDetails(compilationUnit, cachedFiles, storeOutput);
+    */
   }
 }

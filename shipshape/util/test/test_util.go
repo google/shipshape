@@ -23,13 +23,12 @@ import (
 	"strings"
 	"testing"
 
-	"shipshape/util/rpc/server"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 type Analyzer interface {

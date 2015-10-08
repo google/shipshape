@@ -3,9 +3,15 @@ os:
 sudo: required
 services:
   - docker
-addons:
-  apt:
-    packages:
-      - realpath
+install:
+  - docker pull gcr.io/shipshape_releases/dev_container:prod
 script:
-  - ./shipshape/test/docker/docker_run_tests.sh
+  - 'docker run 
+        --privileged 
+        --volume=$TRAVIS_BUILD_DIR:/shipshape 
+        --workdir=/shipshape 
+        gcr.io/shipshape_releases/dev_container:prod 
+        /bin/sh -c 
+            "./setup_bazel.sh && 
+             bazel build //... && 
+             bazel test --test_output=errors //..."'

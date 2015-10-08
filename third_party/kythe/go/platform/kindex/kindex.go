@@ -45,10 +45,10 @@ import (
 	"os"
 	"sync"
 
-	"third_party/kythe/go/platform/analysis"
-	"third_party/kythe/go/platform/delimited"
+	"github.com/google/shipshape/third_party/kythe/go/platform/analysis"
+	"github.com/google/shipshape/third_party/kythe/go/platform/delimited"
 
-	apb "third_party/kythe/proto/analysis_proto"
+	apb "github.com/google/shipshape/third_party/kythe/proto/analysis_proto"
 
 	"github.com/golang/protobuf/proto"
 )

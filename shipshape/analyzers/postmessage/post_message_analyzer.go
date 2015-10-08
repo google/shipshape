@@ -17,10 +17,10 @@
 package postmessage
 
 import (
-	notepb "shipshape/proto/note_proto"
-	ctxpb "shipshape/proto/shipshape_context_proto"
-
 	"github.com/golang/protobuf/proto"
+
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
 )
 
 type PostMessageAnalyzer struct {

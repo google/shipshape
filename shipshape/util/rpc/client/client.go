@@ -77,8 +77,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"shipshape/util/rpc/protocol"
-	"shipshape/util/httpencoding"
+	"github.com/google/shipshape/shipshape/util/rpc/protocol"
+	"github.com/google/shipshape/shipshape/util/httpencoding"
 )
 
 const httpContentType = "application/json"

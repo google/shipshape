@@ -25,19 +25,17 @@ import (
 	"sync"
 	"time"
 
-	"shipshape/util/file"
-	"shipshape/util/rpc/client"
-	"shipshape/util/rpc/server"
-	strset "shipshape/util/strings"
-	"third_party/kythe/go/platform/kindex"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/file"
+	"github.com/google/shipshape/shipshape/util/rpc/client"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
+	strset "github.com/google/shipshape/shipshape/util/strings"
+	//	"kythe.io/kythe/go/platform/kindex"
 
-	apb "third_party/kythe/proto/analysis_proto"
-
-	notepb "shipshape/proto/note_proto"
-	contextpb "shipshape/proto/shipshape_context_proto"
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	contextpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	//	apb "kythe.io/kythe/proto/analysis_proto"
 )
 
 const (
@@ -182,7 +180,7 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	log.Printf("Analyzing stage %s", stage.String())
 	if stage == contextpb.Stage_PRE_BUILD {
 		ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
-	} else {
+	} /*else {
 		comps := filepath.Join(*context.RepoRoot, compilationsDir)
 		compUnits, err := findCompilationUnits(comps)
 		log.Printf("Found %d compUnits at %s", len(compUnits), comps)
@@ -199,7 +197,9 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 			log.Printf("Calling services with comp unit at %s", path)
 			ars = append(ars, sd.callAllAnalyzers(desiredCats, context, stage)...)
 		}
+
 	}
+	*/
 
 	log.Print("Analysis completed")
 	return nil
@@ -248,7 +248,7 @@ func collectAllFiles(root string) ([]string, error) {
 			return nil
 		}
 		// Skip symlinks.
-		if f.Mode() & os.ModeSymlink != 0 {
+		if f.Mode()&os.ModeSymlink != 0 {
 			return nil
 		}
 		// Skip directories starting with "."
@@ -422,6 +422,7 @@ func callAnalyze(analyzer string, req *rpcpb.AnalyzeRequest, out chan<- *rpcpb.A
 // retrieves all the compilation units from it. Currently, kythe puts the compilation units
 // in directories by language. Returns a mapping from the path to the kindex file and the
 // compilation unit found within it.
+/*
 func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
 	var units = make(map[string]*apb.CompilationUnit)
 	walkpath := func(path string, file os.FileInfo, err error) error {
@@ -442,7 +443,7 @@ func findCompilationUnits(dir string) (map[string]*apb.CompilationUnit, error) {
 	}
 	return units, nil
 }
-
+*/
 // generateFailure creates a response with an analysis failure containing the given
 // category and message
 func generateFailure(cat string, message string) *rpcpb.AnalyzeResponse {

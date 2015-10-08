@@ -41,7 +41,7 @@ import (
 	"sort"
 	"sync"
 
-	"shipshape/util/rpc/protocol"
+	"github.com/google/shipshape/shipshape/util/rpc/protocol"
 )
 
 // A Service represents a named collection of remotely-callable methods.

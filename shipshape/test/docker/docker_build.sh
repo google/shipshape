@@ -20,7 +20,7 @@ declare -xr CONTAINER="$1"
 declare -xr IMAGE="$2"
 
 echo " Building docker image ... "
-docker build -f "${TEST_DIR}/Dockerfile" -t "${IMAGE}" "${TEST_DIR}" || exit 1
+docker build --no-cache -f "${TEST_DIR}/Dockerfile" -t "${IMAGE}" "${TEST_DIR}" || exit 1
 
 echo " Remove running container [${CONTAINER}] "
 CONTAINER_ID=`docker ps -a | grep "${CONTAINER}" | awk '{print $1}'`

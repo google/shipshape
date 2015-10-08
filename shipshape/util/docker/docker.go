@@ -30,7 +30,7 @@ import (
 	"strings"
 	"time"
 
-	glog "third_party/go-glog"
+	glog "github.com/google/shipshape/third_party/go-glog"
 )
 
 const (
@@ -174,40 +174,6 @@ func RunService(image, container, workspacePath, logsPath string, analyzerContai
 	cmd := exec.Command("docker", args...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
-	return CommandResult{stdout.String(), stderr.String(), err}
-}
-
-// RunStreams runs the specified shipshape image in streams mode, as the container named container.
-// It binds the shipshape workspace and logs appropriately. It starts with the third-party analyzers
-// already running at analyzerContainers. It uses input as the stdin and gives the privileged flag id
-// dind (docker-in-docker) is true.
-func RunStreams(image, container, workspacePath, logsPath string, analyzerContainers []string, input []byte, dind bool) CommandResult {
-	stdout := bytes.NewBuffer(nil)
-	stderr := bytes.NewBuffer(nil)
-	if len(container) == 0 {
-		return CommandResult{"", "", errors.New("need to provide a name for the container")}
-	}
-
-	volumeMap := map[string]string{workspacePath: shipshapeWork, logsPath: shipshapeLogs}
-
-	var locations []string
-	for _, container := range analyzerContainers {
-		locations = append(locations, fmt.Sprintf(`$%s_PORT_10005_TCP_ADDR:$%s_PORT_10005_TCP_PORT`, strings.ToUpper(container), strings.ToUpper(container)))
-	}
-	locations = append(locations, "localhost:10005", "localhost:10006")
-
-	args := []string{"run"}
-	if dind {
-		args = append(args, "--privileged")
-	}
-	args = append(args, setupArgs(container, map[int]int{10007: 10007}, volumeMap, analyzerContainers, map[string]string{"ANALYZERS": strings.Join(locations, ",")})...)
-	args = append(args, "-i", "-a", "stdin", "-a", "stderr", "-a", "stdout", image)
-
-	cmd := exec.Command("docker", args...)
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	cmd.Stdin = bytes.NewBuffer(input)
 	err := cmd.Run()
 	return CommandResult{stdout.String(), stderr.String(), err}
 }

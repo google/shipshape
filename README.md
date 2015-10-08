@@ -66,21 +66,23 @@ To build Shipshape you need the following tools:
 * [Go](http://golang.org/doc/install)
 * [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
 
-Install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
+You can pull a Docker image with all of these dependencies:
+```
+$ docker pull gcr.io/shipshape_releases/dev_container:prod
+$ docker run --privileged -it gcr.io/shipshape_releases/dev_container:prod /bin/bash
+```
 
+Or you can install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 ```
 $ sudo apt-get install bison clang flex golang openjdk-8-jdk openjdk-8-source
 ```
 
-To run tests for Shipshape you also need the following tool:
-
-* Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)), install in your
-system `PATH`.
+To run tests for Shipshape you also need Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)) installed in your system `PATH`.
 
 ## Building ##
 
 ```
-$ ./setup-bazel.sh   # Run initial Shipshape+Bazel setup
+$ ./configure        # Run initial Shipshape+Bazel setup
 $ bazel build //...  # Build all Shipshape source
 ```
 

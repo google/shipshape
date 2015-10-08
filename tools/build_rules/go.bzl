@@ -183,7 +183,7 @@ base_attrs = {
     ),
     "go_build": attr.int(),
     # TODO(schroederc): put package prefix into common configuration file
-    "go_package_prefix": attr.string(default = ""),
+    "go_package_prefix": attr.string(default = "github.com/google/shipshape/"),
     "_go": attr.label(
         default = Label("//tools/go"),
         allow_files = True,

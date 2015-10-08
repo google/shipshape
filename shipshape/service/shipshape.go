@@ -25,12 +25,11 @@ import (
 	"os"
 	"strings"
 
-	"shipshape/service"
-	"shipshape/util/rpc/server"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/service"
+	"github.com/google/shipshape/shipshape/util/rpc/server"
 
-	rpcpb "shipshape/proto/shipshape_rpc_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 var (

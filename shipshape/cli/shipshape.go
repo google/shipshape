@@ -21,14 +21,138 @@
 package main
 
 import (
-	"shipshape/cli"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/google/shipshape/shipshape/cli"
+
+	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
-// TODO(ciera): This main should actually define all of the flags for the CLI
-// parse them, and call to the library with the appropriate parameters set up as part
-// of a struct. The method that we call should return the number of notes or an error,
-// and the exit code should be handleded here.
+var (
+	analyzerImages = flag.String("analyzer_images", "", "Full docker path to images of external analyzers to use (comma-separated)")
+	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
+	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
+	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
+	event          = flag.String("event", "manual", "The name of the event to use")
+	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
+	repo           = flag.String("repo", "gcr.io/shipshape_releases", "The name of the docker repo to use")
+	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
+	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
+	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
+)
+
+const (
+	returnNoFindings = 0
+	returnFindings   = 1
+	returnError      = 2
+)
+
+func outputAsText(msg *rpcpb.ShipshapeResponse, directory string) error {
+	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+	fileNotes := make(map[string][]*notepb.Note)
+	for _, analysis := range msg.AnalyzeResponse {
+		for _, failure := range analysis.Failure {
+			fmt.Printf("WARNING: Analyzer %s failed to run: %s\n", *failure.Category, *failure.FailureMessage)
+		}
+		for _, note := range analysis.Note {
+			path := ""
+			if note.Location != nil {
+				path = filepath.Join(directory, note.Location.GetPath())
+			}
+			fileNotes[path] = append(fileNotes[path], note)
+		}
+	}
+
+	for path, notes := range fileNotes {
+		if path != "" {
+			fmt.Println(path)
+		} else {
+			fmt.Println("Global")
+		}
+		for _, note := range notes {
+			loc := ""
+			subCat := ""
+			if note.Subcategory != nil {
+				subCat = ":" + *note.Subcategory
+			}
+			if note.GetLocation().Range != nil && note.GetLocation().GetRange().StartLine != nil {
+				if note.GetLocation().GetRange().StartColumn != nil {
+					loc = fmt.Sprintf("Line %d, Col %d ", *note.Location.Range.StartLine, *note.Location.Range.StartColumn)
+				} else {
+					loc = fmt.Sprintf("Line %d ", *note.Location.Range.StartLine)
+				}
+			}
+
+			fmt.Printf("%s[%s%s]\n", loc, *note.Category, subCat)
+			fmt.Printf("\t%s\n", *note.Description)
+		}
+		fmt.Println()
+	}
+	return nil
+}
 
 func main() {
-	cli.Shipshape()
+	flag.Parse()
+
+	// Get the file/directory to analyze.
+	if len(flag.Args()) != 1 {
+		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
+		os.Exit(returnError)
+	}
+
+	thirdPartyAnalyzers := []string{}
+	if *analyzerImages != "" {
+		thirdPartyAnalyzers = strings.Split(*analyzerImages, ",")
+	}
+	cats := []string{}
+	if *categories != "" {
+		cats = strings.Split(*categories, ",")
+	}
+
+	options := cli.Options{
+		File:                flag.Arg(0),
+		ThirdPartyAnalyzers: thirdPartyAnalyzers,
+		Build:               *build,
+		TriggerCats:         cats,
+		Dind:                *dind,
+		Event:               *event,
+		Repo:                *repo,
+		StayUp:              *stayUp,
+		Tag:                 *tag,
+		LocalKythe:          *useLocalKythe,
+	}
+	if *jsonOutput == "" {
+		options.HandleResponse = outputAsText
+	} else {
+		var allResponses rpcpb.ShipshapeResponse
+		options.HandleResponse = func(msg *rpcpb.ShipshapeResponse, _ string) error {
+			allResponses.AnalyzeResponse = append(allResponses.AnalyzeResponse, msg.AnalyzeResponse...)
+			return nil
+		}
+		options.ResponsesDone = func() error {
+			// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
+			b, err := json.Marshal(allResponses)
+			if err != nil {
+				return err
+			}
+			return ioutil.WriteFile(*jsonOutput, b, 0644)
+		}
+	}
+
+	numResults, err := cli.New(options).Run()
+	if err != nil {
+		fmt.Printf("Error: %v", err.Error())
+		os.Exit(returnError)
+	}
+	if numResults != 0 {
+		os.Exit(returnFindings)
+	}
+	os.Exit(returnNoFindings)
 }
