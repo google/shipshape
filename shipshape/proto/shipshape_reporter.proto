@@ -6,7 +6,6 @@ option java_outer_classname = "ShipshapeReporterProto";
 option java_package = "com.google.shipshape.proto";
 
 import "shipshape/proto/note.proto";
-import "shipshape/proto/shipshape_context.proto";
 
 // Where to send the results to
 service Reporter {

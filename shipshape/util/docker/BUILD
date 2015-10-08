@@ -14,7 +14,7 @@
 
 package(default_visibility = ["//shipshape:default_visibility"])
 
-load("/tools/build_rules/go", "go_library")
+load("/tools/build_rules/go", "go_library", "go_test")
 
 go_library(
     name = "docker",
@@ -24,4 +24,12 @@ go_library(
     deps = [
         "//third_party/go-glog:go-glog",
     ],
+)
+
+go_test(
+    name = "docker_test",
+    srcs = [
+        "docker_test.go",
+    ],
+    library = ":docker",
 )

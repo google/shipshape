@@ -1,3 +1,4 @@
+<!--
 // Copyright 2014 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+-->
 # Deploy an analyzer using Shipshape
 
 ## Dependencies
@@ -73,6 +74,7 @@ is a helpful example
 First, implement `Category()`. This is the name of the analyzer, and all results
 returned from this analyzer should use this as the name.
 
+myanalyzer/analyzer.go
 ```
 package myanalyzer
 
@@ -90,7 +92,6 @@ func (Analyzer) Category() string { return "HelloWorld" }
 ```
 
 Implement a simple `Analyze` method that returns a single note
-
 ```
 func (ala Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
   return []*notepb.Note{
@@ -114,6 +115,7 @@ is, link to it
 Now, we just need to implement a service that runs on port 10005 and calls to your analyzer. You can use api.Service to help with this.
 As an example, see the [AndroidLint service](https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/androidlint/service.go)
 
+myanalyzer_service/service.go
 ```
 package main
 
@@ -163,32 +165,61 @@ func main() {
 Java instructions will be available soon.
 
 ## Create a Docker file
-* Create a docker file that
-    * Adds all dependencies needed to run your analyzer
-    * Adds your analyzer
-    * Has port 10005 open
-    * Starts your service
-    https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/docker/DockerFile
-* Create an endpoint script that starts the service
-https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/docker/endpoint.sh
+Shipshape will start and run your service using [Docker](). You'll need to
+provide a docker file that creates a docker image. This is a VM image that
+contains your analyzer and all the dependencies needed to run it. As an example,
+the [AndroidLint analyzer provides a docker file with all its dependencies](https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/docker/DockerFile)
+
+Your DockerFile will also need to actually start up your service through an
+endpoint script, which is just a small shell script that starts your service.
+AndroidLint provides an example of [starting the service](https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/docker/endpoint.sh)
+
+DockerFile
+```
+FROM debian:wheezy
+
+# Make sure all package lists are up-to-date
+RUN apt-get update && apt-get upgrade -y && apt-get clean
+
+# Install any dependencies that you need here
+
+# Set up the analyzer
+# Add the binary that we'll run in the endpoint script.
+ADD myanalyzer_service /myanalyzer_service
+ADD endpoint.sh /endpoint.sh
+
+# 10005 is the port that the shipshape
+# service will expect to see a Shipshape Analyzer at.
+EXPOSE 10005
+
+# Start the endpoint script.
+ENTRYPOINT ["/endpoint.sh"]
+```
+
+endpoint.sh
+```
+# Shipshape will map the /shipshape-output directory to /tmp
+# on the local machine, which is where you can find your logs
+./myanalyzer_service &> /shipshape-output/myanalyzer.log
+```
 
 ##  Test your analyzer locally
 
 Build a docker image with the tag "local"
-    
-    docker build myanalyzer/DockerFile --name=sflwslfms --tag=local
+
+    docker build --tag=myanalyzer:local .
 
 Run the local analyzer
 
-    shipshape --analyzer_image=sdkfjslkfjds --categories=lk;fkdslk directory
+    shipshape --analyzer_image=myanalyzer:local --categories=HelloWorld directory
 
-## Push it up to gcr.io or docker.io
+## Push it up to gcr.io or docker.io, so that others can access it
 
-    docker tag
-    docker push sldfjslfjslkdfsldkfm
+    docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    docker push [SAME_NAME_AND_TAG_AS_ABOVE]
 
 ## Test your public analyzer
 
-   shipshape --analyzer_image=sdkfjslkfjds --categories=lk;fkdslk
+   shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] --categories=HelloWorld
 
-Add it to our list!
+Add it to [our list of analyzers](TODOTODO) by sending us a pull request!
