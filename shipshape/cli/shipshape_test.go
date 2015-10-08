@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"flag"
 	"testing"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"  
 )
+
+var dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
 
 func countFailures(resp rpcpb.ShipshapeResponse) int {
 	failures := 0
@@ -44,10 +47,7 @@ func TestBasic(t *testing.T) {
 		Event:               "manual", // TODO: const
 		Repo:                "gcr.io/shipshape_releases", // TODO: const
 		StayUp:              true,
-		// TODO(rsk): current e2e test require tag to be specified on
-		// the command line. Furthermore, if the tag is "local" it builds
-		// containers and tags them.
-		Tag:                 "prod",
+		Tag:                 *dockerTag,
 		// TODO(rsk): current e2e test can be ru both with & without kythe.
 		LocalKythe:          false,
 	}
