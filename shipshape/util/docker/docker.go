@@ -49,6 +49,25 @@ func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 	return CommandResult{strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err}
 }
 
+// ContainerExists checks if a container with the given name is running or has been running.
+// NB! this implementation depends on the output of the docker ps command, assuming that the number
+// of output lines is more than one if there is a match (i.e., more than just the column headers).
+func ContainerExists(container string) bool {
+	stdout := bytes.NewBuffer(nil)
+	stderr := bytes.NewBuffer(nil)
+	cmd := exec.Command("docker", "ps", "-a", "-f", fmt.Sprintf("name=%v", container))
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("Problem running docker ps command: %v, stderr: %s", err, stderr.String())
+		return false
+	}
+	// A container that exists will cause one more line to be added to the output.
+	// The header accounts for 2 newlines.
+	return len(strings.Split(stdout.String(), "\n")) > 2
+}
+
 // HasDocker determines whether docker is installed
 // and included in PATH.
 func HasDocker() bool {
@@ -239,25 +258,6 @@ func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 	}
 
 	return CommandResult{stdout.String(), stderr.String(), err}
-}
-
-func ContainerExists(container string) bool {
-	stdout := bytes.NewBuffer(nil)
-	stderr := bytes.NewBuffer(nil)
-	cmd := exec.Command("/usr/bin/docker", "ps", "-f", fmt.Sprintf("name=%v", container))
-
-	fmt.Printf("Running cmd: %v\n", cmd)
-
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Printf("Problem running docker ps command: %v", err)
-		return false
-	}
-	lines := len(strings.Split(stdout.String(), "\n"))
-	fmt.Printf("Docker ps command returned stdout [%v] (lines: %v), stderr [%v]\n", stdout.String(), lines, stderr.String())
-	return true
 }
 
 // OutOfDate returns true if the image specified

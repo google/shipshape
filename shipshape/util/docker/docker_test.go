@@ -19,13 +19,15 @@ package docker
 import (
 	"os/exec"
 	"testing"
+	"time"
 )
 
 func TestHasDocker(t *testing.T) {
-        if got, want := HasDocker(), true; got != want {
+	if got, want := HasDocker(), true; got != want {
 		t.Errorf("Unexpected error for HasDocker test: got %v, expected %v",
 			got, want)
-)
+	}
+}
 
 func TestContainerExists(t *testing.T) {
 	tests := []struct {
@@ -37,40 +39,40 @@ func TestContainerExists(t *testing.T) {
 	}{
 		{
 			desc:      "Detect matching running container",
-			container: "docker_test_container",
-			setup:     exec.Command("/usr/bin/docker", "run", "-t", "-i", "--name=docker_test_container", "ubuntu:14.04", "/bin/bash"),
-			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			container: "docker_test_container1",
+			setup:     exec.Command("docker", "run", "--name=docker_test_container1", "ubuntu:14.04", "sleep 30"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container1"),
 			exists:    true,
 		},
 		{
 			desc:      "Don't detect non-matching running container",
 			container: "someother_container",
-			setup:     exec.Command("/usr/bin/docker", "run", "-t", "-i", "--name=docker_test_container", "ubuntu:14.04", "/bin/bash"),
-			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			setup:     exec.Command("docker", "run", "--name=docker_test_container2", "ubuntu:14.04", "sleep 30"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container2"),
 			exists:    false,
 		},
 		{
 			desc:      "Detect matching non-running container",
-			container: "docker_test_container",
-			setup:     exec.Command("/usr/bin/docker", "run", "--name=docker_test_container", "ubuntu:14.04"),
-			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			container: "docker_test_container3",
+			setup:     exec.Command("docker", "run", "--name=docker_test_container3", "ubuntu:14.04", "sleep 0"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container3"),
 			exists:    true,
 		},
 		{
 			desc:      "Don't detect non-matching non-running container",
 			container: "someother_container",
-			setup:     exec.Command("/usr/bin/docker", "run", "--name=docker_test_container", "ubuntu:14.04"),
-			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			setup:     exec.Command("docker", "run", "--name=docker_test_container4", "ubuntu:14.04", "sleep 0"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container4"),
 			exists:    false,
 		},
 	}
 
 	for _, test := range tests {
 		test.setup.Run()
-		state := ContainerExists(test.container)
-		if state == test.exists {
-			t.Errorf("Unexpected error for test [%v] for container [%v]: got %v, expected %v",
-				test.desc, test.container, state, test.exists)
+		time.Sleep(100 * time.Millisecond)
+		if got, want := ContainerExists(test.container), test.exists; got != want {
+			t.Errorf("%v: Wrong result for container %v; got %v, expected %v",
+				test.desc, test.container, got, want)
 		}
 		test.teardown.Run()
 	}
