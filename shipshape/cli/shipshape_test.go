@@ -51,8 +51,8 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		Build:               "",
 		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
 		Dind:                false,
-		Event:               "manual", // TODO: const
-		Repo:                "gcr.io/shipshape_releases", // TODO: const
+		Event:               DefaultEvent,
+		Repo:                DefaultRepo,
 		StayUp:              true,
 		Tag:                 *dockerTag,
 		// TODO(rsk): current e2e test can be run both with & without kythe.
