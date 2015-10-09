@@ -46,6 +46,8 @@ var (
 	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
 	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
+	keyFlags = []string{"analyzer_images", "build", "categories", "inside_docker", "event", "json_output", 
+		"repo", "stay_up", "tag", "local_kythe"}
 )
 
 const (
@@ -53,6 +55,26 @@ const (
 	returnFindings   = 1
 	returnError      = 2
 )
+
+func shipshapeUsage() {
+	shipshapeArgs := make(map[string]bool)
+	for _, flag := range keyFlags {
+		shipshapeArgs[flag] = true
+	}
+	fmt.Println("USAGE: shipshape [flags] <directory>")
+	fmt.Println("Shipshape flags: (for all flags, run shipshape -help)")
+	flag.VisitAll(func (f *flag.Flag) {
+		_, isShipshapeArg := shipshapeArgs[f.Name]
+		if (!isShipshapeArg) {
+			return
+		}
+		defValue := f.DefValue
+		if (defValue == "") {
+			defValue = "\"\""
+		}
+		fmt.Printf("  -%s:\n\t %s (default: %s)\n", f.Name, f.Usage, defValue)
+	})
+}
 
 func outputAsText(msg *rpcpb.ShipshapeResponse, directory string) error {
 	// TODO(ciera): these results aren't sorted. They should be sorted by path and start line
@@ -103,7 +125,7 @@ func main() {
 
 	// Get the file/directory to analyze.
 	if len(flag.Args()) != 1 {
-		fmt.Println("Usage: shipshape [OPTIONS] <directory>")
+		shipshapeUsage()
 		os.Exit(returnError)
 	}
 
