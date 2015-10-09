@@ -12,6 +12,6 @@ script:
         --workdir=/shipshape 
         gcr.io/shipshape_releases/dev_container:prod 
         /bin/sh -c 
-            "./setup_bazel.sh && 
+            "./configure && 
              bazel build //... && 
              bazel test --test_output=errors //..."'
