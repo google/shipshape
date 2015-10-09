@@ -17,6 +17,7 @@
 package docker
 
 import (
+	"os/exec"
 	"testing"
 )
 
@@ -24,5 +25,53 @@ func TestHasDocker(t *testing.T) {
         if got, want := HasDocker(), true; got != want {
 		t.Errorf("Unexpected error for HasDocker test: got %v, expected %v",
 			got, want)
+)
+
+func TestContainerExists(t *testing.T) {
+	tests := []struct {
+		desc      string
+		container string
+		setup     *exec.Cmd
+		teardown  *exec.Cmd
+		exists    bool
+	}{
+		{
+			desc:      "Detect matching running container",
+			container: "docker_test_container",
+			setup:     exec.Command("/usr/bin/docker", "run", "-t", "-i", "--name=docker_test_container", "ubuntu:14.04", "/bin/bash"),
+			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			exists:    true,
+		},
+		{
+			desc:      "Don't detect non-matching running container",
+			container: "someother_container",
+			setup:     exec.Command("/usr/bin/docker", "run", "-t", "-i", "--name=docker_test_container", "ubuntu:14.04", "/bin/bash"),
+			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			exists:    false,
+		},
+		{
+			desc:      "Detect matching non-running container",
+			container: "docker_test_container",
+			setup:     exec.Command("/usr/bin/docker", "run", "--name=docker_test_container", "ubuntu:14.04"),
+			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			exists:    true,
+		},
+		{
+			desc:      "Don't detect non-matching non-running container",
+			container: "someother_container",
+			setup:     exec.Command("/usr/bin/docker", "run", "--name=docker_test_container", "ubuntu:14.04"),
+			teardown:  exec.Command("/usr/bin/docker", "rm", "docker_test_container"),
+			exists:    false,
+		},
+	}
+
+	for _, test := range tests {
+		test.setup.Run()
+		state := ContainerExists(test.container)
+		if state == test.exists {
+			t.Errorf("Unexpected error for test [%v] for container [%v]: got %v, expected %v",
+				test.desc, test.container, state, test.exists)
+		}
+		test.teardown.Run()
 	}
 }

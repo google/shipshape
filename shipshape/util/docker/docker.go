@@ -241,6 +241,25 @@ func Stop(container string, waitTime time.Duration, remove bool) CommandResult {
 	return CommandResult{stdout.String(), stderr.String(), err}
 }
 
+func ContainerExists(container string) bool {
+	stdout := bytes.NewBuffer(nil)
+	stderr := bytes.NewBuffer(nil)
+	cmd := exec.Command("/usr/bin/docker", "ps", "-f", fmt.Sprintf("name=%v", container))
+
+	fmt.Printf("Running cmd: %v\n", cmd)
+
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("Problem running docker ps command: %v", err)
+		return false
+	}
+	lines := len(strings.Split(stdout.String(), "\n"))
+	fmt.Printf("Docker ps command returned stdout [%v] (lines: %v), stderr [%v]\n", stdout.String(), lines, stderr.String())
+	return true
+}
+
 // OutOfDate returns true if the image specified
 // has not been pulled recently.
 func OutOfDate(image string) bool {
