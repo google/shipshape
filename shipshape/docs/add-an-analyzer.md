@@ -164,6 +164,12 @@ dd
 }
 ```
 
+Make sure your analyzer builds
+
+    $ go build helloworld/myanalyzer
+    $ go build helloworld/myservice
+
+
 ### Java
 Java instructions will be available soon.
 
@@ -210,20 +216,20 @@ helloworld/endpoint.sh
 
 Build a docker image with the tag "local"
 
-    docker build --tag=myanalyzer:local helloworld/
+    $ docker build --tag=myanalyzer:local helloworld/
 
 Run the local analyzer. When you use the tag `local`, shipshape won't attempt to
 pull it from a remote location, but will use your locally built image.
 
-    shipshape --analyzer_images=myanalyzer:local --categories=HelloWorld directory
+    $ shipshape --analyzer_images=myanalyzer:local --categories=HelloWorld directory
 
 ## Push it up to gcr.io or docker.io, so that others can access it
 
-    docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
-    docker push [SAME_NAME_AND_TAG_AS_ABOVE]
+    $ docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    $ docker push [SAME_NAME_AND_TAG_AS_ABOVE]
 
 ## Test your public analyzer
 
-   shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] --categories=HelloWorld directory
+   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] --categories=HelloWorld directory
 
 Add it to [our list of analyzers](TODOTODO) by sending us a pull request!
