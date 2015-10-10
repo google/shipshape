@@ -25,9 +25,11 @@ Shipshape requires [Docker](https://docs.docker.com/docker/userguide/) to run.
   `apt-get install docker-engine` works for most machines, but [complete
   instructions](https://docs.docker.com/installation) are available.
   
-  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker group. After you do this, log out of your terminal and log in again.
+  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
+group. After you do this, you'll need to logout of your terminal and log back
+in. 
 
-         $ sudo usermod -G docker $USER    # Group may have to be created
+         $ sudo usermod -G docker $USER
 
 ## Download and Run ##
 
