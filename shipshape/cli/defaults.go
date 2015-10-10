@@ -2,5 +2,5 @@ package cli
 
 const (
 	DefaultEvent = "manual"
-	DefaultRepo  = "gcr.io/shipshape_releases"
+	DefaultRepo  = "beta.gcr.io/shipshape_releases"
 )
