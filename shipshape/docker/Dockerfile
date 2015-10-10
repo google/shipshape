@@ -20,12 +20,14 @@ RUN apt-get update && apt-get upgrade -y  && \
 # utilities
   sudo curl \
 # Packages needed for jshint
-  npm \
+#  npm \
+  nodejs-legacy moreutils \
 # Packages needed for pylint
   pylint=1.3.1-3
 
 # Setup jshint
-RUN npm install -g jshint@2.8.0
+RUN curl -L https://www.npmjs.org/install.sh | sponge | clean=no   sh
+RUN npm install -g jshint
 
 # Install Go, needed for the go vet analyzer
 RUN curl -L -s http://golang.org/dl/go1.3.linux-amd64.tar.gz | tar -zx -C /usr/local
