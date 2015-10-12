@@ -12,8 +12,8 @@ var (
 	// 1) In the BUILD file with an args stanza in the _test rule.
 	// 2) On the command line using --test_arg (i.e. bazel test --test_arg=-shipshape_test_docker_tag=TAG ...).
 	//
-	// As of 9 Oct 2015, there are multiple Bazel targets for common docker tags (:shipshape_test_prod and :shipshape_test_local)
-	// but there are no targets that set local Kythe.
+	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:shipshape_test_prod
+	// and :shipshape_test_local) but there are no targets that set local Kythe.
 	dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
 	localKythe = flag.Bool("shipshape_test_local_kythe", false, "if true, don't pull the Kythe docker image")
 )
@@ -64,12 +64,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		Repo:                DefaultRepo,
 		StayUp:              true,
 		Tag:                 *dockerTag,
-<<<<<<< HEAD
-		// TODO(rsk): current e2e test can be run both with & without kythe.
-		LocalKythe: false,
-=======
 		LocalKythe:          *localKythe,
->>>>>>> Add a flag for determining whether to use a local Kythe.
 	}
 	var allResponses rpcpb.ShipshapeResponse
 	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
