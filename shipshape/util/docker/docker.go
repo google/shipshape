@@ -20,7 +20,6 @@
 package docker
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -54,32 +53,25 @@ func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 // NB! This implementation assumes the last name of the 'docker ps' output will be the container name.
 func ContainerExists(container string) (bool, error) {
 	found := false
-	// Setup the docker command.
+	// Setup and run command
+	stdout := bytes.NewBuffer(nil)
 	cmd := exec.Command("docker", "ps", "-a")
-	cmdReader, err := cmd.StdoutPipe()
-	if err != nil {
-		return false, err
-	}
-	// Create a scanner that goes through each line of the output to check for a matching
-	// container name. We do this because the filter flag for docker ps does a string contains
-	// check and not a equals check on the container name.
-	scanner := bufio.NewScanner(cmdReader)
-	go func() {
-		for scanner.Scan() {
-			text := strings.Trim(scanner.Text(), " ")
-			index := strings.LastIndex(text, " ")
-			name := text[index+1 : len(text)]
-			if name == "NAMES" {
-				continue
-			}
-			if name == container {
-				found = true
-			}
-		}
-	}()
+	cmd.Stdout = stdout
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("Problem running command, err: %v", err)
 		return false, err
+	}
+	// Process output in search for container name match
+	for _, line := range strings.Split(stdout.String(), "\n") {
+		trimmedLine := strings.Trim(line, " ")
+		spaceIndex := strings.LastIndex(trimmedLine, " ")
+		name := trimmedLine[spaceIndex+1 : len(trimmedLine)]
+		if name == "NAMES" {
+			continue
+		}
+		if name == container {
+			found = true
+		}
 	}
 	return found, nil
 }
