@@ -60,17 +60,17 @@ func ContainerExists(container string) (bool, error) {
 		fmt.Printf("Problem running command, err: %v", err)
 		return false, err
 	}
-	// Process output in search for container name match
+	// Process output in search for container name match.
+	// The 'docker ps' output lists the container names in the last column.
+	// Prefixing the container name with a space to avoid substring matching.
+	spacedName := fmt.Sprintf(" %s", container)
 	for itr, line := range strings.Split(stdout.String(), "\n") {
 		// Skip the title row
 		if itr == 0 {
 			continue
 		}
-		// The 'docker ps' output lists the container names in the last column.
 		// Docker adds spaces to the end of each row
 		trimmedLine := strings.Trim(line, " ")
-		// Prefixing the container name with a space to avoid substring matching.
-		spacedName := fmt.Sprintf(" %s", container)
 		if strings.HasSuffix(trimmedLine, spacedName) {
 			return true, nil
 		}
