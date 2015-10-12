@@ -4,7 +4,7 @@ import (
 	"flag"
 	"testing"
 
-	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"  
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
 var dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
@@ -56,7 +56,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		StayUp:              true,
 		Tag:                 *dockerTag,
 		// TODO(rsk): current e2e test can be run both with & without kythe.
-		LocalKythe:          false,
+		LocalKythe: false,
 	}
 	var allResponses rpcpb.ShipshapeResponse
 	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
@@ -75,7 +75,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
 		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if got, want := returnedNotesCount, 38; got != want {
+	if got, want := returnedNotesCount, 39; got != want {
 		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PostMessage"), 2; got != want {
@@ -84,7 +84,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if got, want := countCategoryNotes(allResponses, "JSHint"), 3; got != want {
 		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if got, want := countCategoryNotes(allResponses, "go vet"), 0; got != want {
+	if got, want := countCategoryNotes(allResponses, "go vet"), 1; got != want {
 		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PyLint"), 33; got != want {
