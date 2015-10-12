@@ -70,6 +70,20 @@ func TestContainerExists(t *testing.T) {
 			teardown:  exec.Command("docker", "rm", "docker_test_container4"),
 			exists:    false,
 		},
+		{
+			desc:      "Don't detect container name substrings",
+			container: "ocker_test_containe",
+			setup:     exec.Command("docker", "run", "--name=docker_test_container4", "ubuntu:14.04", "sleep 0"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container4"),
+			exists:    false,
+		},
+		{
+			desc:      "Don't detect container name superstrings",
+			container: "2docker_test_container2",
+			setup:     exec.Command("docker", "run", "--name=docker_test_container4", "ubuntu:14.04", "sleep 0"),
+			teardown:  exec.Command("docker", "rm", "docker_test_container4"),
+			exists:    false,
+		},
 	}
 
 	for _, test := range tests {
