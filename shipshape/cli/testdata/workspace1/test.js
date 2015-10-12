@@ -1,1 +1,3 @@
-this is not javascript
+function() {
+	throw;
+}
