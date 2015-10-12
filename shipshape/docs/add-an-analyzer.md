@@ -157,7 +157,6 @@ func main() {
 
   log.Printf("-- Starting server endpoint at %q\n", addr)
   http.Handle("/", server.Endpoint{&s})
-dd
   if err := http.ListenAndServe(addr, nil); err != nil {
     log.Fatalf("Server startup failed: %v", err)
   }
@@ -175,8 +174,8 @@ Java instructions will be available soon.
 
 ## Create a Docker file
 Shipshape will start and run your service using [Docker](http://docker.io). You'll need to
-provide a docker file that creates a docker image. This is a VM image that
-contains your analyzer and all the dependencies needed to run it. As an example,
+provide a docker file that creates a docker image. A docker image is similar to a VM
+image; it contains your analyzer and all the dependencies needed to run it. (Unlike a traditional virtual machine though, [a container will share the OS to save space](https://www.docker.com/whatisdocker).) As an example,
 the [AndroidLint analyzer provides a docker file with all its dependencies](https://github.com/google/shipshape/blob/master/shipshape/androidlint_analyzer/docker/Dockerfile)
 
 Your Dockerfile will also need to actually start up your service through an
