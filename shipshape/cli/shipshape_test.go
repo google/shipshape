@@ -7,7 +7,16 @@ import (
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
-var dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
+var (
+	// There are two ways to specify test flags when using Bazel:
+	// 1) In the BUILD file with an args stanza in the _test rule.
+	// 2) On the command line using --test_arg (i.e. bazel test --test_arg=-shipshape_test_docker_tag=TAG ...).
+	//
+	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:shipshape_test_prod
+	// and :shipshape_test_local) but there are no targets that set local Kythe.
+	dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
+	localKythe = flag.Bool("shipshape_test_local_kythe", false, "if true, don't pull the Kythe docker image")
+)
 
 func countFailures(resp rpcpb.ShipshapeResponse) int {
 	failures := 0
@@ -55,8 +64,7 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		Repo:                DefaultRepo,
 		StayUp:              true,
 		Tag:                 *dockerTag,
-		// TODO(rsk): current e2e test can be run both with & without kythe.
-		LocalKythe: false,
+		LocalKythe:          *localKythe,
 	}
 	var allResponses rpcpb.ShipshapeResponse
 	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
