@@ -23,7 +23,7 @@ declare -xr TEST_DIR=$(realpath $(dirname "$0"))
 declare -xr BASE_DIR=$(realpath "${TEST_DIR}/../..")
 declare -xr SHIPSHAPE="${BASE_DIR}/bazel-bin/shipshape/cli/shipshape"
 
-declare -xr CONVOY_URL='gcr.io'
+declare -xr CONVOY_URL='beta.gcr.io'
 declare -xr LOCAL_WORKSPACE='/tmp/shipshape-tests'
 declare -xr LOG_FILE='end_to_end_test.log'
 declare -xr REPO=$CONVOY_URL/shipshape_releases
