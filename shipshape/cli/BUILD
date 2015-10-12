@@ -31,6 +31,7 @@ go_binary(
 go_library(
     name = "cli",
     srcs = [
+        "defaults.go",
         "shipshape_lib.go",
     ],
     deps = [
