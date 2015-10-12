@@ -20,6 +20,7 @@
 package docker
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -49,23 +50,38 @@ func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 	return CommandResult{strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err}
 }
 
-// ContainerExists checks if a container with the given name is running or has been running.
-// NB! this implementation depends on the output of the docker ps command, assuming that the number
-// of output lines is more than one if there is a match (i.e., more than just the column headers).
-func ContainerExists(container string) bool {
-	stdout := bytes.NewBuffer(nil)
-	stderr := bytes.NewBuffer(nil)
-	cmd := exec.Command("docker", "ps", "-a", "-f", fmt.Sprintf("name=%v", container))
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	err := cmd.Run()
+// ContainerExists checks if a container with the given name is in the list of running, or old, containers.
+// NB! This implementation assumes the last name of the 'docker ps' output will be the container name.
+func ContainerExists(container string) (bool, error) {
+	found := false
+	// Setup the docker command.
+	cmd := exec.Command("docker", "ps", "-a")
+	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
-		fmt.Printf("Problem running docker ps command: %v, stderr: %s", err, stderr.String())
-		return false
+		return false, err
 	}
-	// A container that exists will cause one more line to be added to the output.
-	// The header accounts for 2 newlines.
-	return len(strings.Split(stdout.String(), "\n")) > 2
+	// Create a scanner that goes through each line of the output to check for a matching
+	// container name. We do this because the filter flag for docker ps does a string contains
+	// check and not a equals check on the container name.
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		for scanner.Scan() {
+			text := strings.Trim(scanner.Text(), " ")
+			index := strings.LastIndex(text, " ")
+			name := text[index+1 : len(text)]
+			if name == "NAMES" {
+				continue
+			}
+			if name == container {
+				found = true
+			}
+		}
+	}()
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Problem running command, err: %v", err)
+		return false, err
+	}
+	return found, nil
 }
 
 // HasDocker determines whether docker is installed

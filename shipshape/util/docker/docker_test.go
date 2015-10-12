@@ -29,6 +29,11 @@ func TestHasDocker(t *testing.T) {
 	}
 }
 
+// NB! This test is using a set of predefined container names that might clash with already
+// existing container names (docker_test_container*). The tests clean up after themselves so
+// matching containers will be cleaned up in the test tear down. Rerunning a test should
+// take care of the clash from the test perspective. However, a non-test related container with
+// a colliding name will not be restored.
 func TestContainerExists(t *testing.T) {
 	tests := []struct {
 		desc      string
@@ -70,8 +75,12 @@ func TestContainerExists(t *testing.T) {
 	for _, test := range tests {
 		test.setup.Run()
 		time.Sleep(100 * time.Millisecond)
-		if got, want := ContainerExists(test.container), test.exists; got != want {
-			t.Errorf("%v: Wrong result for container %v; got %v, expected %v",
+		got, err := ContainerExists(test.container)
+		want := test.exists
+		if err != nil {
+			t.Errorf("%v: Error running test; %v", test.desc, err)
+		} else if got != want {
+			t.Errorf("%v: Wrong result; got %v, expected %v",
 				test.desc, test.container, got, want)
 		}
 		test.teardown.Run()
