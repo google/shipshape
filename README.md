@@ -38,14 +38,11 @@ Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
 Run it!
 
 ```
-$ ./shipshape --categories="go vet,JSHint,PyLint" <Directory>
+$ ./shipshape <Directory>
 ```
 
-Get help!
-
-```
-$ ./shipshape --help
-```
+For examples for how to use it, [see our
+documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/run-cli.md).
 
 ## Analyzers ##
 
