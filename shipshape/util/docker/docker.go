@@ -301,7 +301,7 @@ func MappedVolume(path, container string) (bool, string) {
 	// Why this big ugly mess you ask? Because we can't use a go template to index
 	// like this: .Volumes./shipshape-workspace because go templates only allow
 	// alphanumeric identifiers. So instead, we do this.
-	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
+	v, err := inspect(container, `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`)
 	if err != nil {
 		return false, ""
 	}
