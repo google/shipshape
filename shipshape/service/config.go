@@ -17,7 +17,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -90,9 +89,6 @@ func buildConfig(rawConfig *configpb.ShipshapeConfig, eventName string) *config 
 // validateConfig looks for errors in the given configuration proto.
 // TODO(collinwinter): return all the errors, not just the first one.
 func validateConfig(rawConfig *configpb.ShipshapeConfig) error {
-	if len(rawConfig.Events) == 0 {
-		return errors.New("Config file must have an `events` section")
-	}
 	eventNames := make(map[string][]string)
 	for i, ec := range rawConfig.Events {
 		if ec.Event == nil {

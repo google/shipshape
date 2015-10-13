@@ -136,19 +136,27 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		return err
 	}
 
+	// Get the list of all categories
+	sd.serviceMap = sd.getAllServiceInfo()
+	allCats := sd.allCats()
+
 	// Use the triggered categories if specified
 	var desiredCats strset.Set
 	if len(in.TriggeredCategory) > 0 {
 		desiredCats = strset.New(in.TriggeredCategory...)
 	} else if cfg != nil {
 		desiredCats = strset.New(cfg.categories...)
-	} else {
-		return fmt.Errorf("service needs to be called with triggered categories and/or a repo root with a valid %s file with the event %s", configFilename, *in.Event)
+		if len(desiredCats) > 0 {
+			log.Printf("Running with categories from .shipshape file: %s" + desiredCats.String())
+		}
+	}
+
+	if len(desiredCats) == 0 {
+		log.Printf("No categories specified, running with all available categories: %s", allCats.String())
+		desiredCats = allCats
 	}
 
 	// Find out what categories we have available, and remove/warn on the missing ones
-	sd.serviceMap = sd.getAllServiceInfo()
-	allCats := sd.allCats()
 	missingCats := strset.New().AddSet(desiredCats).RemoveSet(allCats)
 	for missing := range missingCats {
 		ars = append(ars, generateFailure(missing, fmt.Sprintf("The triggered category %q could not be found at the locations %v", missing, sd.AnalyzerLocations)))
