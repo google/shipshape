@@ -62,7 +62,7 @@ The following analyzers were contributed by external developers:
 
 * [AndroidLint](http://tools.android.com/tips/lint). Image: `gcr.io/shipshape_releases/android_lint:prod`.
 * [CTADetector](http://mir.cs.illinois.edu/~yulin2/CTADetector) - Yu Lin (University of Illinois at Urbana-Champaign). Image: `yulin2/ctadetector`.
-* [ExtendJ](https://github.com/google/simplecfg) - Jesper Öqvist (Lund University). Image: N/A (build from source).
+* [ExtendJ](https://github.com/google/simplecfg) - Jesper Öqvist (Lund University). Image: `joqvist/extendj_shipshape`.
 
 ### Add a new analyzer
 
