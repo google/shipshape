@@ -14,6 +14,8 @@
 
 load("/tools/build_rules/docker", "docker_build")
 
+package(default_visibility = ["//shipshape:default_visibility"])
+
 docker_build(
     name = "service",
     src = "Dockerfile",

@@ -76,8 +76,8 @@ go_test(
         # TODO(rsk): figure out why we need to rely on the output
         # marker rather than the target name (may be a bug in
         # either Bazel or the docker_build extension).
-        # "//shipshape/docker:service.done",
-        # "//shipshape/androidlint_analyzer/docker:android_lint.done",
+        "//shipshape/docker:service.done",
+        "//shipshape/androidlint_analyzer/docker:android_lint.done",
     ],
     library = ":cli",
     args = [
