@@ -31,6 +31,7 @@ go_binary(
 go_library(
     name = "cli",
     srcs = [
+        "defaults.go",
         "shipshape_lib.go",
     ],
     deps = [
@@ -59,12 +60,8 @@ go_test(
     ],
 )
 
-# NOTE: until we determine how to automatically tag docker images, you must
-# do that manually:
+# NOTE: Make sure to rebuild your docker images before running these tests!
 #   $ bazel build //shipshape/docker:service //shipshape/androidlint_analyzer/docker:android_lint
-#   $ docker tag gcr.io/shipshape_releases/service:latest gcr.io/shipshape_releases/service:local
-#   $ docker tag gcr.io/shipshape_releases/service:android_lint gcr.io/shipshape_releases/android_lint:local
-# TODO(rsk): figure out how to tag a docker image from Bazel.
 go_test(
     name = "shipshape_test_local",
     srcs = [
@@ -79,8 +76,8 @@ go_test(
         # TODO(rsk): figure out why we need to rely on the output
         # marker rather than the target name (may be a bug in
         # either Bazel or the docker_build extension).
-        # "//shipshape/docker:service.done",
-        # "//shipshape/androidlint_analyzer/docker:android_lint.done",
+        "//shipshape/docker:service.done",
+        "//shipshape/androidlint_analyzer/docker:android_lint.done",
     ],
     library = ":cli",
     args = [

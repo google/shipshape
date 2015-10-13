@@ -14,10 +14,12 @@
 
 load("/tools/build_rules/docker", "docker_build")
 
+package(default_visibility = ["//shipshape:default_visibility"])
+
 docker_build(
     name = "service",
     src = "Dockerfile",
-    image_name = "gcr.io/shipshape_releases/service",
+    image_name = "beta.gcr.io/shipshape_releases/service:local",
     tags = ["manual"],
     use_cache = True,
     data = [

@@ -49,6 +49,35 @@ func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 	return CommandResult{strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err}
 }
 
+// ContainerExists checks if a container with the given name is in the list of running, or old, containers.
+// NB! This implementation assumes the last name of the 'docker ps' output will be the container name.
+func ContainerExists(container string) (bool, error) {
+	// Setup and run command
+	stdout := bytes.NewBuffer(nil)
+	cmd := exec.Command("docker", "ps", "-a")
+	cmd.Stdout = stdout
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Problem running command, err: %v", err)
+		return false, err
+	}
+	// Process output in search for container name match.
+	// The 'docker ps' output lists the container names in the last column.
+	// Prefixing the container name with a space to avoid substring matching.
+	spacedName := fmt.Sprintf(" %s", container)
+	for itr, line := range strings.Split(stdout.String(), "\n") {
+		// Skip the title row
+		if itr == 0 {
+			continue
+		}
+		// Docker adds spaces to the end of each row
+		trimmedLine := strings.Trim(line, " ")
+		if strings.HasSuffix(trimmedLine, spacedName) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // HasDocker determines whether docker is installed
 // and included in PATH.
 func HasDocker() bool {
@@ -272,7 +301,7 @@ func MappedVolume(path, container string) (bool, string) {
 	// Why this big ugly mess you ask? Because we can't use a go template to index
 	// like this: .Volumes./shipshape-workspace because go templates only allow
 	// alphanumeric identifiers. So instead, we do this.
-	v, err := inspect(container, `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`)
+	v, err := inspect(container, `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`)
 	if err != nil {
 		return false, ""
 	}

@@ -4,10 +4,19 @@ import (
 	"flag"
 	"testing"
 
-	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"  
+	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
 
-var dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
+var (
+	// There are two ways to specify test flags when using Bazel:
+	// 1) In the BUILD file with an args stanza in the _test rule.
+	// 2) On the command line using --test_arg (i.e. bazel test --test_arg=-shipshape_test_docker_tag=TAG ...).
+	//
+	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:shipshape_test_prod
+	// and :shipshape_test_local) but there are no targets that set local Kythe.
+	dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
+	localKythe = flag.Bool("shipshape_test_local_kythe", false, "if true, don't pull the Kythe docker image")
+)
 
 func countFailures(resp rpcpb.ShipshapeResponse) int {
 	failures := 0
@@ -51,12 +60,11 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		Build:               "",
 		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
 		Dind:                false,
-		Event:               "manual", // TODO: const
-		Repo:                "gcr.io/shipshape_releases", // TODO: const
+		Event:               DefaultEvent,
+		Repo:                DefaultRepo,
 		StayUp:              true,
 		Tag:                 *dockerTag,
-		// TODO(rsk): current e2e test can be run both with & without kythe.
-		LocalKythe:          false,
+		LocalKythe:          *localKythe,
 	}
 	var allResponses rpcpb.ShipshapeResponse
 	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
@@ -75,16 +83,16 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
 		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if got, want := returnedNotesCount, 43; got != want {
+	if got, want := returnedNotesCount, 39; got != want {
 		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PostMessage"), 2; got != want {
 		t.Errorf("%v: Wrong number of PostMessage notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if got, want := countCategoryNotes(allResponses, "JSHint"), 8; got != want {
+	if got, want := countCategoryNotes(allResponses, "JSHint"), 3; got != want {
 		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
-	if got, want := countCategoryNotes(allResponses, "go vet"), 0; got != want {
+	if got, want := countCategoryNotes(allResponses, "go vet"), 1; got != want {
 		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PyLint"), 33; got != want {
