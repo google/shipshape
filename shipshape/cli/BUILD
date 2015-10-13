@@ -60,12 +60,8 @@ go_test(
     ],
 )
 
-# NOTE: until we determine how to automatically tag docker images, you must
-# do that manually:
+# NOTE: Make sure to rebuild your docker images before running these tests!
 #   $ bazel build //shipshape/docker:service //shipshape/androidlint_analyzer/docker:android_lint
-#   $ docker tag -f beta.gcr.io/shipshape_releases/service:latest beta.gcr.io/shipshape_releases/service:local
-#   $ docker tag -f beta.gcr.io/shipshape_releases/service:android_lint beta.gcr.io/shipshape_releases/android_lint:local
-# TODO(rsk): figure out how to tag a docker image from Bazel.
 go_test(
     name = "shipshape_test_local",
     srcs = [

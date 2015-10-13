@@ -17,7 +17,7 @@ load("/tools/build_rules/docker", "docker_build")
 docker_build(
     name = "android_lint",
     src = "Dockerfile",
-    image_name = "beta.gcr.io/shipshape_releases/android_lint",
+    image_name = "beta.gcr.io/shipshape_releases/android_lint:local",
     tags = ["manual"],
     use_cache = True,
     data = [
