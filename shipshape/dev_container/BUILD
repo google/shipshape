@@ -18,7 +18,7 @@ docker_build(
     name = "dev_container",
     src = "Dockerfile",
     data = ["startup.sh"],
-    image_name = "gcr.io/shipshape_releases/dev_container",
+    image_name = "beta.gcr.io/shipshape_releases/dev_container:local",
     tags = ["manual"],
     use_cache = True,
 )
