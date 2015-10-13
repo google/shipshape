@@ -40,7 +40,7 @@ We can also try out using one of the [external analyzers](TODOTODO)
 
     ./shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod"
 
-Lets add that to our shipshape file too. We can also add multiple events, if we
+Let's add that to our shipshape file too. We can also add multiple events, if we
 want to have different results when we run the tool in different ways.
 
     cat > .shipshape <<EOF
@@ -54,7 +54,7 @@ want to have different results when we run the tool in different ways.
           - Py Lint
           - AndroidLint
     events:
-      - event: ide
+      - event: IDE
         categories:
           - go vet
           - Py Lint
@@ -64,5 +64,5 @@ want to have different results when we run the tool in different ways.
 And it all still works
 
     ./shipshape .
-    ./shipshape --event=ide .
+    ./shipshape --event=IDE .
 
