@@ -16,7 +16,7 @@
 # environment in which Shipshape's source code is mounted and ready to be
 # built.
 
-FROM gcr.io/shipshape_releases/dev_container:prod
+FROM beta.gcr.io/shipshape_releases/dev_container:prod
 
 # -- Shipshape --
 RUN git clone --depth 1 https://github.com/google/shipshape.git
