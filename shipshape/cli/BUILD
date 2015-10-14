@@ -47,7 +47,7 @@ go_library(
 )
 
 go_test(
-    name = "shipshape_test_prod",
+    name = "test_prod",
     srcs = [
         "shipshape_test.go",
     ],
@@ -60,10 +60,24 @@ go_test(
     ],
 )
 
+go_test(
+    name = "test_staging",
+    srcs = [
+        "shipshape_test.go",
+    ],
+    data = [
+        "testdata",
+    ],
+    library = ":cli",
+    args = [
+        "--shipshape_test_docker_tag=staging",
+    ],
+)
+
 # NOTE: Make sure to rebuild your docker images before running these tests!
 #   $ bazel build //shipshape/docker:service //shipshape/androidlint_analyzer/docker:android_lint
 go_test(
-    name = "shipshape_test_local",
+    name = "test_local",
     srcs = [
         "shipshape_test.go",
     ],
