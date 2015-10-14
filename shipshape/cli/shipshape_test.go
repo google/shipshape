@@ -121,6 +121,7 @@ func TestChangingDirs(t *testing.T) {
 		expectedJSHint int
 		expectedGovet  int
 		expectedPyLint int
+		expectRestart  bool
 	}{
 		{
 			name:           "ChildDir",
@@ -128,6 +129,7 @@ func TestChangingDirs(t *testing.T) {
 			expectedJSHint: 0,
 			expectedGovet:  1,
 			expectedPyLint: 0,
+			expectRestart:  true,
 		},
 		{
 			name:           "SiblingDir",
@@ -135,6 +137,7 @@ func TestChangingDirs(t *testing.T) {
 			expectedJSHint: 0,
 			expectedGovet:  0,
 			expectedPyLint: 22,
+			expectRestart:  true,
 		},
 		{
 			name:           "ParentDir",
@@ -142,6 +145,7 @@ func TestChangingDirs(t *testing.T) {
 			expectedJSHint: 3,
 			expectedGovet:  1,
 			expectedPyLint: 22,
+			expectRestart:  true,
 		},
 		{
 			name:           "File",
@@ -149,6 +153,23 @@ func TestChangingDirs(t *testing.T) {
 			expectedJSHint: 3,
 			expectedGovet:  0,
 			expectedPyLint: 0,
+			expectRestart:  false,
+		},
+		{
+			name:           "ParentToChild",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace2",
+			expectedJSHint: 0,
+			expectedGovet:  0,
+			expectedPyLint: 22,
+			expectRestart:  false,
+		},
+		{
+			name:           "ParentToOtherChild",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace1",
+			expectedJSHint: 0,
+			expectedGovet:  1,
+			expectedPyLint: 0,
+			expectRestart:  false,
 		},
 	}
 
@@ -163,6 +184,7 @@ func TestChangingDirs(t *testing.T) {
 			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
 		}
 	}
+	oldId := ""
 
 	for _, test := range tests {
 		options := Options{
@@ -203,6 +225,14 @@ func TestChangingDirs(t *testing.T) {
 			t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
 				testName, got, want, allResponses)
 		}
+		newId, err := docker.ContainerId(container)
+		if err != nil {
+			t.Fatalf("%v: Could not get container id: %v", testName, err)
+		}
+		if got, want := newId != oldId, test.expectRestart; got != want {
+			t.Errorf("%v: Incorrect restart status for container. Got %v, want %v", testName, got, want)
+		}
+		oldId = newId
 	}
 }
 

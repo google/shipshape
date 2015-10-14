@@ -296,13 +296,18 @@ func ImageMatches(image, container string) bool {
 	return bytes.Equal(imageHash, containerHash)
 }
 
+// ContainerId returns the id of the requested container
+func ContainerId(container string) (string, error) {
+	res, err := inspect(container, "{{.Id}}")
+	return string(res), err
+}
+
 // MappedVolume returns whether path is already mapped into the workspace
 // of the shipshape service running at container. If it is, it returns the relative path
 // of path within the mapped volume.
 func MappedVolume(path, container string) (bool, string) {
 	// Why this big ugly mess you ask? Because we can't use a go template to index
-	// like this: .Volumes./shipshape-workspace because go templates only allow
-	// alphanumeric identifiers. So instead, we do this.
+	// into the array that contains the Destination of interest.
 	v, err := inspect(container, `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`)
 	if err != nil {
 		return false, ""
@@ -315,7 +320,10 @@ func MappedVolume(path, container string) (bool, string) {
 	// Handle the subdirectory case by adding a trailing '/'
 	// Want to rule out the case: volume='/a/b2' and path='/a/b'
 	path += "/"
-	return strings.HasPrefix(volume, path), strings.TrimPrefix(path, volume)
+	// We want to return true if the path we need is a subpath
+	// of the directory we have mounted. That is, the start of path
+	// is our volume.
+	return strings.HasPrefix(path, volume), strings.TrimPrefix(path, volume)
 }
 
 // ContainsLinks returns whether the given container has links to the given

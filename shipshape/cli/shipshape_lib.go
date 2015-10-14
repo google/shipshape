@@ -270,7 +270,7 @@ func startShipshapeService(image, absRoot string, analyzers []string, dind bool)
 		subPath = ""
 	} else {
 		var isMapped bool
-		// subPath is the relatve path from the mapped volume on shipping container
+		// subPath is the relative path from the mapped volume on shipping container
 		// to the directory we are analyzing (absRoot)
 		isMapped, subPath = docker.MappedVolume(absRoot, container)
 		// Stop and restart the container if:
