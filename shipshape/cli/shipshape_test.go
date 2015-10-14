@@ -152,8 +152,15 @@ func TestChangingDirs(t *testing.T) {
 	}
 
 	// Clean up the docker state
-	if result := docker.Stop("shipping_container", 0, true); result.Err != nil {
-		t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
+	container := "shipping_container"
+	exists, err := docker.ContainerExists(container)
+	if err != nil {
+		t.Fatalf("Problem checking docker state; err: %v", err)
+	}
+	if exists {
+		if result := docker.Stop(container, 0, true); result.Err != nil {
+			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
+		}
 	}
 
 	for _, test := range tests {
