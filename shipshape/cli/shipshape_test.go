@@ -112,168 +112,84 @@ func TestStreamsMode(t *testing.T) {
 	// is actually still something we need to support.
 }
 
-func TestChangingDirectories(t *testing.T) {
-	// Run on parent directory
-	options := Options{
-		File:                "shipshape/cli/testdata/workspace2",
-		ThirdPartyAnalyzers: []string{},
-		Build:               "",
-		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
-		Dind:                false,
-		Event:               DefaultEvent,
-		Repo:                DefaultRepo,
-		StayUp:              true,
-		Tag:                 *dockerTag,
-		LocalKythe:          *localKythe,
+func TestChangingDirs(t *testing.T) {
+	tests := []struct {
+		name           string
+		file           string
+		expectedJSHint int
+		expectedGovet  int
+		expectedPyLint int
+	}{
+		{
+			name:           "TestChangingDirs:ChildDir",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace1",
+			expectedJSHint: 0,
+			expectedGovet:  1,
+			expectedPyLint: 0,
+		},
+		{
+			name:           "TestChangingDirs:SiblingDir",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace2",
+			expectedJSHint: 0,
+			expectedGovet:  0,
+			expectedPyLint: 22,
+		},
+		{
+			name:           "TestChangingDirs:ParentDir",
+			file:           "shipshape/cli/testdata/workspace2",
+			expectedJSHint: 3,
+			expectedGovet:  1,
+			expectedPyLint: 22,
+		},
+		{
+			name:           "TestChangingDirs:File",
+			file:           "shipshape/cli/testdata/workspace2/test.js",
+			expectedJSHint: 3,
+			expectedGovet:  0,
+			expectedPyLint: 0,
+		},
 	}
-	var allResponsesParent rpcpb.ShipshapeResponse
-	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
-		allResponsesParent.AnalyzeResponse =
-			append(allResponsesParent.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
-		return nil
+	for _, test := range tests {
+		options := Options{
+			File:                test.file,
+			ThirdPartyAnalyzers: []string{},
+			Build:               "",
+			TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
+			Dind:                false,
+			Event:               DefaultEvent,
+			Repo:                DefaultRepo,
+			StayUp:              true,
+			Tag:                 *dockerTag,
+			LocalKythe:          *localKythe,
+		}
+		var allResponses rpcpb.ShipshapeResponse
+		options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
+			allResponses.AnalyzeResponse =
+				append(allResponses.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
+			return nil
+		}
+		testName := test.name
+		if _, err := New(options).Run(); err != nil {
+			t.Errorf("%v: Failure on service call; err: %v", testName, err)
+			continue
+		}
+		if got, want := countFailures(allResponses), 0; got != want {
+			t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "JSHint"), test.expectedJSHint; got != want {
+			t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "go vet"), test.expectedGovet; got != want {
+			t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "PyLint"), test.expectedPyLint; got != want {
+			t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
 	}
-	if _, err := New(options).Run(); err != nil {
-		t.Fatal(err)
-	}
-	testName := "TestChangingDirectories - ParentDir"
-	if got, want := countFailures(allResponsesParent), 0; got != want {
-		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent)
-	}
-	if got, want := countCategoryNotes(allResponsesParent, "JSHint"), 3; got != want {
-		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent)
-	}
-	if got, want := countCategoryNotes(allResponsesParent, "go vet"), 1; got != want {
-		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent)
-	}
-	if got, want := countCategoryNotes(allResponsesParent, "PyLint"), 22; got != want {
-		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent)
-	}
-
-	// Moving down, running on child directory
-	options = Options{
-		File:                "shipshape/cli/testdata/workspace2/subworkspace1",
-		ThirdPartyAnalyzers: []string{},
-		Build:               "",
-		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
-		Dind:                false,
-		Event:               DefaultEvent,
-		Repo:                DefaultRepo,
-		StayUp:              true,
-		Tag:                 *dockerTag,
-		LocalKythe:          *localKythe,
-	}
-	var allResponsesChild rpcpb.ShipshapeResponse
-	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
-		allResponsesChild.AnalyzeResponse =
-			append(allResponsesChild.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
-		return nil
-	}
-	if _, err := New(options).Run(); err != nil {
-		t.Fatal(err)
-	}
-	testName = "TestChangingDirectories - ChildDir"
-	if got, want := countFailures(allResponsesChild), 0; got != want {
-		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesChild)
-	}
-	if got, want := countCategoryNotes(allResponsesChild, "JSHint"), 0; got != want {
-		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesChild)
-	}
-	if got, want := countCategoryNotes(allResponsesChild, "go vet"), 1; got != want {
-		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesChild)
-	}
-	if got, want := countCategoryNotes(allResponsesChild, "PyLint"), 0; got != want {
-		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesChild)
-	}
-
-	// Moving sideways, running on the sibling child directory
-	options = Options{
-		File:                "shipshape/cli/testdata/workspace2/subworkspace2",
-		ThirdPartyAnalyzers: []string{},
-		Build:               "",
-		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
-		Dind:                false,
-		Event:               DefaultEvent,
-		Repo:                DefaultRepo,
-		StayUp:              true,
-		Tag:                 *dockerTag,
-		LocalKythe:          *localKythe,
-	}
-	var allResponsesSibling rpcpb.ShipshapeResponse
-	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
-		allResponsesSibling.AnalyzeResponse =
-			append(allResponsesSibling.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
-		return nil
-	}
-	if _, err := New(options).Run(); err != nil {
-		t.Fatal(err)
-	}
-	testName = "TestChangingDirectories - SiblingDir"
-	if got, want := countFailures(allResponsesSibling), 0; got != want {
-		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesSibling)
-	}
-	if got, want := countCategoryNotes(allResponsesSibling, "JSHint"), 0; got != want {
-		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesSibling)
-	}
-	if got, want := countCategoryNotes(allResponsesSibling, "go vet"), 0; got != want {
-		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesSibling)
-	}
-	if got, want := countCategoryNotes(allResponsesSibling, "PyLint"), 22; got != want {
-		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesSibling)
-	}
-
-	// Moving up, run on the parent directory again
-	options = Options{
-		File:                "shipshape/cli/testdata/workspace2",
-		ThirdPartyAnalyzers: []string{},
-		Build:               "",
-		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
-		Dind:                false,
-		Event:               DefaultEvent,
-		Repo:                DefaultRepo,
-		StayUp:              true,
-		Tag:                 *dockerTag,
-		LocalKythe:          *localKythe,
-	}
-	var allResponsesParent2 rpcpb.ShipshapeResponse
-	options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
-		allResponsesParent2.AnalyzeResponse =
-			append(allResponsesParent2.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
-		return nil
-	}
-	if _, err := New(options).Run(); err != nil {
-		t.Fatal(err)
-	}
-	testName = "TestChangingDirectories - ParentDir again"
-	if got, want := countFailures(allResponsesParent2), 0; got != want {
-		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent2)
-	}
-	if got, want := countCategoryNotes(allResponsesParent2, "JSHint"), 3; got != want {
-		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent2)
-	}
-	if got, want := countCategoryNotes(allResponsesParent2, "go vet"), 1; got != want {
-		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent2)
-	}
-	if got, want := countCategoryNotes(allResponsesParent2, "PyLint"), 22; got != want {
-		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
-			testName, got, want, allResponsesParent2)
-	}
-
-	// TODO(emso): Add a test running on a single file, use workspace2/test.js
 }
 
 func dumpLogs() {
