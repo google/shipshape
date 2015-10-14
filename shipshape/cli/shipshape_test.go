@@ -113,13 +113,6 @@ func TestBuiltInAnalyzersPostBuild(t *testing.T) {
 	// PostMessage and ErrorProne
 }
 
-<<<<<<< HEAD
-func TestStreamsMode(t *testing.T) {
-	// Test whether it works in streams mode
-	// Before creating this, ensure that streams mode
-	// is actually still something we need to support.
-}
-
 func TestChangingDirs(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -210,11 +203,6 @@ func TestChangingDirs(t *testing.T) {
 				testName, got, want, allResponses)
 		}
 	}
-=======
-func TestChangingDirectories(t *testing.T) {
-	// Replaces the changedir test
-	// Make sure to test changing down, changing up, running on the same directory, running on a single file in the same directory, and changing to a sibling
->>>>>>> Added a regression test about running the same test twice in a row
 }
 
 func dumpLogs() {
