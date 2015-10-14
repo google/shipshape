@@ -101,12 +101,19 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	}
 }
 
+// This is a regression test to ensure that when we run the exact same thing twice, it still works.
+func TestTwoRunsExactlySame(t *testing.T) {
+	TestBuiltInAnalyzersPreBuild(t)
+	TestBuiltInAnalyzersPreBuild(t)
+}
+
 func TestBuiltInAnalyzersPostBuild(t *testing.T) {
 	// Replaces part of the e2e test
 	// Test with a kythe maven build
 	// PostMessage and ErrorProne
 }
 
+<<<<<<< HEAD
 func TestStreamsMode(t *testing.T) {
 	// Test whether it works in streams mode
 	// Before creating this, ensure that streams mode
@@ -203,6 +210,11 @@ func TestChangingDirs(t *testing.T) {
 				testName, got, want, allResponses)
 		}
 	}
+=======
+func TestChangingDirectories(t *testing.T) {
+	// Replaces the changedir test
+	// Make sure to test changing down, changing up, running on the same directory, running on a single file in the same directory, and changing to a sibling
+>>>>>>> Added a regression test about running the same test twice in a row
 }
 
 func dumpLogs() {
