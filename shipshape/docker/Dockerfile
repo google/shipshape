@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/dev-con/cloud-dev-java:prod
+FROM beta.gcr.io/dev-con/cloud-dev-java:prod
 
 # Make sure instance is up to date
 RUN apt-get update && apt-get upgrade -y  && \
