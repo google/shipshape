@@ -127,7 +127,7 @@ func main() {
 	// Get the file/directory to analyze.
 	// If we are just showing category list, default to the current directory
 	file := "."
-	if len(flag.Args()) > 1 {
+	if len(flag.Args()) >= 1 {
 		file = flag.Arg(0)
 	} else if !*showCategories {
 		shipshapeUsage()
