@@ -25,11 +25,9 @@ Shipshape requires [Docker](https://docs.docker.com/docker/userguide/) to run.
   `apt-get install docker-engine` works for most machines, but [complete
   instructions](https://docs.docker.com/installation) are available.
   
-  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
-group and restarting docker:
+  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker group. After you do this, log out of your terminal and log in again.
 
          $ sudo usermod -G docker $USER    # Group may have to be created
-         $ sudo service docker.io restart
 
 ## Download and Run ##
 
@@ -109,7 +107,7 @@ Bazel puts the Shipshape CLI binary in the bazel-bin directory. You can run it
 on you directory:
 
 ```
-$ ./bazel-bin/shipshape/cli/shipshape --categories="go vet,JSHint,PyLint" <Directory>
+$ ./bazel-bin/shipshape/cli/shipshape <Directory>
 ```
 
 ### Run with Local Docker Images ###
@@ -127,7 +125,7 @@ $ bazel build //shipshape/androidlint_analyzer/docker:android_lint
 To run with local images:
 
 ```
-$ ./shipshape/test/end_to_end_test.sh --tag local
+$ ./bazel-bin/shipshape/cli/shipshape --tag=local <Directory>
 ```
 
 ## Testing ##
@@ -141,7 +139,7 @@ $ bazel test //...
 For the end-to-end test, run:
 
 ```
-$ ./shipshape/test/end_to_end_test.sh --tag local
+$ bazel test //shipshape/cli:test_local
 ```
 
 # Running the Jenkins Plugin #
