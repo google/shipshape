@@ -50,28 +50,19 @@ func trimResult(stdout, stderr *bytes.Buffer, err error) CommandResult {
 }
 
 // ContainerExists checks if a container with the given name is in the list of running, or old, containers.
-// NB! This implementation assumes the last name of the 'docker ps' output will be the container name.
 func ContainerExists(container string) (bool, error) {
 	// Setup and run command
 	stdout := bytes.NewBuffer(nil)
-	cmd := exec.Command("docker", "ps", "-a")
+	cmd := exec.Command("docker", "ps", "-a", "--format={{.Names}}")
 	cmd.Stdout = stdout
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("Problem running command, err: %v", err)
 		return false, err
 	}
 	// Process output in search for container name match.
-	// The 'docker ps' output lists the container names in the last column.
-	// Prefixing the container name with a space to avoid substring matching.
-	spacedName := fmt.Sprintf(" %s", container)
-	for itr, line := range strings.Split(stdout.String(), "\n") {
-		// Skip the title row
-		if itr == 0 {
-			continue
-		}
-		// Docker adds spaces to the end of each row
-		trimmedLine := strings.Trim(line, " ")
-		if strings.HasSuffix(trimmedLine, spacedName) {
+	// The 'docker ps' output lists the container names one per line
+	for _, line := range strings.Split(stdout.String(), "\n") {
+		if line == container {
 			return true, nil
 		}
 	}

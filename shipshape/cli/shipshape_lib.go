@@ -215,27 +215,41 @@ func numNotes(msg *rpcpb.ShipshapeResponse) int {
 // a new one.
 // The methods returns the (ready) client, the relative path from the docker container's mapped
 // volume to the absRoot that we are analyzing, and any errors from attempting to run the service.
-// TODO(ciera): This *should* check the analyzers that are connected, but does not yet
-// do so.
 func startShipshapeService(image, absRoot string, analyzers []string, dind bool) (*client.Client, string, error) {
 	glog.Infof("Starting shipshape...")
 	container := "shipping_container"
-	// subPath is the relatve path from the mapped volume on shipping container
-	// to the directory we are analyzing (absRoot)
-	isMapped, subPath := docker.MappedVolume(absRoot, container)
-	// Stop and restart the container if:
-	// 1: The container is not using the latest image OR
-	// 2: The container is not mapped to the right directory OR
-	// 3: The container is not linked to the right analyzer containers
-	// Otherwise, use the existing container
-	if !docker.ImageMatches(image, container) || !isMapped || !docker.ContainsLinks(container, analyzers) {
-		glog.Infof("Restarting container with %s", image)
-		stop(container, 0)
+	exists, err := docker.ContainerExists(container)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var subPath string
+	if !exists {
 		result := docker.RunService(image, container, absRoot, localLogs, analyzers, dind)
-		subPath = ""
 		printStreams(result)
 		if result.Err != nil {
 			return nil, "", result.Err
+		}
+		subPath = ""
+	} else {
+		var isMapped bool
+		// subPath is the relatve path from the mapped volume on shipping container
+		// to the directory we are analyzing (absRoot)
+		isMapped, subPath = docker.MappedVolume(absRoot, container)
+		// Stop and restart the container if:
+		// 1: The container is not mapped to the right directory OR
+		// 2: The container is not using the latest image OR
+		// 3: The container is not linked to the right analyzer containers
+		// Otherwise, use the existing container
+		if !isMapped || !docker.ImageMatches(image, container) || !docker.ContainsLinks(container, analyzers) {
+			glog.Infof("Restarting container with %s", image)
+			stop(container, 0)
+			result := docker.RunService(image, container, absRoot, localLogs, analyzers, dind)
+			printStreams(result)
+			if result.Err != nil {
+				return nil, "", result.Err
+			}
+			subPath = ""
 		}
 	}
 	glog.Infof("Image %s running in service mode", image)
