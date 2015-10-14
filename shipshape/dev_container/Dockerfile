@@ -71,6 +71,6 @@ RUN unzip -qq /android-sdk-linux/temp/tools_*-linux.zip -d /android-sdk-linux
 ENV PATH /android-sdk-linux/platform-tools:$PATH
 
 # startup.sh doesn't actually do anything; this is some kind of Docker-in-Docker
-#  black magic.
+# black magic.
 ADD shipshape/dev_container/startup.sh /startup.sh
 ENV ONRUN ${ONRUN} "/startup.sh"
