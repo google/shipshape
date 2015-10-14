@@ -2,10 +2,10 @@ package cli
 
 import (
 	"flag"
-	"os/exec"
 	"testing"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	"github.com/google/shipshape/shipshape/util/docker"
 )
 
 var (
@@ -152,9 +152,8 @@ func TestChangingDirs(t *testing.T) {
 	}
 
 	// Clean up the docker state
-	cmd := exec.Command("docker", "rm", "-f", "shipping_container")
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("Problem cleaning up the docker state; err: %v", err)
+	if result := docker.Stop("shipping_container", 0, true); result.Err != nil {
+		t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
 	}
 
 	for _, test := range tests {
