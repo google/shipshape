@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"os/exec"
 	"testing"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
@@ -121,34 +122,41 @@ func TestChangingDirs(t *testing.T) {
 		expectedPyLint int
 	}{
 		{
-			name:           "TestChangingDirs:ChildDir",
+			name:           "ChildDir",
 			file:           "shipshape/cli/testdata/workspace2/subworkspace1",
 			expectedJSHint: 0,
 			expectedGovet:  1,
 			expectedPyLint: 0,
 		},
 		{
-			name:           "TestChangingDirs:SiblingDir",
+			name:           "SiblingDir",
 			file:           "shipshape/cli/testdata/workspace2/subworkspace2",
 			expectedJSHint: 0,
 			expectedGovet:  0,
 			expectedPyLint: 22,
 		},
 		{
-			name:           "TestChangingDirs:ParentDir",
+			name:           "ParentDir",
 			file:           "shipshape/cli/testdata/workspace2",
 			expectedJSHint: 3,
 			expectedGovet:  1,
 			expectedPyLint: 22,
 		},
 		{
-			name:           "TestChangingDirs:File",
+			name:           "File",
 			file:           "shipshape/cli/testdata/workspace2/test.js",
 			expectedJSHint: 3,
 			expectedGovet:  0,
 			expectedPyLint: 0,
 		},
 	}
+
+	// Clean up the docker state
+	cmd := exec.Command("docker", "rm", "-f", "shipping_container")
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("Problem cleaning up the docker state; err: %v", err)
+	}
+
 	for _, test := range tests {
 		options := Options{
 			File:                test.file,
@@ -170,8 +178,7 @@ func TestChangingDirs(t *testing.T) {
 		}
 		testName := test.name
 		if _, err := New(options).Run(); err != nil {
-			t.Errorf("%v: Failure on service call; err: %v", testName, err)
-			continue
+			t.Fatalf("%v: Failure on service call; err: %v", testName, err)
 		}
 		if got, want := countFailures(allResponses), 0; got != want {
 			t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
