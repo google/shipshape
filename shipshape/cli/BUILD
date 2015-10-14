@@ -55,6 +55,9 @@ go_test(
         "testdata",
     ],
     library = ":cli",
+    deps = [
+        "//shipshape/util/docker:docker",
+    ],
     args = [
         "--shipshape_test_docker_tag=prod",
     ],
@@ -80,6 +83,9 @@ go_test(
         "//shipshape/androidlint_analyzer/docker:android_lint.done",
     ],
     library = ":cli",
+    deps = [
+        "//shipshape/util/docker:docker",
+    ],
     args = [
         "--shipshape_test_docker_tag=local",
     ],

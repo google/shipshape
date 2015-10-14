@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	"github.com/google/shipshape/shipshape/util/docker"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 	//
 	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:shipshape_test_prod
 	// and :shipshape_test_local) but there are no targets that set local Kythe.
-	dockerTag = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
+	dockerTag  = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
 	localKythe = flag.Bool("shipshape_test_local_kythe", false, "if true, don't pull the Kythe docker image")
 )
 
@@ -112,9 +113,89 @@ func TestStreamsMode(t *testing.T) {
 	// is actually still something we need to support.
 }
 
-func TestChangingDirectories(t *testing.T) {
-	// Replaces the changedir test
-	// Make sure to test changing down, changing up, running on the same directory, running on a single file in the same directory, and changing to a sibling
+func TestChangingDirs(t *testing.T) {
+	tests := []struct {
+		name           string
+		file           string
+		expectedJSHint int
+		expectedGovet  int
+		expectedPyLint int
+	}{
+		{
+			name:           "ChildDir",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace1",
+			expectedJSHint: 0,
+			expectedGovet:  1,
+			expectedPyLint: 0,
+		},
+		{
+			name:           "SiblingDir",
+			file:           "shipshape/cli/testdata/workspace2/subworkspace2",
+			expectedJSHint: 0,
+			expectedGovet:  0,
+			expectedPyLint: 22,
+		},
+		{
+			name:           "ParentDir",
+			file:           "shipshape/cli/testdata/workspace2",
+			expectedJSHint: 3,
+			expectedGovet:  1,
+			expectedPyLint: 22,
+		},
+		{
+			name:           "File",
+			file:           "shipshape/cli/testdata/workspace2/test.js",
+			expectedJSHint: 3,
+			expectedGovet:  0,
+			expectedPyLint: 0,
+		},
+	}
+
+	// Clean up the docker state
+	if result := docker.Stop("shipping_container", 0, true); result.Err != nil {
+		t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
+	}
+
+	for _, test := range tests {
+		options := Options{
+			File:                test.file,
+			ThirdPartyAnalyzers: []string{},
+			Build:               "",
+			TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
+			Dind:                false,
+			Event:               DefaultEvent,
+			Repo:                DefaultRepo,
+			StayUp:              true,
+			Tag:                 *dockerTag,
+			LocalKythe:          *localKythe,
+		}
+		var allResponses rpcpb.ShipshapeResponse
+		options.HandleResponse = func(shipshapeResp *rpcpb.ShipshapeResponse, _ string) error {
+			allResponses.AnalyzeResponse =
+				append(allResponses.AnalyzeResponse, shipshapeResp.AnalyzeResponse...)
+			return nil
+		}
+		testName := test.name
+		if _, err := New(options).Run(); err != nil {
+			t.Fatalf("%v: Failure on service call; err: %v", testName, err)
+		}
+		if got, want := countFailures(allResponses), 0; got != want {
+			t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "JSHint"), test.expectedJSHint; got != want {
+			t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "go vet"), test.expectedGovet; got != want {
+			t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+		if got, want := countCategoryNotes(allResponses, "PyLint"), test.expectedPyLint; got != want {
+			t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)",
+				testName, got, want, allResponses)
+		}
+	}
 }
 
 func dumpLogs() {
