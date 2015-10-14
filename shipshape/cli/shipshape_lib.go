@@ -168,13 +168,18 @@ func (i *Invocation) Run() (int, error) {
 			pull(fullKytheImage)
 		}
 
-		// TODO(emso): Add a check for an already running kythe container.
-		// The below defer should stop the one started below but in case this
-		// failed for some reason (or a kythe container was started in some other
-		// way) the below run command will fail.
+		// Stop kythe if it is running otherwise we will fail when we start kythe below
+		exists, err := docker.ContainerExists(fullKytheImage)
+		if err != nil {
+			return numNotes, fmt.Errorf("error making service call: %v", err)
+		}
+		if exists {
+			stop(fullKytheImage, 0)
+		}
+		// Make sure we stop kythe after we are done
 		defer stop("kythe", 10*time.Second)
-		glog.Infof("Retrieving compilation units with %s", i.options.Build)
 
+		glog.Infof("Retrieving compilation units with %s", i.options.Build)
 		result := docker.RunKythe(fullKytheImage, "kythe", absRoot, i.options.Build, i.options.Dind)
 		if result.Err != nil {
 			// kythe spews output, so only capture it if something went wrong.
