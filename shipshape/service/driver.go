@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/google/shipshape/shipshape/util/defaults"
 	"github.com/google/shipshape/shipshape/util/file"
 	"github.com/google/shipshape/shipshape/util/rpc/client"
 	"github.com/google/shipshape/shipshape/util/rpc/server"
@@ -148,6 +149,8 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 		desiredCats = strset.New(cfg.categories...)
 		if len(desiredCats) > 0 {
 			log.Printf("Running with categories from .shipshape file: %s" + desiredCats.String())
+		} else if *in.Event != defaults.DefaultEvent {
+			return fmt.Errorf("No categories configured for event %s", *in.Event)
 		}
 	}
 
