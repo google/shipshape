@@ -47,6 +47,7 @@ go_library(
         "//shipshape/proto:shipshape_config_proto_go",
         "//shipshape/proto:shipshape_context_proto_go",
         "//shipshape/proto:shipshape_rpc_proto_go",
+        "//shipshape/util/defaults:defaults",
         "//shipshape/util/file:file",
         "//shipshape/util/rpc/client:client",
         "//shipshape/util/rpc/server:server",

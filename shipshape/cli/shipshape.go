@@ -30,6 +30,7 @@ import (
 	"strings"
 
 	"github.com/google/shipshape/shipshape/cli"
+	"github.com/google/shipshape/shipshape/util/defaults"
 
 	notepb "github.com/google/shipshape/shipshape/proto/note_proto"
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
@@ -40,9 +41,9 @@ var (
 	build          = flag.String("build", "", "The name of the build system to use to generate compilation units. If empty, will not run the compilation step. Options are maven and go.")
 	categories     = flag.String("categories", "", "Categories to trigger (comma-separated). If none are specified, will use the .shipshape configuration file to decide which categories to run.")
 	dind           = flag.Bool("inside_docker", false, "True if the CLI is run from inside a docker container")
-	event          = flag.String("event", cli.DefaultEvent, "The name of the event to use")
+	event          = flag.String("event", defaults.DefaultEvent, "The name of the event to use")
 	jsonOutput     = flag.String("json_output", "", "When specified, log shipshape results to provided .json file")
-	repo           = flag.String("repo", cli.DefaultRepo, "The name of the docker repo to use")
+	repo           = flag.String("repo", defaults.DefaultRepo, "The name of the docker repo to use")
 	stayUp         = flag.Bool("stay_up", true, "True if we should keep the container running, false if we should stop and remove it.")
 	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")

@@ -19,6 +19,7 @@ package strings
 import (
 	"reflect"
 	"sort"
+	"strings"
 )
 
 // Set is a representation of a set of strings.
@@ -140,4 +141,9 @@ func (s Set) ToSlice() []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// String returns a string representation of s.
+func (s Set) String() string {
+	return strings.Join(s.ToSlice(), ",")
 }

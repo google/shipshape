@@ -121,23 +121,6 @@ func TestValidYamlInvalidConfig(t *testing.T) {
 		err   error
 	}{
 		{
-			"Empty config file",
-			"",
-			errors.New("Config file must have an `events` section"),
-		},
-		{
-			"No events",
-			`
-global:
-  images:
-    - foo.com:5050/foo/bar:prod
-    - bar/baz:hork
-  ignore:
-    - file=.gitignore
-    - third_party/`,
-			errors.New("Config file must have an `events` section"),
-		},
-		{
 			"Event with no categories",
 			`
 events:

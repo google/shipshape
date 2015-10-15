@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
+	"github.com/google/shipshape/shipshape/util/defaults"
 	"github.com/google/shipshape/shipshape/util/docker"
 )
 
@@ -61,8 +62,8 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 		Build:               "",
 		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
 		Dind:                false,
-		Event:               DefaultEvent,
-		Repo:                DefaultRepo,
+		Event:               defaults.DefaultEvent,
+		Repo:                defaults.DefaultRepo,
 		StayUp:              true,
 		Tag:                 *dockerTag,
 		LocalKythe:          *localKythe,
@@ -170,8 +171,8 @@ func TestChangingDirs(t *testing.T) {
 			Build:               "",
 			TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
 			Dind:                false,
-			Event:               DefaultEvent,
-			Repo:                DefaultRepo,
+			Event:               defaults.DefaultEvent,
+			Repo:                defaults.DefaultRepo,
 			StayUp:              true,
 			Tag:                 *dockerTag,
 			LocalKythe:          *localKythe,

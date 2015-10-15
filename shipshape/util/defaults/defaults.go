@@ -1,4 +1,4 @@
-package cli
+package defaults
 
 const (
 	DefaultEvent = "manual"

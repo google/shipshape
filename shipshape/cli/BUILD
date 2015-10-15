@@ -25,19 +25,20 @@ go_binary(
         ":cli",
         "//shipshape/proto:note_proto_go",
         "//shipshape/proto:shipshape_rpc_proto_go",
+        "//shipshape/util/defaults:defaults",
     ],
 )
 
 go_library(
     name = "cli",
     srcs = [
-        "defaults.go",
         "shipshape_lib.go",
     ],
     deps = [
         "//shipshape/proto:shipshape_context_proto_go",
         "//shipshape/proto:shipshape_rpc_proto_go",
         "//shipshape/service:service",
+        "//shipshape/util/defaults:defaults",
         "//shipshape/util/docker:docker",
         "//shipshape/util/rpc/client:client",
         "//shipshape/util/rpc/server:server",
