@@ -42,16 +42,20 @@ SSH into your instance TODO
 
 ### Linux
 
-If you do not already have it, install docker and make it usable without sudo
+If you do not already have it, install `docker` and add your user to the docker
+group so that you can run it without sudo. You will need to log out and log back
+in for the last command to take effect.
 
     $ sudo apt-get install docker-engine
     $ sudo usermod -G docker $USER
-    $ sudo service docker.io restart
 
-If you do not already have it, install go by following the
-[go install instructions](https://golang.org/doc/install)
+If you do not already have it, install `go` by following the [go install instructions](https://golang.org/doc/install)
 
-Install the shipshape CLI
+Get shipshape's go API
+
+    $ go get github.com/google/shipshape/shipshape/api
+
+Install `shipshape`
 
     $ wget http://storage.googleapis.com/shipshape-cli/shipshape
     $ chmod 555 shipshape
