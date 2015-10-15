@@ -141,13 +141,8 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 		}
 	}
 
-	// If we are not running in local mode, pull the latest copy
-	// Notice this will use the local tag as a signal to not pull the
-	// third-party analyzers either.
-	if i.options.Tag != "local" {
-		pull(image)
-		pullAnalyzers(i.options.ThirdPartyAnalyzers)
-	}
+	pull(image)
+	pullAnalyzers(i.options.ThirdPartyAnalyzers)
 
 	// Put in this defer before calling run. Even if run fails, it can
 	// still create the container.
@@ -322,7 +317,9 @@ func analyze(c *client.Client, req *rpcpb.ShipshapeRequest, originalDir string, 
 }
 
 func pull(image string) {
-	if !docker.OutOfDate(image) {
+	// If we are "local", use a local version and don't actually do a pull.
+	// Also don't pull if we aren't out of date yet.
+	if strings.HasSuffix(image, ":local") || !docker.OutOfDate(image) {
 		return
 	}
 	glog.Infof("Pulling image %s", image)
