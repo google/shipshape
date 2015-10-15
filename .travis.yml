@@ -4,13 +4,13 @@ sudo: required
 services:
   - docker
 install:
-  - docker pull gcr.io/shipshape_releases/dev_container:prod
+  - docker pull beta.gcr.io/shipshape_releases/dev_container:prod
 script:
   - 'docker run 
         --privileged 
         --volume=$TRAVIS_BUILD_DIR:/shipshape 
         --workdir=/shipshape 
-        gcr.io/shipshape_releases/dev_container:prod 
+        beta.gcr.io/shipshape_releases/dev_container:prod 
         /bin/sh -c 
             "./configure && 
              bazel build //... && 
