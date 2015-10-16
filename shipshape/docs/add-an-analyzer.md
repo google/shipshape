@@ -103,8 +103,54 @@ func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
 }
 ```
 
-TODO explain what a note actually is, link to it, explain what shipshape context
-is, link to it
+When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
+which is a protocol message that represents a request to have some code
+analyzed. It contains useful information about the code being analyzed and any
+information about the context it is running in.
+
+Your analysis should produce a list of
+[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
+which is another protocol message. A note represents a single piece of
+information from an analysis tool. It can be associated with a line of code in a
+file, and it can provide suggestions for how to fix the error.
+
+Let's modify our Analyze method to now produce one note for every file, and
+place it on the first line of the file.
+```
+func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
+  notes := []*notepb.Note{}
+  for _, path := range ctx.FilePath {
+    notes = append(notes,
+      &notepb.Note{
+        Category:    proto.String(a.Category()),
+        Subcategory: proto.String("greetings"),
+        Description: proto.String("Hello world, this is a code note"),
+        Location: &notepb.Location{
+          SourceContext: ctx.SourceContext,
+          Path: path,
+          Range: &textrangepb.TextRange{
+            Row: 1,
+          },
+        },
+      })
+  }
+  return notes, nil
+}
+```
+
+When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
+which is a protocol message that represents a request to have some code
+analyzed. It contains useful information about the code being analyzed and any
+information about the context it is running in.
+
+Your analysis should produce a list of
+[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
+which is another protocol message. A note represents a single piece of
+information from an analysis tool. It can be associated with a line of code in a
+file, and it can provide suggestions for how to fix the error.
+
+Let's modify our Analyze method to now produce one note for every file, and
+place it on the first line of the file.
 
 
 ### Implement a server for your analyzer
