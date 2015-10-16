@@ -38,7 +38,7 @@ already has go installed.
 
 Creating an analyzer involves making three things:
 
-    1. Creating an analyzer. We recommend implementing our provided API, but this can be done a language of your choise.
+    1. Creating an analyzer. We recommend implementing our provided API, but this can be done a language of your choice.
     2. A service that exposes the analyzer as a service. The required API is defined by
    [shipshape_rpc.proto](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_rpc.proto).  If you utilize the provided library and implemented the provided API in step 1, we implement the hard parts for you.
     3. A docker image that starts the service and exposes it on port 10005.

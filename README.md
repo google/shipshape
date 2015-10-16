@@ -1,3 +1,19 @@
+<!--
+// Copyright 2015 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
 # Overview of Shipshape #
 
 [![Build Status](https://travis-ci.org/google/shipshape.svg?branch=master)](https://travis-ci.org/google/shipshape)
@@ -98,7 +114,7 @@ Instructions are located in `shipshape/jenkins_plugin/README.md`.
     (including the go_dispatcher and the javac_analyzer)
   config -- processes .shipshape config files to determine which analyzers run
 
-**test** -- manual integration tests to simplify the process of running Shipshape 
+**test** -- manual integration tests to simplify the process of running Shipshape
   locally on test input, useful when developing new analyzer services
 
 **util** -- various go utilities that simplify Shipshape code, e.g. for working with
