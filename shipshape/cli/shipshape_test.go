@@ -14,8 +14,8 @@ var (
 	// 1) In the BUILD file with an args stanza in the _test rule.
 	// 2) On the command line using --test_arg (i.e. bazel test --test_arg=-shipshape_test_docker_tag=TAG ...).
 	//
-	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:shipshape_test_prod
-	// and :shipshape_test_local) but there are no targets that set local Kythe.
+	// As of 9 Oct 2015, there are multiple Bazel targets that use --shipshape_test_docker_tag (:test_prod, :test_staging,
+	// and :test_local) but there are no targets that set local Kythe.
 	dockerTag  = flag.String("shipshape_test_docker_tag", "", "the docker tag for the images to use for testing")
 	localKythe = flag.Bool("shipshape_test_local_kythe", false, "if true, don't pull the Kythe docker image")
 )
@@ -236,10 +236,85 @@ func TestChangingDirs(t *testing.T) {
 	}
 }
 
-func dumpLogs() {
+func TestStartService(t *testing.T) {
+	tests := []struct {
+		name          string
+		file          string
+		expectRestart bool
+	}{
+		{
+			name:          "ChildDir",
+			file:          "shipshape/cli/testdata/workspace2/subworkspace1",
+			expectRestart: true,
+		},
+		{
+			name:          "SiblingDir",
+			file:          "shipshape/cli/testdata/workspace2/subworkspace2",
+			expectRestart: true,
+		},
+		{
+			name:          "ParentDir",
+			file:          "shipshape/cli/testdata/workspace2",
+			expectRestart: true,
+		},
+		{
+			name:          "SameDir",
+			file:          "shipshape/cli/testdata/workspace2",
+			expectRestart: false,
+		},
+		{
+			name:          "File",
+			file:          "shipshape/cli/testdata/workspace2/test.js",
+			expectRestart: false,
+		},
+		{
+			name:          "ParentToChild",
+			file:          "shipshape/cli/testdata/workspace2/subworkspace2",
+			expectRestart: false,
+		},
+		{
+			name:          "ParentToOtherChild",
+			file:          "shipshape/cli/testdata/workspace2/subworkspace1",
+			expectRestart: false,
+		},
+	}
 
-}
+	// Clean up the docker state
+	container := "shipping_container"
+	exists, err := docker.ContainerExists(container)
+	if err != nil {
+		t.Fatalf("Problem checking docker state; err: %v", err)
+	}
+	if exists {
+		if result := docker.Stop(container, 0, true); result.Err != nil {
+			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
+		}
+	}
+	oldId := ""
+	for _, test := range tests {
+		options := Options{
+			File:                test.file,
+			ThirdPartyAnalyzers: []string{},
+			Build:               "",
+			TriggerCats:         []string{},
+			Dind:                false,
+			Event:               defaults.DefaultEvent,
+			Repo:                defaults.DefaultRepo,
+			StayUp:              true,
+			Tag:                 *dockerTag,
+			LocalKythe:          *localKythe,
+		}
+		if err := New(options).StartService(); err != nil {
+			t.Fatalf("%v: Failure on service call; err: %v", test.name, err)
+		}
+		newId, err := docker.ContainerId(container)
+		if err != nil {
+			t.Fatalf("%v: Could not get container id: %v", test.name, err)
+		}
+		if got, want := newId != oldId, test.expectRestart; got != want {
+			t.Errorf("%v: Incorrect restart status for container. Got %v, want %v", test.name, got, want)
+		}
+		oldId = newId
 
-func checkOutput(category string, numResults int) {
-
+	}
 }

@@ -81,6 +81,15 @@ func New(options Options) *Invocation {
 	return &Invocation{options}
 }
 
+func (i *Invocation) StartService() error {
+	_, paths, err := i.startServices()
+	if err != nil {
+		return fmt.Errorf("HTTP client did not become healthy: %v", err)
+	}
+	glog.Infof("Service started for %s", paths.absRoot)
+	return nil
+}
+
 func (i *Invocation) ShowCategories() error {
 	var c *client.Client
 	var res *rpcpb.GetCategoryResponse
@@ -127,12 +136,6 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 
 	image := docker.FullImageName(i.options.Repo, image, i.options.Tag)
 	glog.Infof("Starting shipshape using %s on %s", image, paths.absRoot)
-
-	// Create the request
-
-	if len(i.options.TriggerCats) == 0 {
-		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", i.options.Event)
-	}
 
 	if len(i.options.ThirdPartyAnalyzers) == 0 {
 		i.options.ThirdPartyAnalyzers, err = service.GlobalConfig(paths.absRoot)
@@ -184,6 +187,9 @@ func (i *Invocation) Run() (int, error) {
 	var files []string
 	if !paths.fs.IsDir() {
 		files = []string{filepath.Base(i.options.File)}
+	}
+	if len(i.options.TriggerCats) == 0 {
+		glog.Infof("No categories provided. Will be using categories specified by the config file for the event %s", i.options.Event)
 	}
 	req = createRequest(i.options.TriggerCats, files, i.options.Event, filepath.Join(workspace, paths.relativeRoot), ctxpb.Stage_PRE_BUILD.Enum())
 	glog.Infof("Calling with request %v", req)
