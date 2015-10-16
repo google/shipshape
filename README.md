@@ -1,3 +1,19 @@
+<!--
+// Copyright 2015 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
 # Overview of Shipshape #
 
 [![Build Status](https://travis-ci.org/google/shipshape.svg?branch=master)](https://travis-ci.org/google/shipshape)
@@ -13,143 +29,59 @@ to analyze available on disk.
 The source code for Shipshape is located in the "shipshape" directory.
 Third-party libraries used by Shipshape are all in the "third_party" directory.
 
-# Download and Run ShipShape #
-Install dependencies, download and run Shipshape.
+## Download and Run Shipshape
 
-## System Requirements ##
-* Linux: tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
+Shipshape has been tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
 
-## Dependencies ##
 Shipshape requires [Docker](https://docs.docker.com/docker/userguide/) to run.
-  
-  `apt-get install docker-engine` works for most machines, but [complete
-  instructions](https://docs.docker.com/installation) are available.
-  
-  Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker
-group. After you do this, you'll need to logout of your terminal and log back
-in. 
 
-         $ sudo usermod -G docker $USER
+[Install instructions for
+Linux](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md).
 
-## Download and Run ##
+[Install instructions for
+GCE](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md).
 
-Download the CLI from http://storage.googleapis.com/shipshape-cli/shipshape
+Once you've installed it, running is easy!
 
-Run it!
-
-```
-$ ./shipshape <Directory>
-```
+    $ shipshape <Directory>
 
 For examples for how to use it, [see our
 documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/run-cli.md).
 
-## Analyzers ##
+## Analyzers
 
 The following analyzers are bundled with Shipshape:
 
-* [Error Prone](https://github.com/google/error-prone) (category: `ErrorProne`) ***[Currently broken: [Issue #104](https://github.com/google/shipshape/issues/104)]***
 * [go vet](https://godoc.org/golang.org/x/tools/cmd/vet)
 * [JSHint](http://www.jshint.com/)
 * [PyLint](http://www.pylint.org/ )
+* [Error Prone](https://github.com/google/error-prone) (category: `ErrorProne`) ***[Under construction: [Issue #104](https://github.com/google/shipshape/issues/104)]***
 
-### Contributed analyzers ###
+### Contributed analyzers
 
 The following analyzers were contributed by external developers:
 
-* [AndroidLint](http://tools.android.com/tips/lint). Image: `gcr.io/shipshape_releases/android_lint:prod`.
-* [CTADetector](http://mir.cs.illinois.edu/~yulin2/CTADetector) - Yu Lin (University of Illinois at Urbana-Champaign). Image: `yulin2/ctadetector`.
-* [ExtendJ](https://github.com/google/simplecfg) - Jesper Öqvist (Lund University). Image: `joqvist/extendj_shipshape`.
+* [AndroidLint](http://tools.android.com/tips/lint). Image: `gcr.io/shipshape_releases/android_lint:prod`
+* [CTADetector](http://mir.cs.illinois.edu/~yulin2/CTADetector) - Yu Lin (University of Illinois at Urbana-Champaign). Image: `yulin2/ctadetector`
+* [ExtendJ](https://github.com/google/simplecfg) - Jesper Öqvist (Lund University). Image: `joqvist/extendj_shipshape`
 
 ### Add a new analyzer
 
 See our
 [documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/add-an-analyzer.md) on how to create more analyzers of your own. We also have [a complete example](https://github.com/google/shipshape/tree/master/shipshape/androidlint_analyzer/README.md).
 
-# Run Shipshape from Source #
+## Contributing to shipshape
 
-## System Requirements ##
-* Linux: tested on Ubuntu (>=14.04) and Debian unstable, but should work on other Linux distributions.
+To contribute to shipshape, first [read our contribution
+guidelines](https://github.com/google/shipshape/blob/master/CONTRIBUTING.md) and then
+make sure you can [build and run shipshape from
+source](https://github.com/google/shipshape/blob/master/shipshape/docs/dev-setup.md).
 
-## Dependencies ##
-To build Shipshape you need the following tools:
-
-* [Bazel](http://bazel.io), follow these [installation
-  instructions](http://bazel.io/docs/install.html).
-* [Bison](https://www.gnu.org/software/bison/)
-* [Clang](http://llvm.org/releases/download.html)
-* [Docker](https://docs.docker.com/docker/userguide), see above instructions.
-* [Flex](http://flex.sourceforge.net/)
-* [Go](http://golang.org/doc/install)
-* [JDK 8](http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
-
-You can pull a Docker image with all of these dependencies:
-```
-$ docker pull gcr.io/shipshape_releases/dev_container:prod
-$ docker run --privileged -it gcr.io/shipshape_releases/dev_container:prod /bin/bash
-```
-
-Or you can install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
-```
-$ sudo apt-get install bison clang flex golang openjdk-8-jdk openjdk-8-source
-```
-
-To run tests for Shipshape you also need Android `lint` (part of the [Android SDK](https://developer.android.com/sdk/index.html)) installed in your system `PATH`.
-
-## Building ##
-
-```
-$ ./configure        # Run initial Shipshape+Bazel setup
-$ bazel build //...  # Build all Shipshape source
-```
-
-## Running ##
-
-Bazel puts the Shipshape CLI binary in the bazel-bin directory. You can run it
-on you directory:
-
-```
-$ ./bazel-bin/shipshape/cli/shipshape <Directory>
-```
-
-### Run with Local Docker Images ###
-
-The Shipshape CLI uses released docker images for Shipshape by default. If you
-pass `--tag local` to the CLI it will use locally built images instead.
-
-To build and store docker images locally, run:
-
-```
-$ bazel build //shipshape/docker:service
-$ bazel build //shipshape/androidlint_analyzer/docker:android_lint
-```
-
-To run with local images:
-
-```
-$ ./bazel-bin/shipshape/cli/shipshape --tag=local <Directory>
-```
-
-## Testing ##
-
-For unit tests, run:
-
-```
-$ bazel test //...
-```
-
-For the end-to-end test, run:
-
-```
-$ bazel test //shipshape/cli:test_local
-```
-
-# Running the Jenkins Plugin #
+## Running the Jenkins Plugin #
 
 Instructions are located in `shipshape/jenkins_plugin/README.md`.
 
-
-# Package Structure of Shipshape #
+## Package Structure of Shipshape #
 
 **analyzers** -- implementation for several simple analyzers run by the
   go_dispatcher. The canonical simplest analyzer is in analyzers/postmessage
@@ -182,7 +114,7 @@ Instructions are located in `shipshape/jenkins_plugin/README.md`.
     (including the go_dispatcher and the javac_analyzer)
   config -- processes .shipshape config files to determine which analyzers run
 
-**test** -- manual integration tests to simplify the process of running Shipshape 
+**test** -- manual integration tests to simplify the process of running Shipshape
   locally on test input, useful when developing new analyzer services
 
 **util** -- various go utilities that simplify Shipshape code, e.g. for working with
