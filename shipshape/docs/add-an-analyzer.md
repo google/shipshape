@@ -25,53 +25,23 @@ deploy a shipshape analyzer. You will need:
 * The Shipshape API (currently supporting go and Java)
 * Whatever language tools and dependencies your analyzer needs to build and run
 
-The Linux instructions work for Ubuntu 10.14+. Alternately, you can create a
-GCE instance from our provided setup image, which has everything you need
-pre-installed. We do not support Mac/Windows at this time, due to a bug in
-Docker.
+You'll need to have docker and the CLI already installed on either [a Linux
+machine](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md) or [a GCE
+instance](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md)
 
 For this tutorial, we be creating an analyzer implemented in Go.
-
-### GCE
-First, make a Google Compute Engine Project. TODO
-
-Create an instance using the shipshape image. TODO instructions and link to the
-image
-
-SSH into your instance TODO
-
-### Linux
-
-If you do not already have it, install `docker` and add your user to the docker
-group so that you can run it without sudo. You will need to log out and log back
-in for the last command to take effect.
-
-    $ sudo apt-get install docker-engine
-    $ sudo usermod -G docker $USER
-
-If you do not already have it, install `go` by following the [go install instructions](https://golang.org/doc/install)
-
-Get shipshape's go API
-
-    $ go get github.com/google/shipshape/shipshape/api
-
-Install `shipshape`
-
-    $ wget http://storage.googleapis.com/shipshape-cli/shipshape
-    $ chmod 555 shipshape
-    $ sudo mv shipshape /usr/bin/
+If you do not already have it, install go by following the
+[go install instructions](https://golang.org/doc/install). The GCE install above
+already has go installed.
 
 ## Implement your analyzer
 
 Creating an analyzer involves making three things:
-1. Creating an analyzer. We recommend implementing our provided API, but this
-   can be done a language of your choise.
-2. A service that exposes the analyzer as a service. The required API is defined
-   by
-   [shipshape_rpc.proto](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_rpc.proto).
-   If you utilize the provided library and implemented the provided API in step
-   1, we implement the hard parts for you.
-3. A docker image that starts the service and exposes it on port 10005.
+
+    1. Creating an analyzer. We recommend implementing our provided API, but this can be done a language of your choice.
+    2. A service that exposes the analyzer as a service. The required API is defined by
+   [shipshape_rpc.proto](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_rpc.proto).  If you utilize the provided library and implemented the provided API in step 1, we implement the hard parts for you.
+    3. A docker image that starts the service and exposes it on port 10005.
 
 ### Go
 First, we need to make sure go is all set up. Create gocode/src/helloworld, and
@@ -255,4 +225,5 @@ pull it from a remote location, but will use your locally built image.
    $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] \
                --categories=HelloWorld directory
 
-Add it to [our list of analyzers](TODOTODO) by sending us a pull request!
+Add it to [our list of
+analyzers](https://github.com/google/shipshape/blob/master/README.md) by sending us a pull request!
