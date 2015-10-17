@@ -72,6 +72,7 @@ go_test(
     data = [
         "testdata",
     ],
+    tags = ["manual"],
     library = ":cli",
     args = [
         "--shipshape_test_docker_tag=staging",
