@@ -22,9 +22,9 @@ or [use
 GCE](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md).
 
 Navigate to a directory you'd like to run shipshape on. If you don't have one,
-we have a test repo that has some known bugs. TODO put test repo here
+we have a test repo that has some known bugs.
 
-    $ git clone OUR_TEST_REPO
+    $ git clone https://github.com/google/shipshape-demo
 
 Run the command line tool. The first time this is run, it's going to be slow as
 it needs to download the latest docker image with the analyzers.
