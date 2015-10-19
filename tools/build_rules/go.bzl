@@ -230,24 +230,42 @@ go_test = rule(
     test = True,
 )
 
-def go_package(deps=[], test_deps=[], test_data=[], visibility=None):
-  name = PACKAGE_NAME.split("/")[-1]
+def go_package(name=None, package=None,
+               srcs="", deps=[], test_deps=[], test_args=[], test_data=[],
+               tests=True, exclude_srcs=[],
+               visibility=None):
+  if not name:
+    name = PACKAGE_NAME.split("/")[-1]
+
+  if srcs and not srcs.endswith("/"):
+    srcs += "/"
+
+  exclude = []
+  for src in exclude_srcs:
+    exclude += [srcs+src]
+
+  lib_srcs, test_srcs = [], []
+  for src in native.glob([srcs+"*.go"], exclude=exclude, exclude_directories=1):
+    if src.endswith("_test.go"):
+      test_srcs += [src]
+    else:
+      lib_srcs += [src]
+
   go_library(
     name = name,
-    srcs = native.glob(
-        includes = ["*.go"],
-        excludes = ["*_test.go"],
-    ),
+    srcs = lib_srcs,
     deps = deps,
+    package = package,
     visibility = visibility,
   )
-  test_srcs = native.glob(includes = ["*_test.go"])
-  if test_srcs:
+
+  if tests and test_srcs:
     go_test(
       name = name + "_test",
       srcs = test_srcs,
       library = ":" + name,
       deps = test_deps,
+      args = test_args,
       data = test_data,
       visibility = ["//visibility:private"],
     )
