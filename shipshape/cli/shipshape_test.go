@@ -55,7 +55,7 @@ func TestExternalAnalyzers(t *testing.T) {
 	// Run CLI using a .shipshape file
 }
 
-func TestBuiltInAnalyzersPreBuild(t *testing.T) {
+func runPrebuildAnalyzers(t *testing.T, testName string) {
 	options := Options{
 		File:                "shipshape/cli/testdata/workspace1",
 		ThirdPartyAnalyzers: []string{},
@@ -77,7 +77,6 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testName := "TestBuiltInAnalyzerPreBuild"
 
 	if got, want := countFailures(allResponses), 0; got != want {
 		t.Errorf("%v: Wrong number of failures; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
@@ -102,10 +101,16 @@ func TestBuiltInAnalyzersPreBuild(t *testing.T) {
 	}
 }
 
+func TestBuiltInAnalyzersPreBuild(t *testing.T) {
+	cleanExistingContainer(t, "shipping_container")
+	runPrebuildAnalyzers(t, "TestBuiltInAnalyzerPreBuild")
+}
+
 // This is a regression test to ensure that when we run the exact same thing twice, it still works.
 func TestTwoRunsExactlySame(t *testing.T) {
-	TestBuiltInAnalyzersPreBuild(t)
-	TestBuiltInAnalyzersPreBuild(t)
+	cleanExistingContainer(t, "shipping_container")
+	runPrebuildAnalyzers(t, "first run")
+	runPrebuildAnalyzers(t, "second run")
 }
 
 func TestBuiltInAnalyzersPostBuild(t *testing.T) {
@@ -175,15 +180,7 @@ func TestChangingDirs(t *testing.T) {
 
 	// Clean up the docker state
 	container := "shipping_container"
-	exists, err := docker.ContainerExists(container)
-	if err != nil {
-		t.Fatalf("Problem checking docker state; err: %v", err)
-	}
-	if exists {
-		if result := docker.Stop(container, 0, true); result.Err != nil {
-			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
-		}
-	}
+	cleanExistingContainer(t, container)
 	oldId := ""
 
 	for _, test := range tests {
@@ -279,17 +276,8 @@ func TestStartService(t *testing.T) {
 		},
 	}
 
-	// Clean up the docker state
 	container := "shipping_container"
-	exists, err := docker.ContainerExists(container)
-	if err != nil {
-		t.Fatalf("Problem checking docker state; err: %v", err)
-	}
-	if exists {
-		if result := docker.Stop(container, 0, true); result.Err != nil {
-			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
-		}
-	}
+	cleanExistingContainer(t, container)
 	oldId := ""
 	for _, test := range tests {
 		options := Options{
@@ -316,5 +304,17 @@ func TestStartService(t *testing.T) {
 		}
 		oldId = newId
 
+	}
+}
+
+func cleanExistingContainer(t *testing.T, container string) {
+	exists, err := docker.ContainerExists(container)
+	if err != nil {
+		t.Fatalf("Problem checking docker state; err: %v", err)
+	}
+	if exists {
+		if result := docker.Stop(container, 0, true); result.Err != nil {
+			t.Fatalf("Problem cleaning up the docker state; err: %v", result.Err)
+		}
 	}
 }
