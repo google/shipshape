@@ -48,7 +48,7 @@ var (
 	tag            = flag.String("tag", "prod", "Tag to use for the analysis service image. If this is local, we will not attempt to pull the image.")
 	useLocalKythe  = flag.Bool("local_kythe", false, "True if we should not pull down the kythe image. This is used for testing a new kythe image.")
 	showCategories = flag.Bool("show_categories", false, "Show what categories are available instead of running analyses.")
-	hotStart       = flag.Bool("hot_start", true, "Just start the service, but do nothing else.")
+	hotStart       = flag.Bool("hot_start", false, "Just start the service, but do nothing else.")
 	keyFlags       = []string{"analyzer_images", "build", "categories", "inside_docker", "event", "json_output",
 		"repo", "stay_up", "tag", "local_kythe", "show_categories"}
 )
@@ -188,7 +188,7 @@ func main() {
 	}
 
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
+		fmt.Printf("Error: %v\n", err.Error())
 		os.Exit(returnError)
 	}
 	if numResults != 0 {

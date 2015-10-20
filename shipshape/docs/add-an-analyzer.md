@@ -79,6 +79,7 @@ import (
 
   notepb "github.com/google/shipshape/shipshape/proto/note_proto"
   ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+  trpb "github.com/google/shipshape/shipshape/proto/textrange_proto"
 )
 
 type Analyzer struct{}
@@ -103,8 +104,54 @@ func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
 }
 ```
 
-TODO explain what a note actually is, link to it, explain what shipshape context
-is, link to it
+When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
+which is a protocol message that represents a request to have some code
+analyzed. It contains useful information about the code being analyzed and any
+information about the context it is running in.
+
+Your analysis should produce a list of
+[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
+which is another protocol message. A note represents a single piece of
+information from an analysis tool. It can be associated with a line of code in a
+file, and it can provide suggestions for how to fix the error.
+
+Let's modify our Analyze method to now produce one note for every file, and
+place it on the first line of the file.
+```
+func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
+  notes := []*notepb.Note{}
+  for _, path := range ctx.FilePath {
+    notes = append(notes,
+      &notepb.Note{
+        Category:    proto.String(a.Category()),
+        Subcategory: proto.String("greetings"),
+        Description: proto.String("Hello world, this is a code note"),
+        Location: &notepb.Location{
+          SourceContext: ctx.SourceContext,
+          Path: proto.String(path),
+          Range: &trpb.TextRange{
+            StartLine: proto.Int(1),
+          },
+        },
+      })
+  }
+  return notes, nil
+}
+```
+
+When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
+which is a protocol message that represents a request to have some code
+analyzed. It contains useful information about the code being analyzed and any
+information about the context it is running in.
+
+Your analysis should produce a list of
+[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
+which is another protocol message. A note represents a single piece of
+information from an analysis tool. It can be associated with a line of code in a
+file, and it can provide suggestions for how to fix the error.
+
+Let's modify our Analyze method to now produce one note for every file, and
+place it on the first line of the file.
 
 
 ### Implement a server for your analyzer
@@ -184,9 +231,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get clean
 # Install any dependencies that you need here
 
 # Set up the analyzer
-# Add the binary that we'll run in the endpoint script.
-ADD myservice /myservice
-ADD endpoint.sh /endpoint.sh
+# Add the binary that we'll run in the endpoint script
+# and the endpoint script itself.
+COPY myservice /myservice
+COPY helloworld/endpoint.sh /endpoint.sh
 
 # 10005 is the port that the shipshape service will expect to see a Shipshape
 # Analyzer at.
@@ -198,22 +246,28 @@ ENTRYPOINT ["/endpoint.sh"]
 
 helloworld/endpoint.sh
 ```
+#!/bin/bash
+
 # Shipshape will map the /shipshape-output directory to /tmp on the local
 # machine, which is where you can find your logs
 ./myservice &> /shipshape-output/myanalyzer.log
 ```
 
+Make sure to make the script executable!
+
+    $ chmod 755 helloworld/endpoint.sh
+
 ##  Test your analyzer locally
 
-Build a docker image with the tag "local"
+Build a docker image with the tag "local", using the file we created earlier.
+Notice that we're building it from the directory with our myservice binary.
 
-    $ docker build --tag=myanalyzer:local helloworld/
+    $ docker build --tag=myanalyzer:local --file=helloworld/Dockerfile .
 
 Run the local analyzer. When you use the tag `local`, shipshape won't attempt to
 pull it from a remote location, but will use your locally built image.
 
-    $ shipshape --analyzer_images=myanalyzer:local \
-                --categories=HelloWorld directory
+    $ shipshape --analyzer_images=myanalyzer:local <directory>
 
 ## Push it up to gcr.io or docker.io, so that others can access it
 
@@ -222,8 +276,7 @@ pull it from a remote location, but will use your locally built image.
 
 ## Test your public analyzer
 
-   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] \
-               --categories=HelloWorld directory
+   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] directory
 
 Add it to [our list of
-analyzers](https://github.com/google/shipshape/blob/master/README.md) by sending us a pull request!
+analyzers](https://github.com/google/shipshape/blob/master/README.md#contributed-analyzers) by sending us a pull request!
