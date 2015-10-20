@@ -46,7 +46,7 @@ defined by
       - event: default
         categories:
           - go vet
-          - Py Lint
+          - PyLint
     EOF
 
 Let's also add a pylintrc file
@@ -64,7 +64,8 @@ But we can still override them
 
     $ shipshape --categories="JSHint" .
 
-We can also try out using one of the [external analyzers](TODOTODO)
+We can also try out using one of the [external
+analyzers](https://github.com/google/shipshape#contributed-analyzers)
 
     $ shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod"
 
@@ -79,13 +80,13 @@ want to have different results when we run the tool in different ways.
       - event: default
         categories:
           - go vet
-          - Py Lint
+          - PyLint
           - AndroidLint
     events:
       - event: IDE
         categories:
           - go vet
-          - Py Lint
+          - PyLint
     EOF
 
 
