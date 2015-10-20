@@ -25,9 +25,7 @@ import (
 	"github.com/google/shipshape/shipshape/analyzers/codealert"
 	"github.com/google/shipshape/shipshape/analyzers/govet"
 	"github.com/google/shipshape/shipshape/analyzers/jshint"
-	"github.com/google/shipshape/shipshape/analyzers/postmessage"
 	"github.com/google/shipshape/shipshape/analyzers/pylint"
-	"github.com/google/shipshape/shipshape/analyzers/wordcount"
 	"github.com/google/shipshape/shipshape/api"
 	"github.com/google/shipshape/shipshape/util/rpc/server"
 
@@ -44,8 +42,9 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
 	analyzers := []api.Analyzer{
-		new(postmessage.PostMessageAnalyzer),
-		new(wordcount.WordCountAnalyzer),
+		// TODO(ciera): uncomment when #110 is fixed
+		//		new(postmessage.PostMessageAnalyzer),
+		//		new(wordcount.WordCountAnalyzer),
 		new(jshint.JSHintAnalyzer),
 		new(codealert.CodeAlertAnalyzer),
 		new(pylint.PyLintAnalyzer),

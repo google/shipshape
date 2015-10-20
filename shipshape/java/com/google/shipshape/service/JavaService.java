@@ -43,7 +43,8 @@ class JavaService {
       new JCommander(service, args);
 
       ArrayList<Analyzer> analyzers = new ArrayList<>();
-      analyzers.add(new PostMessageAnalyzer());
+// TODO(ciera): uncomment when #110 is fixed
+//      analyzers.add(new PostMessageAnalyzer());
 
       final Server server = new Server();
       JavaDispatcher<Object> dispatcher = new JavaDispatcher<>(analyzers, Stage.PRE_BUILD, null);
