@@ -83,6 +83,9 @@ func New(options Options) *Invocation {
 
 func (i *Invocation) StartService() error {
 	_, paths, cleanup, err := i.startServices()
+	// TODO(ciera): This is a problem right now. Since we call cleanup here,
+	// it's going to immediately take down any third party analyzer, thus making the entire
+	// start service step rather pointless when we use third party analyzers.
 	defer cleanup()
 	if err != nil {
 		return fmt.Errorf("HTTP client did not become healthy: %v", err)
@@ -152,19 +155,17 @@ func (i *Invocation) startServices() (*client.Client, Paths, func(), error) {
 	// Create a cleanup function that will stop all the containers we started,
 	// if that is desired.
 	cleanup := func() {
-		// Put in this defer before calling run. Even if run fails, it can
-		// still create the container.
 		if !i.options.StayUp {
 			// TODO(ciera): Rather than immediately sending a SIGKILL,
 			// we should use the default 10 seconds and properly handle
 			// SIGTERMs in the endpoint script.
-			defer stop("shipping_container", 0)
+			stop("shipping_container", 0)
 		}
 		// Stop all the analyzers, even the ones that had trouble starting,
 		// in case they did actually start
 		for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
 			container, _ := getContainerAndAddress(analyzerRepo, id)
-			defer stop(container, 0)
+			stop(container, 0)
 		}
 	}
 
