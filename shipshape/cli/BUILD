@@ -79,8 +79,6 @@ go_test(
     ],
 )
 
-# NOTE: Make sure to rebuild your docker images before running these tests!
-#   $ bazel build //shipshape/docker:service //shipshape/androidlint_analyzer/docker:android_lint
 go_test(
     name = "test_local",
     srcs = [
