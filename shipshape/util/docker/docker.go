@@ -306,9 +306,23 @@ func ContainerId(container string) (string, error) {
 // of the shipshape service running at container. If it is, it returns the relative path
 // of path within the mapped volume.
 func MappedVolume(path, container string) (bool, string) {
-	// Why this big ugly mess you ask? Because we can't use a go template to index
+	// Sigh.
+	// In docker < 1.8.0, docker inspect has a Volumes that is a map of strings to strings. We can't
+	// directly index into the map though, because go has limitations of what values are a valid index,
+	// and of course we are using those values.
+	// In docker 1.8+, docker CHANGED THE FORMAT. docker inspect now has a Mounts that is an array of
+	// objects. We have to go through the array and look for the item of interest.
 	// into the array that contains the Destination of interest.
-	v, err := inspect(container, `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`)
+	versionArray, err := version()
+	if err != nil {
+		return false, ""
+	}
+	mappedVolumeFormat := `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`
+
+	if versionArray[0] == 1 && versionArray[1] < 8 {
+		mappedVolumeFormat = `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`
+	}
+	v, err := inspect(container, mappedVolumeFormat)
 	if err != nil {
 		return false, ""
 	}
@@ -352,4 +366,23 @@ func inspect(name, format string) ([]byte, error) {
 	}
 	cmd := exec.Command("docker", "inspect", formatter, name)
 	return cmd.CombinedOutput()
+}
+
+// version returns the docker version, as a []int. So docker version 1.8.3
+// will be [1, 8, 3]
+func version() ([]int, error) {
+	cmd := exec.Command("docker", "version", "--format='{{.Server.Version}}'")
+	raw, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	strParts := strings.Split(strings.TrimSpace(string(raw)), ".")
+	parts := make([]int, len(strParts))
+	for i, p := range strParts {
+		parts[i], err = strconv.Atoi(p)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return parts, nil
 }
