@@ -188,7 +188,7 @@ func main() {
 	}
 
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
+		fmt.Printf("Error: %v\n", err.Error())
 		os.Exit(returnError)
 	}
 	if numResults != 0 {
