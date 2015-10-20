@@ -307,21 +307,23 @@ func ContainerId(container string) (string, error) {
 // of path within the mapped volume.
 func MappedVolume(path, container string) (bool, string) {
 	// Sigh.
-	// In docker < 1.8.0, docker inspect has a Volumes that is a map of strings to strings. We can't
-	// directly index into the map though, because go has limitations of what values are a valid index,
-	// and of course we are using those values.
+	// In docker < 1.8.0, docker inspect has a Volumes entry that is a map of strings to strings. We can't
+	// directly index into the map though, because go requires indicies to have alphanumberics only,
+	// and ours have punctuation since they are a path name.
 	// In docker 1.8+, docker CHANGED THE FORMAT. docker inspect now has a Mounts that is an array of
 	// objects. We have to go through the array and look for the item of interest.
 	// into the array that contains the Destination of interest.
-	versionArray, err := version()
-	if err != nil {
-		return false, ""
-	}
-	mappedVolumeFormat := `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`
 
-	if versionArray[0] == 1 && versionArray[1] < 8 {
+	// mappedVolumeFormat is a go format string that will retrieve the path that is mapped to
+	// /shipshape-workspace
+	mappedVolumeFormat := `{{range $k, $v := .Mounts}} {{if eq $v.Destination "/shipshape-workspace"}} {{$v.Source}} {{end}} {{end}}`
+	versionArray, err := version()
+	// Oh, yeah. In docker <1.7, getting the version doesn't even work because it doesn't have a
+	// --format flag. So let's just assume that if we get an error here, it's old.
+	if err != nil || (versionArray[0] == 1 && versionArray[1] < 8) {
 		mappedVolumeFormat = `{{range $k, $v := .Volumes}} {{if eq $k "/shipshape-workspace"}} {{$v}} {{end}} {{end}}`
 	}
+
 	v, err := inspect(container, mappedVolumeFormat)
 	if err != nil {
 		return false, ""
