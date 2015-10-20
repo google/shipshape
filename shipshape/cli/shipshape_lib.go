@@ -82,7 +82,8 @@ func New(options Options) *Invocation {
 }
 
 func (i *Invocation) StartService() error {
-	_, paths, err := i.startServices()
+	_, paths, cleanup, err := i.startServices()
+	defer cleanup()
 	if err != nil {
 		return fmt.Errorf("HTTP client did not become healthy: %v", err)
 	}
@@ -95,7 +96,8 @@ func (i *Invocation) ShowCategories() error {
 	var res *rpcpb.GetCategoryResponse
 
 	// Run it on files
-	c, _, err := i.startServices()
+	c, _, cleanup, err := i.startServices()
+	defer cleanup()
 	if err != nil {
 		return fmt.Errorf("HTTP client did not become healthy: %v", err)
 	}
@@ -110,14 +112,14 @@ func (i *Invocation) ShowCategories() error {
 	return nil
 }
 
-func (i *Invocation) startServices() (*client.Client, Paths, error) {
+func (i *Invocation) startServices() (*client.Client, Paths, func(), error) {
 	var paths Paths
 	var err error
 
 	glog.Infof("Starting shipshape...")
 	paths.fs, err = os.Stat(i.options.File)
 	if err != nil {
-		return nil, paths, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
+		return nil, paths, func() {}, fmt.Errorf("%s is not a valid file or directory\n", i.options.File)
 	}
 
 	paths.origDir = i.options.File
@@ -127,11 +129,11 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 
 	paths.absRoot, err = filepath.Abs(paths.origDir)
 	if err != nil {
-		return nil, paths, fmt.Errorf("could not get absolute path for %s: %v\n", paths.origDir, err)
+		return nil, paths, func() {}, fmt.Errorf("could not get absolute path for %s: %v\n", paths.origDir, err)
 	}
 
 	if !docker.HasDocker() {
-		return nil, paths, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
+		return nil, paths, func() {}, fmt.Errorf("docker could not be found. Make sure you have docker installed.")
 	}
 
 	image := docker.FullImageName(i.options.Repo, image, i.options.Tag)
@@ -147,19 +149,23 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 	pull(image)
 	pullAnalyzers(i.options.ThirdPartyAnalyzers)
 
-	// Put in this defer before calling run. Even if run fails, it can
-	// still create the container.
-	if !i.options.StayUp {
-		// TODO(ciera): Rather than immediately sending a SIGKILL,
-		// we should use the default 10 seconds and properly handle
-		// SIGTERMs in the endpoint script.
-		defer stop("shipping_container", 0)
-	}
-	// Stop all the analyzers, even the ones that had trouble starting,
-	// in case they did actually start
-	for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
-		container, _ := getContainerAndAddress(analyzerRepo, id)
-		defer stop(container, 0)
+	// Create a cleanup function that will stop all the containers we started,
+	// if that is desired.
+	cleanup := func() {
+		// Put in this defer before calling run. Even if run fails, it can
+		// still create the container.
+		if !i.options.StayUp {
+			// TODO(ciera): Rather than immediately sending a SIGKILL,
+			// we should use the default 10 seconds and properly handle
+			// SIGTERMs in the endpoint script.
+			defer stop("shipping_container", 0)
+		}
+		// Stop all the analyzers, even the ones that had trouble starting,
+		// in case they did actually start
+		for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
+			container, _ := getContainerAndAddress(analyzerRepo, id)
+			defer stop(container, 0)
+		}
 	}
 
 	containers, errs := startAnalyzers(paths.absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
@@ -169,9 +175,9 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 	var c *client.Client
 	c, paths.relativeRoot, err = startShipshapeService(image, paths.absRoot, containers, i.options.Dind)
 	if err != nil {
-		return nil, paths, fmt.Errorf("HTTP client did not become healthy: %v", err)
+		return nil, paths, cleanup, fmt.Errorf("HTTP client did not become healthy: %v", err)
 	}
-	return c, paths, nil
+	return c, paths, cleanup, nil
 }
 
 func (i *Invocation) Run() (int, error) {
@@ -180,7 +186,8 @@ func (i *Invocation) Run() (int, error) {
 	var numNotes int
 
 	// Run it on files
-	c, paths, err := i.startServices()
+	c, paths, cleanup, err := i.startServices()
+	defer cleanup()
 	if err != nil {
 		return 0, err
 	}
