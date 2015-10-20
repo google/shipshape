@@ -154,12 +154,12 @@ func (i *Invocation) startServices() (*client.Client, Paths, error) {
 		// we should use the default 10 seconds and properly handle
 		// SIGTERMs in the endpoint script.
 		defer stop("shipping_container", 0)
-		// Stop all the analyzers, even the ones that had trouble starting,
-		// in case they did actually start
-		for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
-			container, _ := getContainerAndAddress(analyzerRepo, id)
-			defer stop(container, 0)
-		}
+	}
+	// Stop all the analyzers, even the ones that had trouble starting,
+	// in case they did actually start
+	for id, analyzerRepo := range i.options.ThirdPartyAnalyzers {
+		container, _ := getContainerAndAddress(analyzerRepo, id)
+		defer stop(container, 0)
 	}
 
 	containers, errs := startAnalyzers(paths.absRoot, i.options.ThirdPartyAnalyzers, i.options.Dind)
