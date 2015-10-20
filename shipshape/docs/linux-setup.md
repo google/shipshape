@@ -25,7 +25,7 @@ Shipshape has been tested on Ubuntu (>=14.04) and Debian unstable, but should wo
 
 Make sure you can [run docker without sudo](https://docs.docker.com/articles/basics) by adding your user to the docker group. After you do this, log out of your terminal and log in again.
 
-    $ sudo usermod -G docker $USER
+    $ sudo usermod -a -G docker $USER
 
 ## Install shipshape
 

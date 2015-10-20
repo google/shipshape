@@ -22,9 +22,9 @@ or [use
 GCE](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md).
 
 Navigate to a directory you'd like to run shipshape on. If you don't have one,
-we have a test repo that has some known bugs. TODO put test repo here
+we have a test repo that has some known bugs.
 
-    $ git clone OUR_TEST_REPO
+    $ git clone https://github.com/google/shipshape-demo
 
 Run the command line tool. The first time this is run, it's going to be slow as
 it needs to download the latest docker image with the analyzers.
@@ -46,7 +46,7 @@ defined by
       - event: default
         categories:
           - go vet
-          - Py Lint
+          - PyLint
     EOF
 
 Let's also add a pylintrc file
@@ -64,7 +64,8 @@ But we can still override them
 
     $ shipshape --categories="JSHint" .
 
-We can also try out using one of the [external analyzers](TODOTODO)
+We can also try out using one of the [external
+analyzers](https://github.com/google/shipshape#contributed-analyzers)
 
     $ shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod"
 
@@ -79,13 +80,12 @@ want to have different results when we run the tool in different ways.
       - event: default
         categories:
           - go vet
-          - Py Lint
+          - PyLint
           - AndroidLint
-    events:
       - event: IDE
         categories:
           - go vet
-          - Py Lint
+          - PyLint
     EOF
 
 

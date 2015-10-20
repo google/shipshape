@@ -60,7 +60,7 @@ func runPrebuildAnalyzers(t *testing.T, testName string) {
 		File:                "shipshape/cli/testdata/workspace1",
 		ThirdPartyAnalyzers: []string{},
 		Build:               "",
-		TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
+		TriggerCats:         []string{"JSHint", "go vet", "PyLint"},
 		Dind:                false,
 		Event:               defaults.DefaultEvent,
 		Repo:                defaults.DefaultRepo,
@@ -84,11 +84,8 @@ func runPrebuildAnalyzers(t *testing.T, testName string) {
 	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
 		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if got, want := returnedNotesCount, 39; got != want {
+	if got, want := returnedNotesCount, 37; got != want {
 		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
-	}
-	if got, want := countCategoryNotes(allResponses, "PostMessage"), 2; got != want {
-		t.Errorf("%v: Wrong number of PostMessage notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "JSHint"), 3; got != want {
 		t.Errorf("%v: Wrong number of JSHint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
@@ -188,7 +185,7 @@ func TestChangingDirs(t *testing.T) {
 			File:                test.file,
 			ThirdPartyAnalyzers: []string{},
 			Build:               "",
-			TriggerCats:         []string{"PostMessage", "JSHint", "go vet", "PyLint"},
+			TriggerCats:         []string{"JSHint", "go vet", "PyLint"},
 			Dind:                false,
 			Event:               defaults.DefaultEvent,
 			Repo:                defaults.DefaultRepo,
