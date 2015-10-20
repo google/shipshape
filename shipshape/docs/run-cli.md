@@ -82,7 +82,6 @@ want to have different results when we run the tool in different ways.
           - go vet
           - PyLint
           - AndroidLint
-    events:
       - event: IDE
         categories:
           - go vet
