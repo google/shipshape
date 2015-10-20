@@ -40,14 +40,14 @@ to build shipshape from source:
 You can pull a Docker image with all of these dependencies and develop in that:
 
     ```
-    $ docker pull gcr.io/shipshape_releases/dev_container:prod
-    $ docker run --privileged -it gcr.io/shipshape_releases/dev_container:prod /bin/bash
+    docker pull gcr.io/shipshape_releases/dev_container:prod
+    docker run --privileged -it gcr.io/shipshape_releases/dev_container:prod /bin/bash
     ```
 
 Or you can install bison, clang, flex, and go (on Ubuntu >=14.10) using apt:
 
     ```
-    $ sudo apt-get install bison clang flex golang openjdk-8-jdk openjdk-8-source
+    sudo apt-get install bison clang flex golang openjdk-8-jdk openjdk-8-source
     ```
 
 To run tests for Shipshape you also need Android `lint` (part of the
@@ -57,18 +57,18 @@ your system `PATH`.
 
 ## Building our source
 
-    $ mkdir -p github.com/google && cd github.com/google
-    $ git clone https://github.com/google/shipshape.git
-    $ cd shipshape
-    $ ./configure        # Run initial Shipshape+Bazel setup
-    $ bazel build //...  # Build all Shipshape source
+    mkdir -p github.com/google && cd github.com/google
+    git clone https://github.com/google/shipshape.git
+    cd shipshape
+    ./configure        # Run initial Shipshape+Bazel setup
+    bazel build //...  # Build all Shipshape source
 
 ## Running locally
 Bazel puts the Shipshape CLI binary in the bazel-bin directory. You can run it
 on you directory:
 
 ```
-$ ./bazel-bin/shipshape/cli/shipshape <Directory>
+./bazel-bin/shipshape/cli/shipshape <Directory>
 ```
 
 ## Run with Local Docker Images
@@ -79,14 +79,14 @@ pass `--tag local` to the CLI it will use locally built images instead.
 To build and store docker images locally, run:
 
 ```
-$ bazel build //shipshape/docker:service
-$ bazel build //shipshape/androidlint_analyzer/docker:android_lint
+bazel build //shipshape/docker:service
+bazel build //shipshape/androidlint_analyzer/docker:android_lint
 ```
 
 To run with local images:
 
 ```
-$ ./bazel-bin/shipshape/cli/shipshape --tag=local <Directory>
+./bazel-bin/shipshape/cli/shipshape --tag=local <Directory>
 ```
 
 ## Testing
@@ -94,13 +94,13 @@ $ ./bazel-bin/shipshape/cli/shipshape --tag=local <Directory>
 For unit tests, run:
 
 ```
-$ bazel test //...
+bazel test //...
 ```
 
 For the end-to-end test, run:
 
 ```
-$ bazel test //shipshape/cli:test_local
+bazel test //shipshape/cli:test_local
 ```
 
 
