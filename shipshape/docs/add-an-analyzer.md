@@ -79,6 +79,7 @@ import (
 
   notepb "github.com/google/shipshape/shipshape/proto/note_proto"
   ctxpb "github.com/google/shipshape/shipshape/proto/shipshape_context_proto"
+  trpb "github.com/google/shipshape/shipshape/proto/textrange_proto"
 )
 
 type Analyzer struct{}
@@ -127,9 +128,9 @@ func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
         Description: proto.String("Hello world, this is a code note"),
         Location: &notepb.Location{
           SourceContext: ctx.SourceContext,
-          Path: path,
-          Range: &textrangepb.TextRange{
-            Row: 1,
+          Path: proto.String(path),
+          Range: &trpb.TextRange{
+            StartLine: proto.Int(1),
           },
         },
       })
@@ -230,9 +231,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get clean
 # Install any dependencies that you need here
 
 # Set up the analyzer
-# Add the binary that we'll run in the endpoint script.
-ADD myservice /myservice
-ADD endpoint.sh /endpoint.sh
+# Add the binary that we'll run in the endpoint script
+# and the endpoint script itself.
+COPY myservice /myservice
+COPY helloworld/endpoint.sh /endpoint.sh
 
 # 10005 is the port that the shipshape service will expect to see a Shipshape
 # Analyzer at.
@@ -244,22 +246,28 @@ ENTRYPOINT ["/endpoint.sh"]
 
 helloworld/endpoint.sh
 ```
+#!/bin/bash
+
 # Shipshape will map the /shipshape-output directory to /tmp on the local
 # machine, which is where you can find your logs
 ./myservice &> /shipshape-output/myanalyzer.log
 ```
 
+Make sure to make the script executable!
+
+    $ chmod 755 helloworld/endpoint.sh
+
 ##  Test your analyzer locally
 
-Build a docker image with the tag "local"
+Build a docker image with the tag "local", using the file we created earlier.
+Notice that we're building it from the directory with our myservice binary.
 
-    $ docker build --tag=myanalyzer:local helloworld/
+    $ docker build --tag=myanalyzer:local --file=helloworld/Dockerfile .
 
 Run the local analyzer. When you use the tag `local`, shipshape won't attempt to
 pull it from a remote location, but will use your locally built image.
 
-    $ shipshape --analyzer_images=myanalyzer:local \
-                --categories=HelloWorld directory
+    $ shipshape --analyzer_images=myanalyzer:local <directory>
 
 ## Push it up to gcr.io or docker.io, so that others can access it
 
@@ -268,8 +276,7 @@ pull it from a remote location, but will use your locally built image.
 
 ## Test your public analyzer
 
-   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] \
-               --categories=HelloWorld directory
+   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] directory
 
 Add it to [our list of
-analyzers](https://github.com/google/shipshape/blob/master/README.md) by sending us a pull request!
+analyzers](https://github.com/google/shipshape/blob/master/README.md#contributed-analyzers) by sending us a pull request!
