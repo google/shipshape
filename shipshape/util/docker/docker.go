@@ -308,7 +308,7 @@ func ContainerId(container string) (string, error) {
 func MappedVolume(path, container string) (bool, string) {
 	// Sigh.
 	// In docker < 1.8.0, docker inspect has a Volumes entry that is a map of strings to strings. We can't
-	// directly index into the map though, because go requires indicies to have alphanumberics only,
+	// directly index into the map though, because go requires indicies to have alphanumerics only,
 	// and ours have punctuation since they are a path name.
 	// In docker 1.8+, docker CHANGED THE FORMAT. docker inspect now has a Mounts that is an array of
 	// objects. We have to go through the array and look for the item of interest.
