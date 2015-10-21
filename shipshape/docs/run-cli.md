@@ -65,9 +65,11 @@ But we can still override them
     shipshape --categories="JSHint" .
 
 We can also try out using one of the [external
-analyzers](https://github.com/google/shipshape#contributed-analyzers)
+analyzers](https://github.com/google/shipshape#contributed-analyzers). Like
+before, this will take a minute the first time it is run, since it is pulling a
+new image down.
 
-    shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod"
+    shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod" .
 
 Let's add that to our shipshape file too. We can also add multiple events, if we
 want to have different results when we run the tool in different ways.
