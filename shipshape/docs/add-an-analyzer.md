@@ -47,18 +47,18 @@ Creating an analyzer involves making three things:
 First, we need to make sure go is all set up. Create gocode/src/helloworld, and
 set your go path.
 
-    $ mkdir -p gocode/src/helloworld
-    $ export GOPATH=/home/$USER/gocode
+    mkdir -p gocode/src/helloworld
+    export GOPATH=/home/$USER/gocode
 
 Get shipshape's go API
 
-    $ go get github.com/google/shipshape/shipshape/api
+    go get github.com/google/shipshape/shipshape/api
 
 Create two packages, one for your analyzer and one for your service.
 
-    $ cd gocode/src
-    $ mkdir helloworld/myanalyzer
-    $ mkdir helloworld/myservice
+    cd gocode/src
+    mkdir helloworld/myanalyzer
+    mkdir helloworld/myservice
 
 ### Create an analyzer
 We'll do this by implementing
@@ -200,8 +200,8 @@ func main() {
 
 Make sure your analyzer builds
 
-    $ go build helloworld/myanalyzer
-    $ go build helloworld/myservice
+    go build helloworld/myanalyzer
+    go build helloworld/myservice
 
 
 ### Java
@@ -255,28 +255,28 @@ helloworld/endpoint.sh
 
 Make sure to make the script executable!
 
-    $ chmod 755 helloworld/endpoint.sh
+    chmod 755 helloworld/endpoint.sh
 
 ##  Test your analyzer locally
 
 Build a docker image with the tag "local", using the file we created earlier.
 Notice that we're building it from the directory with our myservice binary.
 
-    $ docker build --tag=myanalyzer:local --file=helloworld/Dockerfile .
+    docker build --tag=myanalyzer:local --file=helloworld/Dockerfile .
 
 Run the local analyzer. When you use the tag `local`, shipshape won't attempt to
 pull it from a remote location, but will use your locally built image.
 
-    $ shipshape --analyzer_images=myanalyzer:local <directory>
+    shipshape --analyzer_images=myanalyzer:local <directory>
 
 ## Push it up to gcr.io or docker.io, so that others can access it
 
-    $ docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
-    $ docker push [SAME_NAME_AND_TAG_AS_ABOVE]
+    docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    docker push [SAME_NAME_AND_TAG_AS_ABOVE]
 
 ## Test your public analyzer
 
-   $ shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] directory
+   shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] directory
 
 Add it to [our list of
 analyzers](https://github.com/google/shipshape/blob/master/README.md#contributed-analyzers) by sending us a pull request!
