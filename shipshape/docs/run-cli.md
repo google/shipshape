@@ -69,7 +69,7 @@ analyzers](https://github.com/google/shipshape#contributed-analyzers). Like
 before, this will take a minute the first time it is run, since it is pulling a
 new image down.
 
-    shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod" .
+    shipshape --analyzer_images="joqvist/extendj_shipshape" .
 
 Let's add that to our shipshape file too. We can also add multiple events, if we
 want to have different results when we run the tool in different ways.
@@ -77,13 +77,13 @@ want to have different results when we run the tool in different ways.
     cat > .shipshape <<EOF
     global:
       images:
-        - gcr.io/shipshape_releases/android_lint:prod
+        - joqvist/extendj_shipshape
     events:
       - event: default
         categories:
           - go vet
           - PyLint
-          - AndroidLint
+          - ExtendJ
       - event: IDE
         categories:
           - go vet
