@@ -19,6 +19,7 @@ package com.google.shipshape.service;
 import com.google.devtools.kythe.common.FormattingLogger;
 import com.google.shipshape.util.rpc.HttpServerFrontend;
 import com.google.shipshape.util.rpc.Server;
+import com.google.shipshape.analyzers.CheckstyleGoogleAnalyzer;
 import com.google.shipshape.analyzers.PostMessageAnalyzer;
 import com.google.shipshape.proto.ShipshapeContextProto.Stage;
 
@@ -45,6 +46,7 @@ class JavaService {
       ArrayList<Analyzer> analyzers = new ArrayList<>();
 // TODO(ciera): uncomment when #110 is fixed
 //      analyzers.add(new PostMessageAnalyzer());
+      analyzers.add(new CheckstyleGoogleAnalyzer());
 
       final Server server = new Server();
       JavaDispatcher<Object> dispatcher = new JavaDispatcher<>(analyzers, Stage.PRE_BUILD, null);
