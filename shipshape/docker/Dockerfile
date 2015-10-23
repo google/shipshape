@@ -30,7 +30,7 @@ RUN curl -L https://www.npmjs.org/install.sh | sponge | clean=no   sh
 RUN npm install -g jshint
 
 # Checkstyle
-RUN curl --location --silent --fail http://downloads.sourceforge.net/project/checkstyle/checkstyle/6.11.2/checkstyle-6.11.2-all.jar > /usr/local/bin/checkstyle-6.11.2-all.jar
+ADD third_party/checkstyle/checkstyle-6.11.2-all.jar /usr/local/bin/checkstyle-6.11.2-all.jar
 
 # Install Go, needed for the go vet analyzer
 RUN curl -L -s http://golang.org/dl/go1.3.linux-amd64.tar.gz | tar -zx -C /usr/local

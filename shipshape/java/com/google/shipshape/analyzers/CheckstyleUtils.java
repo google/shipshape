@@ -16,6 +16,7 @@
 
 package com.google.shipshape.analyzers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -36,6 +37,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +56,9 @@ import javax.xml.parsers.SAXParserFactory;
  * A utility class of methods for writing analyzers that wrap Checkstyle.
  */
 final class CheckstyleUtils {
+  @VisibleForTesting
+  static String checkstyleJar = "/usr/local/bin/checkstyle-6.11.2-all.jar";
+
   private static final ExecutorService threadpool = Executors.newCachedThreadPool();
   private static final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
   private static final String checkstylePackageBase = "com.puppycrawl.tools.checkstyle.checks.";
@@ -94,8 +104,8 @@ final class CheckstyleUtils {
   static ImmutableList<Note>  runCheckstyle(ShipshapeContext context, String category,
       ImmutableMap<String, String> javaFiles, String checkstyleConfig) throws AnalyzerException {
     ImmutableList<String> commandLine = new ImmutableList.Builder<String>()
-        .add("java")
-        .add("-jar", "/usr/local/bin/checkstyle-6.11.2-all.jar")
+        .add(String.format("%s/bin/java", System.getProperties().getProperty("java.home")))
+        .add("-jar", checkstyleJar)
         .add("-c", checkstyleConfig)
         .add("-f", "xml")
         .addAll(javaFiles.keySet())
@@ -127,11 +137,24 @@ final class CheckstyleUtils {
     // TODO(rsk): double check what a non-0 exit code means.
     if (process.exitValue() != 0 || stderr.length > 0) {
       throw new AnalyzerException(category, context,
-          String.format("command %s failed with %d and stderr \"%s\"", commandLine,
-            process.exitValue(), stderr));
+          String.format("command %s failed with %d with stdout \"%s\" and stderr \"%s\"",
+              commandLine, process.exitValue(),
+              decodeWithReplacement(stdout, StandardCharsets.UTF_8),
+              decodeWithReplacement(stderr, StandardCharsets.UTF_8)));
     }
 
     return parseCheckstyleXml(context, category, javaFiles, stdout);
+  }
+
+  private static String decodeWithReplacement(byte[] bytes, Charset cs) {
+    CharsetDecoder decoder = cs.newDecoder();
+    decoder.onMalformedInput(CodingErrorAction.REPLACE);
+    decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+    try {
+      return decoder.decode(ByteBuffer.wrap(bytes)).toString();
+    } catch (CharacterCodingException e) {
+      return String.format("could not decode as %s", cs.displayName());
+    }
   }
 
   private static class ReadAll implements Callable<byte[]> {
