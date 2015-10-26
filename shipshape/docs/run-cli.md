@@ -67,9 +67,15 @@ But we can still override them
 We can also try out using one of the [external
 analyzers](https://github.com/google/shipshape#contributed-analyzers). Like
 before, this will take a minute the first time it is run, since it is pulling a
-new image down.
+new image down. Let's first find out what categories are available with the
+new analyzer.
 
-    shipshape --analyzer_images="joqvist/extendj_shipshape" .
+    shipshape --analyzer_images="joqvist/extendj_shipshape" --show_categories
+
+And now let's run it. Notice that we now have to specify the category, since we
+set up the .shipshape file to only run go vet and PyLint.
+
+    shipshape --analyzer_images="joqvist/extendj_shipshape" --categories="ExtendJ" .
 
 Let's add that to our shipshape file too. We can also add multiple events, if we
 want to have different results when we run the tool in different ways.
