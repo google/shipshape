@@ -60,7 +60,7 @@ func runPrebuildAnalyzers(t *testing.T, testName string) {
 		File:                "shipshape/cli/testdata/workspace1",
 		ThirdPartyAnalyzers: []string{},
 		Build:               "",
-		TriggerCats:         []string{"JSHint", "go vet", "PyLint"},
+		TriggerCats:         []string{"JSHint", "go vet", "PyLint", "CheckstyleGoogle"},
 		Dind:                false,
 		Event:               defaults.DefaultEvent,
 		Repo:                defaults.DefaultRepo,
@@ -84,7 +84,7 @@ func runPrebuildAnalyzers(t *testing.T, testName string) {
 	if countedNotes := countNotes(allResponses); returnedNotesCount != countedNotes {
 		t.Errorf("%v: Inconsistent note count: returned %v, counted %v (proto data: %v", testName, returnedNotesCount, countedNotes, allResponses)
 	}
-	if got, want := returnedNotesCount, 37; got != want {
+	if got, want := returnedNotesCount, 43; got != want {
 		t.Errorf("%v: Wrong number of notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "JSHint"), 3; got != want {
@@ -94,6 +94,9 @@ func runPrebuildAnalyzers(t *testing.T, testName string) {
 		t.Errorf("%v: Wrong number of go vet notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 	if got, want := countCategoryNotes(allResponses, "PyLint"), 33; got != want {
+		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
+	}
+	if got, want := countCategoryNotes(allResponses, "CheckstyleGoogle"), 6; got != want {
 		t.Errorf("%v: Wrong number of PyLint notes; got %v, want %v (proto data: %v)", testName, got, want, allResponses)
 	}
 }
