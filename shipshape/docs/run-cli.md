@@ -32,7 +32,18 @@ it needs to download the latest docker image with the analyzers.
     shipshape . # This will take a minute.
     shipshape . # This will only be a few seconds now.
 
-Get the list of categories
+When these have completed you should see output that looks something like:
+
+```
+shipshape-demo/js-tests/sample.js
+Line 18, Col 22 [JSHint]
+	Missing semicolon.
+Line 19, Col 24 [JSHint]
+	Use '===' to compare with 'null'.
+...
+```
+
+To get the list of categories run:
 
     shipshape --show_categories
 
@@ -56,7 +67,7 @@ Let's also add a pylintrc file
     errors-only=yes
     EOF
 
-Now when we run, our preferred settings are used
+Now when we run, our preferred settings are used as can be seen by running again:
 
     shipshape .
 
