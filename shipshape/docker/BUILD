@@ -28,6 +28,7 @@ docker_build(
         "//shipshape/service:go_dispatcher",
         "//shipshape/service:shipshape",
         "endpoint.sh",
+        "//third_party/checkstyle",
     ],
 )
 
