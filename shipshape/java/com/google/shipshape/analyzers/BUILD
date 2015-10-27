@@ -17,6 +17,8 @@ package(default_visibility = ["//shipshape:default_visibility"])
 java_library(
     name = "analyzers",
     srcs = [
+        "CheckstyleGoogleAnalyzer.java",
+        "CheckstyleUtils.java",
         "EncodingOffsetConverter.java",
         "ErrorProneAnalyzer.java",
         "FixAndReplacementConverter.java",

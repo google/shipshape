@@ -55,6 +55,7 @@ go_test(
     data = [
         "testdata",
     ],
+    tags = ["manual"],
     library = ":cli",
     deps = [
         "//shipshape/util/docker:docker",

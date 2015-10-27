@@ -32,7 +32,18 @@ it needs to download the latest docker image with the analyzers.
     shipshape . # This will take a minute.
     shipshape . # This will only be a few seconds now.
 
-Get the list of categories
+When these have completed you should see output that looks something like:
+
+```
+shipshape-demo/js-tests/sample.js
+Line 18, Col 22 [JSHint]
+	Missing semicolon.
+Line 19, Col 24 [JSHint]
+	Use '===' to compare with 'null'.
+...
+```
+
+To get the list of categories run:
 
     shipshape --show_categories
 
@@ -56,7 +67,7 @@ Let's also add a pylintrc file
     errors-only=yes
     EOF
 
-Now when we run, our preferred settings are used
+Now when we run, our preferred settings are used as can be seen by running again:
 
     shipshape .
 
@@ -65,9 +76,17 @@ But we can still override them
     shipshape --categories="JSHint" .
 
 We can also try out using one of the [external
-analyzers](https://github.com/google/shipshape#contributed-analyzers)
+analyzers](https://github.com/google/shipshape#contributed-analyzers). Like
+before, this will take a minute the first time it is run, since it is pulling a
+new image down. Let's first find out what categories are available with the
+new analyzer.
 
-    shipshape --analyzer_images="gcr.io/shipshape_releases/android_lint:prod"
+    shipshape --analyzer_images="joqvist/extendj_shipshape" --show_categories
+
+And now let's run it. Notice that we now have to specify the category, since we
+set up the .shipshape file to only run go vet and PyLint.
+
+    shipshape --analyzer_images="joqvist/extendj_shipshape" --categories="ExtendJ" .
 
 Let's add that to our shipshape file too. We can also add multiple events, if we
 want to have different results when we run the tool in different ways.
@@ -75,13 +94,13 @@ want to have different results when we run the tool in different ways.
     cat > .shipshape <<EOF
     global:
       images:
-        - gcr.io/shipshape_releases/android_lint:prod
+        - joqvist/extendj_shipshape
     events:
       - event: default
         categories:
           - go vet
           - PyLint
-          - AndroidLint
+          - ExtendJ
       - event: IDE
         categories:
           - go vet
