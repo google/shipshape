@@ -137,21 +137,6 @@ func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
 }
 ```
 
-When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
-which is a protocol message that represents a request to have some code
-analyzed. It contains useful information about the code being analyzed and any
-information about the context it is running in.
-
-Your analysis should produce a list of
-[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
-which is another protocol message. A note represents a single piece of
-information from an analysis tool. It can be associated with a line of code in a
-file, and it can provide suggestions for how to fix the error.
-
-Let's modify our Analyze method to now produce one note for every file, and
-place it on the first line of the file.
-
-
 ### Implement a server for your analyzer
 Now, we just need to implement a service that runs on port 10005 and calls to
 your analyzer. You can use api.Service to help with this.  As an example, see
