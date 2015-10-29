@@ -16,10 +16,7 @@
 
 # Running Shipshape
 
-First, did you install shipshape? You can either do a [Linux
-install](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md)
-or [use
-GCE](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md).
+First, did you [install shipshape](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md)?
 
 Navigate to a directory you'd like to run shipshape on. If you don't have one,
 we have a test repo that has some known bugs.
