@@ -138,7 +138,7 @@ func TestGetServiceInfo(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		driver := NewDriver(test.addrs)
+		driver := NewDriver(test.addrs, nil)
 		info := driver.getAllServiceInfo()
 
 		if len(test.result) != len(info) {

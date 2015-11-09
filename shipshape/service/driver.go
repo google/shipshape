@@ -56,7 +56,8 @@ type ShipshapeDriver struct {
 	// serviceMap is a mapping from analyzer locations to the categories they have available
 	// and the stage they should be run at.
 	// The range of serviceMap is the same as AnalyzerLocations
-	serviceMap map[string]serviceInfo
+	serviceMap        map[string]serviceInfo
+	defaultCategories strset.Set
 }
 
 type serviceInfo struct {
@@ -67,13 +68,13 @@ type serviceInfo struct {
 
 // NewDriver creates a new driver with with the analyzers at the
 // specified locations. This func makes no rpcs.
-func NewDriver(analyzerLocations []string) *ShipshapeDriver {
+func NewDriver(analyzerLocations []string, defaultCategories strset.Set) *ShipshapeDriver {
 	var addrs []string
 
 	for _, addr := range analyzerLocations {
 		addrs = append(addrs, strings.TrimPrefix(addr, "http://"))
 	}
-	return &ShipshapeDriver{AnalyzerLocations: addrs}
+	return &ShipshapeDriver{AnalyzerLocations: addrs, defaultCategories: defaultCategories}
 }
 
 // NewTestDriver is only for testing. It creates a ShipshapeDriver
@@ -155,8 +156,8 @@ func (sd ShipshapeDriver) Run(ctx server.Context, in *rpcpb.ShipshapeRequest, ou
 	}
 
 	if len(desiredCats) == 0 {
-		log.Printf("No categories specified, running with all available categories: %s", allCats.String())
-		desiredCats = allCats
+		log.Printf("No categories specified, running with default categories: %s", sd.defaultCategories.String())
+		desiredCats = sd.defaultCategories
 	}
 
 	// Find out what categories we have available, and remove/warn on the missing ones
