@@ -68,6 +68,7 @@ go_binary(
         ":service",
         "//shipshape/proto:shipshape_rpc_proto_go",
         "//shipshape/util/rpc/server:server",
+        "//shipshape/util/strings:strings",
         "//third_party/go:protobuf",
     ],
 )

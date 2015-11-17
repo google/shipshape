@@ -28,6 +28,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/google/shipshape/shipshape/service"
 	"github.com/google/shipshape/shipshape/util/rpc/server"
+	strset "github.com/google/shipshape/shipshape/util/strings"
 
 	rpcpb "github.com/google/shipshape/shipshape/proto/shipshape_rpc_proto"
 )
@@ -64,7 +65,14 @@ func main() {
 		log.Printf("All analyzers deemed healthy")
 	}
 
-	shipshapeService := service.NewDriver(analyzerList)
+	defaultCategories := strset.New(
+		"CheckstyleGoogle",
+		"ErrorProne",
+		"CodeAlert",
+		"JSHint",
+		"PyLint",
+		"go vet")
+	shipshapeService := service.NewDriver(analyzerList, defaultCategories)
 
 	if *startService {
 		// Start shipshape service
