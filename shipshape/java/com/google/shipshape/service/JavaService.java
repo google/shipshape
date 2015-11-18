@@ -44,8 +44,7 @@ class JavaService {
       new JCommander(service, args);
 
       ArrayList<Analyzer> analyzers = new ArrayList<>();
-// TODO(ciera): uncomment when #110 is fixed
-//      analyzers.add(new PostMessageAnalyzer());
+      analyzers.add(new PostMessageAnalyzer());
       analyzers.add(new CheckstyleGoogleAnalyzer());
 
       final Server server = new Server();

@@ -25,14 +25,12 @@ deploy a shipshape analyzer. You will need:
 * The Shipshape API (currently supporting go and Java)
 * Whatever language tools and dependencies your analyzer needs to build and run
 
-You'll need to have docker and the CLI already installed on either [a Linux
-machine](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md) or [a GCE
-instance](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md)
+You'll need to have docker and the CLI already installed on [a Linux
+machine](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md).
 
 For this tutorial, we be creating an analyzer implemented in Go.
 If you do not already have it, install go by following the
-[go install instructions](https://golang.org/doc/install). The GCE install above
-already has go installed.
+[go install instructions](https://golang.org/doc/install).
 
 ## Implement your analyzer
 
@@ -43,7 +41,7 @@ Creating an analyzer involves making three things:
    [shipshape_rpc.proto](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_rpc.proto).  If you utilize the provided library and implemented the provided API in step 1, we implement the hard parts for you.
 3. A docker image that starts the service and exposes it on port 10005.
 
-### Go
+### Go setup
 First, we need to make sure go is all set up. Create gocode/src/helloworld, and
 set your go path.
 
@@ -138,21 +136,6 @@ func (a Analyzer) Analyze(ctx *ctxpb.ShipshapeContext) ([]*notepb.Note, error) {
   return notes, nil
 }
 ```
-
-When this is method is called, it will be provided with a [`ShipshapeContext`](https://github.com/google/shipshape/blob/master/shipshape/proto/shipshape_context.proto),
-which is a protocol message that represents a request to have some code
-analyzed. It contains useful information about the code being analyzed and any
-information about the context it is running in.
-
-Your analysis should produce a list of
-[`Note`s](https://github.com/google/shipshape/blob/master/shipshape/proto/note.proto),
-which is another protocol message. A note represents a single piece of
-information from an analysis tool. It can be associated with a line of code in a
-file, and it can provide suggestions for how to fix the error.
-
-Let's modify our Analyze method to now produce one note for every file, and
-place it on the first line of the file.
-
 
 ### Implement a server for your analyzer
 Now, we just need to implement a service that runs on port 10005 and calls to
@@ -269,12 +252,14 @@ pull it from a remote location, but will use your locally built image.
 
     shipshape --analyzer_images=myanalyzer:local <directory>
 
-## Push it up to gcr.io or docker.io, so that others can access it
+## Make your analyzer publicly accessable
+
+Push it up to gcr.io or docker.io, so that others can access it
 
     docker tag myanalyzer:local [REGISTRYHOST/][USERNAME/]NAME[:TAG]
     docker push [SAME_NAME_AND_TAG_AS_ABOVE]
 
-## Test your public analyzer
+Now you can access the public version of your analyzer
 
    shipshape --analyzer_image=[SAME_NAME_AND_TAG_AS_ABOVE] directory
 
