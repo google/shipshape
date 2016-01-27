@@ -35,18 +35,24 @@ Shipshape has been tested on Ubuntu (>=14.04) and Debian unstable, but should wo
 
 Shipshape requires [Docker](https://docs.docker.com/docker/userguide/) to run.
 
-[Install instructions for
-Linux](https://github.com/google/shipshape/blob/master/shipshape/docs/linux-setup.md).
+[Install instructions for Linux](shipshape/docs/linux-setup.md).
 
-[Install instructions for
-GCE](https://github.com/google/shipshape/blob/master/shipshape/docs/gce-setup.md).
+[Install instructions for GCE](shipshape/docs/gce-setup.md).
 
 Once you've installed it, running is easy!
 
     $ shipshape <Directory>
 
-For examples for how to use it, [see our
-documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/run-cli.md).
+For examples for how to use it, [see our documentation](shipshape/docs/run-cli.md).
+
+### Building from source
+
+Shipshape uses the [Bazel build tool](http://bazel.io/docs/install.html). Once you have Docker and Bazel installed, you can build Shipshape with:
+
+    $ ./configure
+    $ bazel build //...
+
+The binary will be saved in `bazel-bin/shipshape/cli/shipshape`.
 
 ## Analyzers
 
@@ -67,15 +73,13 @@ The following analyzers were contributed by external developers:
 
 ### Add a new analyzer
 
-See our
-[documentation](https://github.com/google/shipshape/blob/master/shipshape/docs/add-an-analyzer.md) on how to create more analyzers of your own. We also have [a complete example](https://github.com/google/shipshape/tree/master/shipshape/androidlint_analyzer/README.md).
+See our [documentation](shipshape/docs/add-an-analyzer.md) on how to create more analyzers of your own.
+We also have [a complete example](shipshape/androidlint_analyzer/README.md).
 
 ## Contributing to shipshape
 
-To contribute to shipshape, first [read our contribution
-guidelines](https://github.com/google/shipshape/blob/master/CONTRIBUTING.md) and then
-make sure you can [build and run shipshape from
-source](https://github.com/google/shipshape/blob/master/shipshape/docs/dev-setup.md).
+To contribute to shipshape, first [read our contribution guidelines](CONTRIBUTING.md) and then
+make sure you can [build and run shipshape from source](shipshape/docs/dev-setup.md).
 
 ## Running the Jenkins Plugin #
 
