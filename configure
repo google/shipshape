@@ -23,9 +23,20 @@ if [[ $(uname) == 'Darwin' ]]; then
   FALSE=/usr/bin/false
   # Forcibly replace symlinks, even if the symlink is to a directory.
   LNOPTS="-sfFh"
+else
+  FALSE=/bin/false
+  LNOPTS="-sTf"
+fi
+
+# TODO: os.path.realpath() does not match the behavior of Debian's 
+# "realpath -s". Should we just use readlink?
+if [[ -z "$(which realpath)" ]]; then
   realpath() {
     python -c 'import os, sys; print os.path.realpath(sys.argv[2])' $@
   }
+fi
+
+if [[ -z "$(which readlink)" ]]; then
   readlink() {
     if [[ -L "$2" ]]; then
       python -c 'import os, sys; print os.readlink(sys.argv[2])' $@
@@ -33,9 +44,6 @@ if [[ $(uname) == 'Darwin' ]]; then
       echo $2
     fi
   }
-else
-  FALSE=/bin/false
-  LNOPTS="-sTf"
 fi
 
 if [[ -z "$GO" ]]; then
