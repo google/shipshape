@@ -58,7 +58,7 @@ The binary will be saved in `bazel-bin/shipshape/cli/shipshape`.
 
 The following analyzers are bundled with Shipshape:
 
-* [go vet](https://godoc.org/golang.org/x/tools/cmd/vet)
+* [go vet](https://godoc.org/github.com/golang/go/src/cmd/vet)
 * [JSHint](http://www.jshint.com/)
 * [PyLint](http://www.pylint.org/ )
 * [Error Prone](https://github.com/google/error-prone) (category: `ErrorProne`) ***[Under construction: [Issue #104](https://github.com/google/shipshape/issues/104)]***
