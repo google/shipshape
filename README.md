@@ -14,7 +14,12 @@
 // limitations under the License.
 -->
 
-# Overview of Shipshape #
+***Shipshape is not actively maintained. The GitHub project has been
+archived.***
+
+# Overview of Shipshape
+
+***Last updated: 2016-08-29***
 
 [![Build Status](https://travis-ci.org/google/shipshape.svg?branch=master)](https://travis-ci.org/google/shipshape)
 
